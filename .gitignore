@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output and caches
+dist/
+out-tsc/
+*.tsbuildinfo
+.angular/
+.cache/
+.eslintcache
+
+# Tests
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment and secrets (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local data
+/data/
+
+# Editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
