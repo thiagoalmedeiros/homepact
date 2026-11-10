@@ -1,0 +1,10 @@
+version: '3'
+
+tasks:
+  up:
+    desc: Start the local stack (MongoDB + API + web) with the root .env
+    preconditions:
+      - sh: test -f .env
+        msg: 'Missing .env. Create it with: cp .env.example .env'
+    cmds:
+      - docker compose --env-file .env -f infra/docker-compose.yml up --build
