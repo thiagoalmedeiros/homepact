@@ -1,0 +1,47 @@
+<section class="page-narrow hero">
+  <p class="eyebrow">{{ tenant.company()?.name }}</p>
+  <h1 class="title-1 headline" i18n="@@landing.headline">Your home, agreed together.</h1>
+  <p class="lead" i18n="@@landing.lead">
+    Review the proposal your sales representative prepared with you, ask for changes, and sign when
+    it's right. All in one place.
+  </p>
+  <form class="invite card" (ngSubmit)="open()">
+    <label for="invite" class="strong small" i18n="@@landing.inviteLabel"
+      >Have an invite link?</label
+    >
+    <div class="row invite-row">
+      <input
+        id="invite"
+        class="input"
+        name="invite"
+        [(ngModel)]="invite"
+        placeholder="Paste your link"
+        i18n-placeholder="@@landing.invitePlaceholder"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="btn" type="submit" [disabled]="!invite.trim()" i18n="@@common.actions.open">
+        Open
+      </button>
+    </div>
+    @if (invalid) {
+      <p class="tiny error" i18n="@@landing.invalidInvite">
+        That doesn't look like an invite link.
+      </p>
+    }
+  </form>
+  <p class="small muted">
+    <ng-container i18n="@@landing.savedToAccount">Saved your proposal to an account?</ng-container>
+    <a [routerLink]="paths.login" i18n="@@common.actions.signIn">Sign in</a>
+  </p>
+</section>
+
+<section class="page steps">
+  @for (s of steps; track s.title) {
+    <div class="step">
+      <span class="step-icon"><hc-icon [name]="s.icon" [size]="22" /></span>
+      <h2 class="title-3">{{ s.title }}</h2>
+      <p class="muted small">{{ s.body }}</p>
+    </div>
+  }
+</section>

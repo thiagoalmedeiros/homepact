@@ -1,0 +1,38 @@
+@if (tenant.company(); as c) {
+  <footer class="footer">
+    <div class="page">
+      <div class="cols">
+        <div class="stack" style="--gap: 6px">
+          <span class="strong">{{ c.name }}</span>
+          @if (c.tagline) {
+            <span class="muted">{{ c.tagline }}</span>
+          }
+        </div>
+        <div class="stack" style="--gap: 6px">
+          <span class="strong" i18n="@@footer.yourHome">Your home</span>
+          <a [routerLink]="paths.myProposals" i18n="@@footer.myProposals">My proposals</a>
+          <a [routerLink]="paths.login" i18n="@@common.actions.signIn">Sign in</a>
+        </div>
+        @if (c.contact; as ct) {
+          <div class="stack" style="--gap: 6px">
+            <span class="strong" i18n="@@footer.contact">Contact</span>
+            @if (ct.phone) {
+              <a [href]="'tel:' + ct.phone">{{ ct.phone }}</a>
+            }
+            @if (ct.email) {
+              <a [href]="'mailto:' + ct.email">{{ ct.email }}</a>
+            }
+            @if (ct.address) {
+              <span class="muted">{{ ct.address }}</span>
+            }
+          </div>
+        }
+      </div>
+      <hr class="divider" />
+      <p class="tiny muted legal" i18n="@@footer.legal">
+        Prices and availability may change until a proposal is signed. Copyright © {{ year }}
+        {{ c.name }}.
+      </p>
+    </div>
+  </footer>
+}

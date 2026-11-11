@@ -1,0 +1,30 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.console-head h1,
+.console-head p {
+  margin: 0 0 6px;
+}
+.banner {
+  margin-bottom: 20px;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 1000px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.side .title-3 {
+  margin: 0 0 4px;
+}
+.info {
+  --gap: 6px;
+}

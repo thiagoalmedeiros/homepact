@@ -1,0 +1,44 @@
+<div class="stack list">
+  @for (a of adjustments(); track $index; let i = $index) {
+    <div class="adj">
+      <input
+        class="input"
+        [ngModel]="a.label"
+        (ngModelChange)="set(i, { label: $event })"
+        [name]="'adj-label-' + i"
+        placeholder="e.g. Lot premium, Show home promotion"
+        i18n-placeholder="@@adjustments.placeholder"
+        aria-label="Adjustment"
+        i18n-aria-label="@@adjustments.label"
+      />
+      <input
+        class="input amount tabular"
+        type="number"
+        step="100"
+        [ngModel]="a.amountCents / 100"
+        (ngModelChange)="set(i, { amountCents: toCents($event) })"
+        [name]="'adj-amount-' + i"
+        aria-label="Amount in dollars (negative for a credit)"
+        i18n-aria-label="@@adjustments.amount"
+      />
+      <button
+        class="icon-btn"
+        type="button"
+        (click)="remove(i)"
+        aria-label="Remove adjustment"
+        i18n-aria-label="@@adjustments.remove"
+      >
+        <hc-icon name="trash" [size]="16" />
+      </button>
+    </div>
+  }
+  <button class="link-btn small add" type="button" (click)="add()">
+    <hc-icon name="plus" [size]="14" />
+    <ng-container i18n="@@adjustments.add">Add a price adjustment</ng-container>
+  </button>
+  @if (adjustments().length) {
+    <p class="tiny muted hint" i18n="@@adjustments.hint">
+      Use a negative amount for a credit or discount.
+    </p>
+  }
+</div>

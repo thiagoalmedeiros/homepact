@@ -1,0 +1,20 @@
+@let r = resource();
+@if (r.error()) {
+  <div class="callout error row" role="alert">
+    <span i18n="@@loadState.failed">Couldn't load this right now.</span>
+    <button class="link-btn" type="button" (click)="reload()" i18n="@@common.actions.tryAgain">
+      Try again
+    </button>
+  </div>
+} @else if (r.isLoading() && !r.hasValue()) {
+  <div
+    class="stack skeletons"
+    aria-busy="true"
+    aria-label="Loading"
+    i18n-aria-label="@@loadState.loading"
+  >
+    @for (_ of [1, 2, 3]; track $index) {
+      <div class="skeleton" [style.height.px]="height()"></div>
+    }
+  </div>
+}

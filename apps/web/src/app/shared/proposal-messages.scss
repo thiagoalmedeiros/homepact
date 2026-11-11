@@ -1,0 +1,67 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 460px;
+  padding: 4px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.system {
+  text-align: center;
+  margin: 2px auto;
+  max-width: 85%;
+}
+.msg {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 82%;
+}
+.msg.mine {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.msg.mine .bubble {
+  background: var(--accent);
+  color: #fff;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 20px;
+}
+.who {
+  margin: 0 8px 4px;
+}
+.bubble {
+  margin: 0;
+  padding: 9px 15px;
+  border-radius: 20px;
+  border-bottom-left-radius: 6px;
+  background: var(--bubble-other);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.composer {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.composer .input {
+  border-radius: 980px;
+  min-height: 40px;
+  padding: 8px 18px;
+}
+.send {
+  width: 40px;
+  height: 40px;
+  background: var(--accent);
+  color: #fff;
+}
+.send:disabled {
+  opacity: 0.4;
+}

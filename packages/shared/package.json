@@ -1,0 +1,50 @@
+{
+  "name": "@homepact/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Types and constants shared by the API and the web UI.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./format": {
+      "types": "./dist/format.d.ts",
+      "default": "./dist/format.js"
+    },
+    "./enums": {
+      "types": "./dist/enums.d.ts",
+      "default": "./dist/enums.js"
+    },
+    "./changes": {
+      "types": "./dist/changes.d.ts",
+      "default": "./dist/changes.js"
+    },
+    "./agreement-fields": {
+      "types": "./dist/agreement-fields.d.ts",
+      "default": "./dist/agreement-fields.js"
+    },
+    "./mortgage": {
+      "types": "./dist/mortgage.d.ts",
+      "default": "./dist/mortgage.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.5"
+  },
+  "sideEffects": false
+}

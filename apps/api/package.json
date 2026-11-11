@@ -7,20 +7,29 @@
   "scripts": {
     "dev": "node --env-file-if-exists=../../.env --import tsx --watch src/server.ts",
     "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/server.js",
+    "start": "node --env-file-if-exists=../../.env dist/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed:super-admin": "node --env-file-if-exists=../../.env --import tsx src/scripts/seed-super-admin.ts",
+    "seed:showcase": "node --env-file-if-exists=../../.env --import tsx src/scripts/seed-showcase.ts"
   },
   "dependencies": {
+    "@homepact/shared": "0.1.0",
+    "cors": "^2.8.5",
     "express": "^5.3.0",
-    "mongodb": "^7.8.0",
+    "express-rate-limit": "^8.7.1",
+    "jose": "^6.2.13",
+    "mongodb": "^7.7.0",
+    "pdfkit": "^0.20.2",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^24.0.0",
+    "@types/pdfkit": "^0.17.6",
     "pino-pretty": "^13.2.0",
     "tsx": "^4.23.15",
     "vitest": "^5.0.5"

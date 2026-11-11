@@ -1,0 +1,21 @@
+.tabs {
+  margin-bottom: 16px;
+}
+.area-filter {
+  width: auto;
+  min-height: 36px;
+  padding-block: 6px;
+}
+.table-card {
+  padding: 8px 16px;
+}
+.area-row td:first-child {
+  width: 40%;
+}
+.pick {
+  max-height: 220px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

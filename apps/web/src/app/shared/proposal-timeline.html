@@ -1,0 +1,82 @@
+@let cur = detail().proposal.currency;
+<ol class="timeline">
+  @for (e of entries(); track $index) {
+    <li>
+      @switch (e.kind) {
+        @case ('signed') {
+          <span class="node signed"><hc-icon name="check" [size]="12" [weight]="2.6" /></span>
+          <div class="body">
+            <p class="strong" i18n="@@timeline.signedBy">Signed by {{ e.name }}</p>
+            <p class="tiny muted">
+              <ng-container i18n="@@timeline.revision">Revision {{ e.revision }}</ng-container> ·
+              {{ e.totalCents | money: cur }} · {{ e.at | ago }}
+            </p>
+          </div>
+        }
+        @case ('revision') {
+          <span class="node"></span>
+          <div class="body">
+            <div class="spread">
+              <p class="strong">
+                <ng-container i18n="@@timeline.revision"
+                  >Revision {{ e.revision.number }}</ng-container
+                >
+                @if (e.revision.number === detail().proposal.currentRevision) {
+                  <span class="pill blue tiny-pill" i18n="@@common.current">Current</span>
+                }
+              </p>
+              <button
+                class="link-btn small tabular"
+                type="button"
+                (click)="view.emit(e.revision.number)"
+              >
+                {{ e.revision.quote.totalCents | money: cur }}
+              </button>
+            </div>
+            <p class="tiny muted">{{ e.revision.authorName }} · {{ e.at | ago }}</p>
+            @if (e.revision.note) {
+              <p class="note small">{{ e.revision.note }}</p>
+            }
+          </div>
+        }
+        @case ('request') {
+          <span class="node request"></span>
+          <div class="body">
+            <div class="spread">
+              <p class="strong" i18n="@@timeline.requested">
+                {{ e.request.authorName }} requested
+                {e.request.changes.length, plural,
+                  =1 {1 change}
+                  other {{{ e.request.changes.length }} changes}
+                }
+              </p>
+              @if (e.request.status === ChangeRequestStatus.Open) {
+                <span class="pill orange" i18n="@@timeline.awaitingReview">Awaiting review</span>
+              } @else if (e.request.status === ChangeRequestStatus.Withdrawn) {
+                <span class="pill" i18n="@@timeline.withdrawn">Withdrawn</span>
+              }
+            </div>
+            <p class="tiny muted">
+              <ng-container i18n="@@timeline.onRevision"
+                >On revision {{ e.request.baseRevision }}</ng-container
+              >
+              · {{ e.at | ago }}
+              @if (e.request.resolvedByName) {
+                ·
+                <ng-container i18n="@@timeline.answeredBy"
+                  >answered by {{ e.request.resolvedByName }}</ng-container
+                >
+              }
+            </p>
+            @if (e.request.note) {
+              <p class="note small">“{{ e.request.note }}”</p>
+            }
+            <div class="changes">
+              <hc-change-lines [changes]="e.request.changes" [currency]="cur" />
+            </div>
+          </div>
+        }
+      }
+    </li>
+  }
+</ol>

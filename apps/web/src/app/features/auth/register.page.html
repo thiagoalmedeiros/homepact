@@ -1,0 +1,73 @@
+<section class="auth">
+  <form class="card stack form" #f="ngForm" (ngSubmit)="f.valid && submit()">
+    <div class="center stack intro">
+      <h1 class="title-2" i18n="@@auth.register.title">Create your account</h1>
+      <p class="muted small" i18n="@@auth.register.subtitle">
+        Keep every conversation with {{ tenant.company()?.name }} in one place.
+      </p>
+    </div>
+    @if (error()) {
+      <div class="callout error small" role="alert">{{ error() }}</div>
+    }
+    <div class="field">
+      <label for="name" i18n="@@auth.register.fullName">Full name</label>
+      <input id="name" class="input" name="name" [(ngModel)]="name" autocomplete="name" required />
+    </div>
+    <div class="field">
+      <label for="email" i18n="@@auth.register.email">Email</label>
+      <input
+        id="email"
+        class="input"
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        autocomplete="email"
+        required
+        [attr.aria-invalid]="!!fieldError('email')"
+        aria-describedby="email-error"
+      />
+      @if (fieldError('email'); as e) {
+        <span class="error" id="email-error" role="alert">{{ e }}</span>
+      }
+    </div>
+    <div class="field">
+      <label for="phone"
+        ><ng-container i18n="@@auth.register.phone">Phone</ng-container>
+        <span class="hint" i18n="@@common.optional">optional</span></label
+      >
+      <input id="phone" class="input" name="phone" [(ngModel)]="phone" autocomplete="tel" />
+    </div>
+    <div class="field">
+      <label for="password" i18n="@@auth.register.password">Password</label>
+      <input
+        id="password"
+        class="input"
+        type="password"
+        name="password"
+        [(ngModel)]="password"
+        autocomplete="new-password"
+        required
+        minlength="8"
+        [attr.aria-invalid]="!!fieldError('password')"
+        aria-describedby="password-hint password-error"
+      />
+      <span class="hint" id="password-hint" i18n="@@auth.register.passwordHint"
+        >At least 8 characters.</span
+      >
+      @if (fieldError('password'); as e) {
+        <span class="error" id="password-error" role="alert">{{ e }}</span>
+      }
+    </div>
+    <button class="btn btn-lg btn-block" type="submit" [disabled]="f.invalid || busy()">
+      @if (busy()) {
+        <ng-container i18n="@@auth.register.submitting">Creating…</ng-container>
+      } @else {
+        <ng-container i18n="@@auth.register.submit">Create account</ng-container>
+      }
+    </button>
+    <p class="small center muted">
+      <ng-container i18n="@@auth.register.alreadyRegistered">Already registered?</ng-container>
+      <a [routerLink]="paths.login" i18n="@@common.actions.signIn">Sign in</a>
+    </p>
+  </form>
+</section>

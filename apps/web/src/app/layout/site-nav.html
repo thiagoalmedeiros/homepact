@@ -1,0 +1,40 @@
+<header class="nav chrome">
+  <nav class="nav-inner page" aria-label="Main" i18n-aria-label="@@nav.main">
+    <a [routerLink]="paths.home" class="brand" aria-label="Home" i18n-aria-label="@@nav.home">
+      <hc-logo />
+    </a>
+    <span class="grow"></span>
+    @if (tenant.company()?.contact?.phone; as phone) {
+      <a [href]="'tel:' + phone" class="hide-sm small phone">{{ phone }}</a>
+    }
+    <div class="actions">
+      @if (auth.isStaff()) {
+        <a
+          class="btn btn-sm btn-secondary"
+          [routerLink]="paths.console.overview"
+          i18n="@@nav.console"
+          >Console</a
+        >
+      } @else if (auth.isBuyer()) {
+        <a
+          class="btn btn-sm btn-secondary"
+          [routerLink]="paths.myProposals"
+          routerLinkActive="active"
+        >
+          <hc-icon name="user" [size]="16" />
+          <span class="who">
+            @if (firstName(); as name) {
+              {{ name }}
+            } @else {
+              <ng-container i18n="@@common.account">Account</ng-container>
+            }
+          </span>
+        </a>
+      } @else {
+        <a class="btn btn-sm btn-ghost" [routerLink]="paths.login" i18n="@@common.actions.signIn"
+          >Sign in</a
+        >
+      }
+    </div>
+  </nav>
+</header>

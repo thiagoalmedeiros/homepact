@@ -1,0 +1,352 @@
+<header class="console-head">
+  <div>
+    <a class="back small" [routerLink]="paths.console.proposals"
+      ><hc-icon name="back" [size]="14" />
+      <ng-container i18n="@@console.builder.back">Proposals</ng-container></a
+    >
+    <h1 class="title-1" i18n="@@console.builder.title">New proposal</h1>
+    <p class="muted">{{ subtitle() }}</p>
+  </div>
+  @if (step() !== 'start') {
+    <button class="btn btn-secondary btn-sm" type="button" (click)="back()">
+      <ng-container i18n="@@common.actions.back">Back</ng-container>
+    </button>
+  }
+</header>
+
+@switch (step()) {
+  @case ('start') {
+    <div class="starts">
+      <button class="card start" type="button" (click)="go('plan')" data-testid="start-plan">
+        <span class="start-icon"><hc-icon name="layers" [size]="28" /></span>
+        <span class="title-3" i18n="@@console.builder.startPlan.title"
+          >Packages on a floor plan</span
+        >
+        <span class="muted small" i18n="@@console.builder.startPlan.body"
+          >Pick a model and choose packages and options together. The price updates as you go.</span
+        >
+      </button>
+      <button class="card start" type="button" (click)="go('home')" data-testid="start-home">
+        <span class="start-icon"><hc-icon name="house" [size]="28" /></span>
+        <span class="title-3" i18n="@@console.builder.startHome.title">Pre-existing home</span>
+        <span class="muted small" i18n="@@console.builder.startHome.body"
+          >Offer a home that is built or under way, at its asking price. You can lock it so it's
+          sold as built.</span
+        >
+      </button>
+    </div>
+  }
+
+  @case ('plan') {
+    <hc-load-state [resource]="houses" [height]="120" />
+    <div class="picker">
+      @for (h of plans(); track h.id) {
+        <button
+          class="card pick"
+          type="button"
+          (click)="choosePlan(h)"
+          [attr.data-testid]="'plan-' + h.slug"
+        >
+          <span class="pick-media">
+            @if (h.images[0]) {
+              <img [src]="h.images[0]" alt="" loading="lazy" referrerpolicy="no-referrer" />
+            } @else {
+              <hc-icon name="house" [size]="40" [weight]="1" />
+            }
+          </span>
+          <span class="pick-body">
+            <span class="strong">{{ h.name }}</span>
+            <span class="tiny muted"
+              >{{ h.style }} ·
+              <ng-container i18n="@@common.specs"
+                >{{ h.specs.sqft.toLocaleString(locale) }} ft² · {{ h.specs.beds }} bd ·
+                {{ h.specs.baths }} ba</ng-container
+              ></span
+            >
+            <span class="small tabular" i18n="@@console.builder.from"
+              >From {{ h.basePriceCents | money }}</span
+            >
+          </span>
+        </button>
+      } @empty {
+        @if (houses.hasValue()) {
+          <div class="inset">
+            <ng-container i18n="@@console.builder.noPlans"
+              >No published floor plans yet.</ng-container
+            >
+            <a [routerLink]="paths.console.homes" i18n="@@console.builder.publishModel"
+              >Publish a model</a
+            >
+            <ng-container i18n="@@console.builder.toProposeIt">to propose it.</ng-container>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  @case ('configure') {
+    <hc-load-state [resource]="planDetail" [height]="160" />
+    @if (planDetail.hasValue() ? planDetail.value() : undefined; as d) {
+      <div class="build">
+        <div class="build-main">
+          <hc-selection-editor
+            [areas]="d.areas"
+            [currency]="d.currency"
+            [(selections)]="selections"
+          />
+          <section class="card adjustments">
+            <h3 class="title-3" i18n="@@console.builder.priceAdjustments">Price adjustments</h3>
+            <hc-adjustments-editor [(adjustments)]="adjustments" />
+          </section>
+        </div>
+        <aside class="build-side">
+          <div class="card sticky">
+            <p class="tiny muted">{{ d.house.name }}</p>
+            @if (liveQuote.value(); as q) {
+              <hc-quote-breakdown [quote]="q" />
+            } @else {
+              <div class="skeleton quote-loading"></div>
+            }
+            @if (liveQuote.error(); as e) {
+              <p class="callout error small">{{ e }}</p>
+            }
+          </div>
+        </aside>
+      </div>
+      <div class="bar chrome">
+        <div class="bar-inner">
+          <div>
+            <p class="tiny muted" i18n="@@console.builder.proposalTotal">
+              {{ d.house.name }} · proposal total
+            </p>
+            <p
+              class="bar-total tabular"
+              [class.dim]="liveQuote.pending()"
+              data-testid="builder-total"
+            >
+              {{ liveQuote.value() ? (liveQuote.value()!.totalCents | money: d.currency) : '—' }}
+            </p>
+          </div>
+          <button
+            class="btn btn-lg"
+            type="button"
+            (click)="go('buyer')"
+            [disabled]="!liveQuote.value() || !!liveQuote.error()"
+            data-testid="builder-continue"
+            i18n="@@common.actions.continue"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    }
+  }
+
+  @case ('home') {
+    <hc-load-state [resource]="inventory" [height]="120" />
+    <div class="picker">
+      @for (h of availableHomes(); track h.id) {
+        <button
+          class="card pick home"
+          type="button"
+          [attr.aria-pressed]="home()?.id === h.id"
+          (click)="chooseHome(h)"
+          [attr.data-testid]="'home-' + h.id"
+        >
+          <span class="pick-body">
+            <span class="strong">{{ h.address }}</span>
+            <span class="tiny muted"
+              >{{ h.houseName }} · {{ h.community
+              }}{{ h.possession ? ' · ' + h.possession : '' }}</span
+            >
+            <span class="title-3 tabular"
+              >{{ h.quote.totalCents | money: h.quote.currency }}
+              <span class="tiny muted" i18n="@@console.builder.beforeTax">before tax</span></span
+            >
+            @if (h.features.length) {
+              <span class="tiny muted">{{ h.features.slice(0, 3).join(' · ') }}</span>
+            }
+          </span>
+        </button>
+      } @empty {
+        @if (inventory.hasValue()) {
+          <div class="inset">
+            <ng-container i18n="@@console.builder.noHomes"
+              >No pre-existing homes are available.</ng-container
+            >
+            <a [routerLink]="paths.console.inventory"
+              ><ng-container i18n="@@console.builder.addOne">Add one</ng-container></a
+            >.
+          </div>
+        }
+      }
+    </div>
+    @if (home(); as h) {
+      <div class="bar chrome">
+        <div class="bar-inner">
+          <label class="lock">
+            <input
+              class="switch"
+              type="checkbox"
+              [(ngModel)]="locked"
+              name="locked"
+              data-testid="lock-switch"
+            />
+            <span>
+              <span class="strong small"
+                ><ng-container i18n="@@console.builder.soldAsBuilt"
+                  >Sold as built</ng-container
+                ></span
+              ><br />
+              <span class="tiny muted">
+                @if (locked) {
+                  <ng-container i18n="@@console.builder.lockedHint"
+                    >The buyer can review and sign, but not request changes.</ng-container
+                  >
+                } @else {
+                  <ng-container i18n="@@console.builder.unlockedHint"
+                    >The buyer can request changes to this home.</ng-container
+                  >
+                }
+              </span>
+            </span>
+          </label>
+          <button
+            class="btn btn-lg"
+            type="button"
+            (click)="go('buyer')"
+            data-testid="builder-continue"
+            i18n="@@common.actions.continue"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    }
+  }
+
+  @case ('buyer') {
+    <div class="build">
+      <form class="card stack build-main" (ngSubmit)="create()" id="buyer-form">
+        <h3 class="title-3" i18n="@@console.builder.whoFor">Who is this proposal for?</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label for="b-name" i18n="@@console.builder.buyerName">Buyer name</label>
+            <input
+              id="b-name"
+              class="input"
+              name="name"
+              [(ngModel)]="buyer.name"
+              required
+              autocomplete="off"
+            />
+          </div>
+          <div class="field">
+            <label for="b-email"
+              ><ng-container i18n="@@console.builder.email">Email</ng-container>
+              <span class="hint" i18n="@@common.optional">optional</span></label
+            >
+            <input
+              id="b-email"
+              class="input"
+              type="email"
+              name="email"
+              [(ngModel)]="buyer.email"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label for="b-phone"
+            ><ng-container i18n="@@console.builder.phone">Phone</ng-container>
+            <span class="hint" i18n="@@common.optional">optional</span></label
+          >
+          <input
+            id="b-phone"
+            class="input"
+            name="phone"
+            [(ngModel)]="buyer.phone"
+            autocomplete="off"
+          />
+        </div>
+        <div class="field">
+          <label for="b-note"
+            ><ng-container i18n="@@console.builder.note">Note to the buyer</ng-container>
+            <span class="hint" i18n="@@common.optional">optional</span></label
+          >
+          <textarea
+            id="b-note"
+            class="textarea"
+            name="note"
+            [(ngModel)]="note"
+            placeholder="What you agreed today, next steps…"
+            i18n-placeholder="@@console.builder.notePlaceholder"
+          ></textarea>
+        </div>
+        <h3 class="title-3 pricing-title" i18n="@@console.builder.taxAndReferral">
+          Sales tax and referral
+        </h3>
+        @if (taxRates.hasValue() && programs.hasValue()) {
+          <hc-tax-referral-editor
+            [rates]="taxRates.value()"
+            [programs]="programs.value()"
+            [currency]="summaryQuote()?.currency ?? 'CAD'"
+            [taxRegion]="taxRegion() ?? null"
+            (taxRegionChange)="taxRegion.set($event)"
+            [(referral)]="referral"
+          />
+        } @else {
+          <hc-load-state [resource]="taxRates" [height]="60" />
+          <hc-load-state [resource]="programs" [height]="60" />
+        }
+        @if (referralIncomplete()) {
+          <p class="tiny muted" i18n="@@console.builder.referralIncomplete">
+            Choose the referral program and type who referred the buyer, or turn the referral off.
+          </p>
+        }
+        <button
+          class="btn btn-lg btn-block"
+          type="submit"
+          [disabled]="busy() || !buyer.name.trim() || referralIncomplete() || !!liveQuote.error()"
+          data-testid="create-proposal"
+        >
+          @if (busy()) {
+            <ng-container i18n="@@console.builder.creating">Creating…</ng-container>
+          } @else {
+            <ng-container i18n="@@console.builder.create">Create proposal</ng-container>
+          }
+        </button>
+      </form>
+      <aside class="build-side">
+        <div class="card sticky">
+          <p class="tiny muted">{{ summaryTitle() }}</p>
+          @if (summaryQuote(); as q) {
+            <hc-quote-breakdown [quote]="q" [class.dim]="liveQuote.pending()" />
+          } @else {
+            <div class="skeleton quote-loading"></div>
+          }
+          @if (liveQuote.error(); as e) {
+            <p class="callout error small">{{ e }}</p>
+          }
+          @if (home() && locked) {
+            <p class="pill locked-pill">
+              <hc-icon name="shield" [size]="12" />
+              <ng-container i18n="@@console.builder.soldAsBuilt">Sold as built</ng-container>
+            </p>
+          }
+        </div>
+      </aside>
+    </div>
+  }
+}
+
+@if (created(); as c) {
+  <hc-invite-sheet
+    [accessKey]="c.accessKey"
+    title="Proposal created"
+    i18n-title="@@console.builder.created"
+    [buyerName]="c.proposal.buyer.name"
+    [buyerEmail]="c.proposal.buyer.email"
+    (done)="finish(c)"
+  />
+}

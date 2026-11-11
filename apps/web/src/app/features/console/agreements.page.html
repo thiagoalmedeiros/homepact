@@ -1,0 +1,118 @@
+<header class="console-head">
+  <div>
+    <h1 class="title-1" i18n="@@console.agreements.title">Purchase agreements</h1>
+    <p class="muted" i18n="@@console.agreements.subtitle">
+      Signed proposals, turned into agreements of purchase and sale.
+    </p>
+  </div>
+  <a class="btn btn-secondary" [routerLink]="paths.console.templates" data-testid="templates"
+    ><hc-icon name="doc" [size]="16" />
+    <ng-container i18n="@@console.agreements.templates">Templates</ng-container></a
+  >
+</header>
+
+@if (ready().length) {
+  <section class="card ready" data-testid="ready">
+    <h2 class="title-3" i18n="@@console.agreements.readyTitle">Ready for an agreement</h2>
+    <p class="small muted" i18n="@@console.agreements.readyBody">
+      These proposals are signed and have no agreement yet.
+    </p>
+    <ul class="list">
+      @for (p of ready(); track p.id) {
+        <li>
+          <a
+            class="spread"
+            [routerLink]="paths.console.proposal(p.id)"
+            [attr.data-testid]="'ready-' + p.reference"
+          >
+            <span>
+              <span class="strong">{{ p.buyer.name || text.buyer }}</span>
+              <span class="small muted" i18n="@@console.agreements.readyMeta">
+                · {{ p.houseName }} · {{ p.reference }}</span
+              >
+            </span>
+            <span class="small"
+              ><ng-container i18n="@@console.agreements.prepare">Prepare</ng-container>
+              <hc-icon name="chevron" [size]="14"
+            /></span>
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+}
+
+<div
+  class="segmented filters"
+  role="group"
+  aria-label="Filter"
+  i18n-aria-label="@@console.agreements.filter"
+>
+  @for (f of filters; track f.id) {
+    <button [attr.aria-pressed]="filter() === f.id" (click)="filter.set(f.id)">
+      {{ f.label }}
+    </button>
+  }
+</div>
+<hc-load-state [resource]="list" />
+<div [hidden]="!list.hasValue()" class="card table-wrap table-card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th i18n="@@console.agreements.columns.buyer">Buyer</th>
+        <th i18n="@@console.agreements.columns.home">Home</th>
+        <th i18n="@@console.agreements.columns.status">Status</th>
+        <th class="num" i18n="@@console.agreements.columns.price">Price</th>
+        <th class="num hide-sm" i18n="@@console.agreements.columns.updated">Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (a of visible(); track a.id) {
+        @let label = LABEL[a.status];
+        <tr
+          role="button"
+          tabindex="0"
+          (click)="open(a)"
+          (keydown.enter)="open(a)"
+          (keydown.space)="$event.preventDefault(); open(a)"
+          [attr.data-testid]="'agreement-row-' + a.reference"
+        >
+          <td>
+            <div class="strong">{{ a.buyerName }}</div>
+            @if (a.purchaserCount > 1) {
+              <div class="tiny muted" i18n="@@console.agreements.signedCount">
+                {{ a.signedCount }} of {{ a.purchaserCount }} purchaser(s) signed
+              </div>
+            }
+            <div class="tiny muted">
+              <ng-container i18n="@@console.agreements.fromProposal"
+                >{{ a.reference }} · from {{ a.proposalReference }}</ng-container
+              >
+            </div>
+          </td>
+          <td>
+            <div>{{ a.houseName }}</div>
+            <div class="tiny muted">
+              @if (a.address) {
+                {{ a.address }}
+              } @else {
+                <ng-container i18n="@@console.agreements.builtToOrder">Built to order</ng-container>
+              }
+            </div>
+          </td>
+          <td>
+            <span class="pill" [class]="label.tone">{{ label.text }}</span>
+          </td>
+          <td class="num tabular">{{ a.totalCents | money: a.currency }}</td>
+          <td class="num hide-sm muted small">{{ a.updatedAt | ago }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="empty" i18n="@@console.agreements.empty">
+            No agreements here. Open a signed proposal to prepare its purchase agreement.
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

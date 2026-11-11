@@ -1,0 +1,46 @@
+<div class="console">
+  <aside class="sidebar chrome">
+    <a [routerLink]="paths.console.overview" class="brand">
+      <hc-logo [height]="30" />
+    </a>
+    <nav class="side-nav" aria-label="Console" i18n-aria-label="@@console.shell.label">
+      @for (item of nav; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.exact }"
+        >
+          <hc-icon [name]="item.icon" [size]="18" /> <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+    <div class="me">
+      <div class="user small">
+        <span class="avatar">{{ initials() }}</span>
+        <span class="stack who">
+          <span class="strong">{{ auth.user()?.name }}</span>
+          <span class="tiny muted">
+            @if (auth.isAdmin()) {
+              <ng-container i18n="@@console.shell.administrator">Administrator</ng-container>
+            } @else {
+              <ng-container i18n="@@console.shell.sales">Sales</ng-container>
+            }
+          </span>
+        </span>
+        <button
+          class="icon-btn"
+          (click)="logout()"
+          aria-label="Sign out"
+          i18n-aria-label="@@common.actions.signOut"
+          title="Sign out"
+          i18n-title="@@common.actions.signOut"
+        >
+          <hc-icon name="logout" [size]="16" />
+        </button>
+      </div>
+    </div>
+  </aside>
+  <div class="content">
+    <router-outlet />
+  </div>
+</div>

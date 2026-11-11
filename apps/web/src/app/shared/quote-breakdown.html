@@ -1,0 +1,86 @@
+@let q = quote();
+<div class="breakdown">
+  <div class="kv">
+    <span><ng-container i18n="@@quote.basePrice">Base price</ng-container></span
+    ><span>{{ q.baseCents | money: q.currency }}</span>
+  </div>
+  @for (group of groups(); track group.label) {
+    <div class="group">
+      <p class="tiny muted group-label">{{ group.label }}</p>
+      @for (line of group.lines; track line.refId) {
+        <div class="kv small">
+          <span>
+            @if (line.kind === 'package') {
+              <ng-container i18n="@@quote.packageName">{{ line.name }} package</ng-container>
+            } @else {
+              {{ line.name }}
+            }
+          </span>
+          <span>
+            @if (line.unitCents === 0) {
+              <ng-container i18n="@@common.included">Included</ng-container>
+            } @else {
+              {{ line.unitCents | money: q.currency : true }}
+            }
+          </span>
+        </div>
+      }
+    </div>
+  }
+  @if (q.adjustments.length) {
+    <div class="group">
+      <p class="tiny muted group-label" i18n="@@quote.adjustments">Adjustments</p>
+      @for (a of q.adjustments; track $index) {
+        <div class="kv small" [class.credit]="a.amountCents < 0">
+          <span>{{ a.label }}</span
+          ><span>{{ a.amountCents | money: q.currency : true }}</span>
+        </div>
+      }
+    </div>
+  }
+  @if (q.referral; as r) {
+    <div class="group" data-testid="quote-referral">
+      <p class="tiny muted group-label" i18n="@@quote.referral">Referral</p>
+      <div class="kv small" [class.credit]="r.creditCents > 0">
+        <span i18n="@@quote.referredBy">{{ r.programName }}: referred by {{ r.referrerName }}</span
+        ><span>{{ -r.creditCents | money: q.currency : true }}</span>
+      </div>
+    </div>
+  }
+  <hr class="divider" />
+  @if (q.subtotalCents !== undefined) {
+    <div class="kv" data-testid="quote-before-tax">
+      <span><ng-container i18n="@@quote.beforeTax">Price before tax</ng-container></span
+      ><span>{{ q.subtotalCents | money: q.currency }}</span>
+    </div>
+    <div class="group" data-testid="quote-tax">
+      @if (q.tax; as tax) {
+        <p class="tiny muted group-label" i18n="@@quote.salesTaxIn">
+          Sales tax · {{ tax.regionName }}
+        </p>
+        @for (line of tax.lines; track $index) {
+          <div class="kv small">
+            <span>{{ line.label }} ({{ line.ratePercent / 100 | percent: '1.0-3' }})</span
+            ><span>{{ line.amountCents | money: q.currency }}</span>
+          </div>
+        }
+      } @else {
+        <div class="kv small">
+          <span><ng-container i18n="@@quote.noSalesTax">No sales tax</ng-container></span
+          ><span>{{ 0 | money: q.currency }}</span>
+        </div>
+      }
+    </div>
+    <hr class="divider" />
+  }
+  <div class="kv total">
+    <span>
+      @if (q.tax) {
+        <ng-container i18n="@@quote.totalWithTax">Total, sales tax included</ng-container>
+      } @else {
+        <ng-container i18n="@@quote.total">Total</ng-container>
+      }
+    </span>
+    <span data-testid="quote-total">{{ q.totalCents | money: q.currency }}</span>
+  </div>
+</div>

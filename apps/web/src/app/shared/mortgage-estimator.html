@@ -1,0 +1,169 @@
+@let e = estimate();
+@let cur = currency();
+<section class="card estimator" data-testid="mortgage-estimator">
+  <div class="spread head">
+    <h2 class="title-3" i18n="@@mortgage.title">Estimate your payments</h2>
+    @if (referenceRate(); as r) {
+      <span class="reference" data-testid="reference-rate">
+        <span class="tiny muted" i18n="@@mortgage.referenceLabel">Posted 5-year rate</span>
+        <span class="strong tabular">{{ r.ratePercent / 100 | percent: '1.2-2' }}</span>
+        @if (sparkline(); as s) {
+          <svg
+            class="spark"
+            [attr.viewBox]="'0 0 ' + spark.width + ' ' + spark.height"
+            [attr.width]="spark.width"
+            [attr.height]="spark.height"
+            role="img"
+            [attr.aria-label]="sparkLabel(s.first, s.last)"
+            data-testid="rate-sparkline"
+          >
+            <polyline [attr.points]="s.points.join(' ')" />
+          </svg>
+        }
+      </span>
+    }
+  </div>
+
+  <div class="kv">
+    <span i18n="@@mortgage.price">Home price, sales tax included</span>
+    <span class="tabular">{{ priceCents() | money: cur }}</span>
+  </div>
+
+  <div class="field">
+    <label for="m-down" class="spread">
+      <span i18n="@@mortgage.downPayment">Down payment</span>
+      <span class="tabular" data-testid="down-payment"
+        >{{ downPaymentCents() | money: cur }} · {{ downPercent() / 100 | percent: '1.0-1' }}</span
+      >
+    </label>
+    <input
+      id="m-down"
+      class="range"
+      type="range"
+      min="5"
+      max="50"
+      step="0.5"
+      [ngModel]="downPercent()"
+      [ngModelOptions]="{ standalone: true }"
+      (ngModelChange)="setDownPercent($event)"
+      data-testid="down-percent"
+    />
+    <span class="hint" i18n="@@mortgage.minimum"
+      >Minimum {{ e.minimumDownPaymentCents | money: cur }} ({{
+        minimumDownPercent() / 100 | percent: '1.0-1'
+      }})</span
+    >
+  </div>
+
+  <div class="form-grid">
+    <div class="field">
+      <label for="m-rate" i18n="@@mortgage.rate">Interest rate (%)</label>
+      <input
+        id="m-rate"
+        class="input tabular"
+        type="number"
+        min="0"
+        max="25"
+        step="0.05"
+        [ngModel]="ratePercent()"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="setRate($event)"
+        data-testid="rate"
+      />
+      @if (referenceRate(); as r) {
+        @if (ratePercent() !== r.ratePercent) {
+          <button class="link-btn small" type="button" (click)="useReferenceRate()">
+            <ng-container i18n="@@mortgage.useReference"
+              >Use the posted rate ({{ r.ratePercent / 100 | percent: '1.2-2' }})</ng-container
+            >
+          </button>
+        }
+      }
+    </div>
+    <div class="field">
+      <label for="m-amortization" i18n="@@mortgage.amortization">Amortization</label>
+      <select
+        id="m-amortization"
+        class="select"
+        [ngModel]="amortizationYears()"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="amortizationYears.set(+$event)"
+        data-testid="amortization"
+      >
+        @for (years of amortizations; track years) {
+          <option [value]="years" i18n="@@mortgage.years">{{ years }} years</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="m-frequency" i18n="@@mortgage.frequency">Payments</label>
+      <select
+        id="m-frequency"
+        class="select"
+        [ngModel]="frequency()"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="frequency.set($event)"
+        data-testid="frequency"
+      >
+        @for (f of frequencies; track f) {
+          <option [value]="f">{{ frequencyLabel[f] }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (e.belowMinimumDownPayment) {
+    <p class="callout warn small" data-testid="below-minimum" i18n="@@mortgage.belowMinimum">
+      The down payment must be at least {{ e.minimumDownPaymentCents | money: cur }} for this price.
+    </p>
+  }
+
+  <hr class="divider" />
+  <div class="payment" [class.dim]="e.belowMinimumDownPayment">
+    <span class="amount tabular" data-testid="payment">≈ {{ e.paymentCents | money: cur }}</span>
+    <span class="muted">{{ perPayment[frequency()] }}</span>
+  </div>
+  @if (e.insurancePremiumCents) {
+    <div class="kv small" data-testid="insurance">
+      <span i18n="@@mortgage.insurance"
+        >Mortgage insurance ({{ e.insurancePremiumRatePercent / 100 | percent: '1.2-2' }}), added to
+        the mortgage</span
+      >
+      <span class="tabular">{{ e.insurancePremiumCents | money: cur }}</span>
+    </div>
+    @if (e.premiumSalesTaxCents) {
+      <div class="kv small" data-testid="premium-tax">
+        <span i18n="@@mortgage.premiumTax">Provincial tax on the premium, paid at closing</span>
+        <span class="tabular">{{ e.premiumSalesTaxCents | money: cur }}</span>
+      </div>
+    }
+  }
+  <div class="kv small">
+    <span i18n="@@mortgage.mortgage">Mortgage</span>
+    <span class="tabular" data-testid="mortgage">{{ e.mortgageCents | money: cur }}</span>
+  </div>
+  <div class="kv small">
+    <span i18n="@@mortgage.interest"
+      >Interest over {{ e.yearsToPayOff | number: '1.0-1' }} years</span
+    >
+    <span class="tabular" data-testid="interest">{{ e.totalInterestCents | money: cur }}</span>
+  </div>
+
+  <p class="tiny muted disclaimer" data-testid="mortgage-disclaimer">
+    <ng-container i18n="@@mortgage.disclaimer"
+      >Estimate only, not a financing offer. Fixed rate, compounded semi-annually.</ng-container
+    >
+    {{ ' ' }}
+    @if (referenceRate(); as r) {
+      <ng-container i18n="@@mortgage.referenceSource"
+        >The posted rate is the banks' 5-year conventional rate published by
+        <a [href]="r.sourceUrl" target="_blank" rel="noopener">{{ r.source }}</a> on
+        {{ r.asOf | localDate: 'calendar' }}; lenders often offer less.</ng-container
+      >
+    } @else if (reference.hasValue() || reference.error()) {
+      <ng-container i18n="@@mortgage.noReference"
+        >The posted rate is not available right now: enter the rate you were offered.</ng-container
+      >
+    }
+  </p>
+</section>

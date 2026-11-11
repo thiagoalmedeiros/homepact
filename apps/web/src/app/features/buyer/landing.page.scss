@@ -1,0 +1,55 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 88px 0 48px;
+  text-align: center;
+  align-items: center;
+}
+.headline {
+  font-size: clamp(40px, 6vw, 64px);
+  line-height: 1.04;
+  margin: 0;
+}
+.lead {
+  margin: 0;
+  max-width: 560px;
+}
+.invite {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  margin-top: 12px;
+}
+.invite-row {
+  flex-wrap: nowrap;
+  --gap: 8px;
+}
+.error {
+  color: var(--danger);
+  margin: 0;
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px;
+  padding-bottom: 96px;
+}
+.step {
+  text-align: center;
+}
+.step h2 {
+  margin: 12px 0 6px;
+}
+.step-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}

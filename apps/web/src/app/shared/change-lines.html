@@ -1,0 +1,26 @@
+<ul class="lines">
+  @for (c of changes(); track $index) {
+    <li [class]="c.decision ?? ''" data-testid="change-line">
+      @if (c.decision === ChangeDecision.Approved) {
+        <span class="mark ok" title="Approved" i18n-title="@@changeLines.approved"
+          ><hc-icon name="check" [size]="12" [weight]="2.6"
+        /></span>
+      } @else if (c.decision === ChangeDecision.Declined) {
+        <span class="mark no" title="Declined" i18n-title="@@changeLines.declined"
+          ><hc-icon name="close" [size]="12" [weight]="2.6"
+        /></span>
+      } @else {
+        <span class="mark dot"></span>
+      }
+      <span class="grow">
+        <span class="label">{{ c.label }}</span>
+        @if (c.decisionNote) {
+          <span class="tiny muted note">{{ c.decisionNote }}</span>
+        }
+      </span>
+      <span class="tabular small delta" [class.credit]="c.deltaCents < 0">{{
+        c.deltaCents ? (c.deltaCents | money: currency() : true) : '—'
+      }}</span>
+    </li>
+  }
+</ul>

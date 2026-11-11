@@ -1,0 +1,89 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.banner {
+  margin-bottom: 16px;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 1000px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.bare {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.default {
+  --gap: 8px;
+}
+.clause-head {
+  --gap: 6px;
+  flex-wrap: nowrap;
+}
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+.up {
+  transform: rotate(-90deg);
+}
+.down {
+  transform: rotate(90deg);
+}
+.add {
+  align-self: flex-start;
+}
+.error-text {
+  color: var(--danger);
+  margin: 0;
+}
+.fields {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+}
+.fields .title-3 {
+  margin: 0 0 4px;
+}
+.fields ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.field-btn {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.field-btn:hover:not(:disabled) {
+  background: var(--fill);
+}
+.field-btn:disabled {
+  cursor: default;
+}
+code {
+  font-size: 12px;
+}
+
+.initials {
+  --gap: 8px;
+  align-items: center;
+  color: var(--text-3);
+}

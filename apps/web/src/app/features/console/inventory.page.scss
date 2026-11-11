@@ -1,0 +1,19 @@
+.actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  --gap: 6px;
+}
+.lock {
+  --gap: 12px;
+  flex-wrap: nowrap;
+  cursor: pointer;
+}
+summary {
+  cursor: pointer;
+}
+.config {
+  margin-top: 16px;
+}
+.table-card {
+  padding: 8px 16px;
+}

@@ -1,0 +1,37 @@
+<hc-sheet [title]="title() ?? defaultTitle" [dismissible]="false">
+  <div class="stack" data-testid="invite-sheet">
+    <p class="muted small" i18n="@@invite.intro">
+      Send this private link to {{ buyerName() || theBuyer }}. It opens their proposal, where they
+      can review it, ask for changes and sign. No account is needed.
+    </p>
+    <div class="callout warn small">
+      <strong i18n="@@invite.onceTitle">Shown only once.</strong>
+      <ng-container i18n="@@invite.onceBody"
+        >We store a fingerprint, not the link itself. If it gets lost, you can replace it from the
+        proposal.</ng-container
+      >
+    </div>
+    <div class="code" data-testid="invite-link">{{ link() }}</div>
+    <div class="row">
+      <button class="btn btn-secondary" type="button" (click)="copy()">
+        <hc-icon name="copy" [size]="16" />
+        <ng-container i18n="@@invite.copy">Copy link</ng-container>
+      </button>
+      @if (buyerEmail()) {
+        <a class="btn btn-secondary" [href]="mailto()"
+          ><hc-icon name="mail" [size]="16" />
+          <ng-container i18n="@@invite.email">Email</ng-container></a
+        >
+      }
+      <button
+        class="btn"
+        type="button"
+        (click)="done.emit()"
+        data-testid="invite-done"
+        i18n="@@invite.done"
+      >
+        Done
+      </button>
+    </div>
+  </div>
+</hc-sheet>

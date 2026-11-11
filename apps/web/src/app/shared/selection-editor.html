@@ -1,0 +1,125 @@
+@for (area of areas(); track area.slug) {
+  @let sel = selections()[area.slug];
+  @let mode = modeOf(area);
+  <section class="area" [attr.aria-labelledby]="'area-' + area.slug">
+    <div class="spread area-head">
+      <div class="row title-row">
+        <h3 class="title-3" [id]="'area-' + area.slug">{{ area.label }}</h3>
+        @if (base() && changed(area.slug)) {
+          <span class="pill orange" data-testid="changed" i18n="@@selection.changed">Changed</span>
+        }
+      </div>
+      <span class="tabular small muted">
+        @if (areaCost(area, sel)) {
+          <ng-container i18n="@@selection.extra"
+            >+{{ areaCost(area, sel) | money: currency() }}</ng-container
+          >
+        } @else {
+          <ng-container i18n="@@common.included">Included</ng-container>
+        }
+      </span>
+    </div>
+    @if (area.description) {
+      <p class="muted small desc">{{ area.description }}</p>
+    }
+    @if (area.packages.length && looseItems(area).length) {
+      <div class="segmented mode" role="group" [attr.aria-label]="choiceLabel(area.label)">
+        <button
+          type="button"
+          [attr.aria-pressed]="mode === 'package'"
+          (click)="setMode(area, 'package')"
+          i18n="@@selection.packages"
+        >
+          Packages
+        </button>
+        <button
+          type="button"
+          [attr.aria-pressed]="mode === 'items'"
+          (click)="setMode(area, 'items')"
+          i18n="@@selection.individualOptions"
+        >
+          Individual options
+        </button>
+      </div>
+    }
+    @if (mode === 'package') {
+      <div class="tiles" role="radiogroup" [attr.aria-label]="area.label">
+        @for (p of area.packages; track p.id) {
+          <button
+            type="button"
+            class="option"
+            role="radio"
+            [attr.aria-checked]="isPackage(sel, p.id)"
+            (click)="pickPackage(area.slug, p.id)"
+            [attr.data-testid]="'package-' + p.id"
+          >
+            @if (p.imageUrl) {
+              <img
+                class="option-img"
+                [src]="p.imageUrl"
+                alt=""
+                loading="lazy"
+                referrerpolicy="no-referrer"
+              />
+            }
+            <span class="option-name"
+              >{{ p.name }}
+              @if (base() && isPackage(base()![area.slug], p.id)) {
+                <span class="current" i18n="@@common.current">Current</span>
+              }
+            </span>
+            <span class="option-price">
+              @if (p.priceCents) {
+                {{ p.priceCents | money: currency() }}
+              } @else {
+                <ng-container i18n="@@common.included">Included</ng-container>
+              }
+            </span>
+            @if (p.itemNames.length > 1) {
+              <span class="option-desc">{{ p.itemNames.join(' · ') }}</span>
+            } @else if (p.description) {
+              <span class="option-desc">{{ p.description }}</span>
+            }
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="tiles">
+        @for (it of looseItems(area); track it.id) {
+          <button
+            type="button"
+            class="option"
+            role="checkbox"
+            [attr.aria-checked]="hasItem(sel, it.id)"
+            (click)="toggleItem(area, it.id)"
+            [attr.data-testid]="'item-' + it.id"
+          >
+            @if (it.imageUrl) {
+              <img
+                class="option-img"
+                [src]="it.imageUrl"
+                alt=""
+                loading="lazy"
+                referrerpolicy="no-referrer"
+              />
+            }
+            <span class="option-name"
+              >{{ it.name }}
+              @if (base() && inBase(area, it.id)) {
+                <span class="current" i18n="@@common.current">Current</span>
+              }
+            </span>
+            <span class="option-price">{{ it.priceCents | money: currency() : true }}</span>
+            @if (it.description) {
+              <span class="option-desc">{{ it.description }}</span>
+            }
+          </button>
+        }
+      </div>
+    }
+  </section>
+} @empty {
+  <div class="inset" i18n="@@selection.noOptions">
+    This floor plan has no options; it is offered as designed.
+  </div>
+}

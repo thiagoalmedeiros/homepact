@@ -2,30 +2,43 @@
   "name": "homepact",
   "version": "0.1.0",
   "private": true,
-  "description": "Proposal and contract negotiation for new-home sales: a builder and a buyer agree on a house, its options and its price.",
-  "license": "MIT",
+  "description": "Client–constructor contract agreement for a house purchase (monorepo).",
+  "packageManager": "npm@11.19.1",
   "workspaces": [
+    "packages/*",
     "apps/*"
   ],
   "engines": {
-    "node": ">=22.12"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
   },
   "scripts": {
-    "dev:api": "npm run dev -w apps/api",
-    "dev:web": "npm run dev -w apps/web",
     "build": "npm run build --workspaces --if-present",
+    "qa": "npm install --no-audit --no-fund && npm test",
+    "pretest": "npm run build -w packages/shared",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "e2e": "playwright test"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.14.0",
+    "@playwright/test": "^1.64.1",
+    "eslint": "^10.13.0",
     "globals": "^17.13.0",
     "prettier": "^3.9.10",
     "typescript": "~6.0.2",
-    "typescript-eslint": "^8.72.1"
+    "typescript-eslint": "^8.72.0"
+  },
+  "overrides": {
+    "minimatch": "^10.2.6 || ^11.0.3"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "esbuild@0.28.2": true,
+    "fsevents@2.3.3": true,
+    "lmdb@3.5.6": true,
+    "msgpackr-extract@3.0.4": true
   }
 }

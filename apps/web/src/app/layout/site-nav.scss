@@ -1,0 +1,36 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.grow {
+  flex: 1;
+}
+.phone {
+  color: var(--text-2);
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.who {
+  display: inline-block;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+@media (max-width: 720px) {
+  .brand {
+    --logo-max: 120px;
+  }
+}

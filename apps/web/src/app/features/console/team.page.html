@@ -1,0 +1,113 @@
+<header class="console-head">
+  <div>
+    <h1 class="title-1" i18n="@@console.team.title">Team</h1>
+    <p class="muted" i18n="@@console.team.subtitle">
+      Administrators manage the catalog and team; sales staff negotiate with buyers.
+    </p>
+  </div>
+  @if (isAdmin()) {
+    <button class="btn" (click)="open()">
+      <hc-icon name="plus" [size]="16" />
+      <ng-container i18n="@@console.team.add">Add member</ng-container>
+    </button>
+  }
+</header>
+<hc-load-state [resource]="users" />
+<div [hidden]="!users.hasValue()" class="card table-wrap table-card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th i18n="@@console.team.columns.name">Name</th>
+        <th class="hide-sm" i18n="@@console.team.columns.email">Email</th>
+        <th i18n="@@console.team.columns.role">Role</th>
+        <th i18n="@@console.team.columns.active">Active</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (u of (users.hasValue() ? users.value() : undefined) ?? []; track u.id) {
+        <tr>
+          <td>
+            <div class="row member">
+              <span class="avatar">{{ u.name[0] }}</span
+              ><span class="strong">{{ u.name }}</span>
+            </div>
+          </td>
+          <td class="hide-sm muted">{{ u.email }}</td>
+          <td>
+            <span class="pill" [class.blue]="u.role === Role.CompanyAdmin">{{
+              roleLabel[u.role]
+            }}</span>
+          </td>
+          <td>
+            <input
+              type="checkbox"
+              class="switch"
+              [checked]="u.active"
+              [disabled]="!isAdmin() || u.id === auth.user()?.id"
+              (change)="toggle(u)"
+              [attr.aria-label]="activeLabel(u.name)"
+            />
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if (adding()) {
+  <hc-sheet
+    title="Add team member"
+    i18n-title="@@console.team.sheetTitle"
+    (closed)="adding.set(false)"
+  >
+    <form class="stack" #f="ngForm" (ngSubmit)="f.valid && create()">
+      <div class="field">
+        <label for="t-name"><ng-container i18n="@@console.team.name">Name</ng-container></label
+        ><input id="t-name" class="input" name="name" [(ngModel)]="draft.name" required />
+      </div>
+      <div class="field">
+        <label for="t-email"><ng-container i18n="@@console.team.email">Email</ng-container></label
+        ><input
+          id="t-email"
+          class="input"
+          type="email"
+          name="email"
+          [(ngModel)]="draft.email"
+          required
+        />
+      </div>
+      <div class="field">
+        <label for="t-pw"
+          ><ng-container i18n="@@console.team.password">Temporary password</ng-container></label
+        ><input
+          id="t-pw"
+          class="input"
+          type="password"
+          name="pw"
+          [(ngModel)]="draft.password"
+          minlength="8"
+          required
+        />
+      </div>
+      <div class="segmented" role="group" aria-label="Role" i18n-aria-label="@@console.team.role">
+        <button
+          type="button"
+          [attr.aria-pressed]="draft.role === Role.CompanyStaff"
+          (click)="draft.role = Role.CompanyStaff"
+        >
+          <ng-container i18n="@@console.team.roles.company_staff">Sales</ng-container>
+        </button>
+        <button
+          type="button"
+          [attr.aria-pressed]="draft.role === Role.CompanyAdmin"
+          (click)="draft.role = Role.CompanyAdmin"
+        >
+          <ng-container i18n="@@console.team.roles.company_admin">Administrator</ng-container>
+        </button>
+      </div>
+      <button class="btn btn-lg btn-block" type="submit" [disabled]="f.invalid || busy()">
+        <ng-container i18n="@@console.team.add">Add member</ng-container>
+      </button>
+    </form>
+  </hc-sheet>
+}

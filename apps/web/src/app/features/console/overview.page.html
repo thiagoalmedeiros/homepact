@@ -1,0 +1,89 @@
+<header class="console-head">
+  <div>
+    <p class="eyebrow">{{ today | localDate: 'weekday' }}</p>
+    <h1 class="title-1">{{ greeting() }}</h1>
+  </div>
+  <a class="btn" [routerLink]="paths.console.newProposal" data-testid="overview-new"
+    ><hc-icon name="plus" [size]="16" />
+    <ng-container i18n="@@console.overview.newProposal">New proposal</ng-container></a
+  >
+</header>
+
+<div class="stat-grid">
+  <a class="card stat-card plain" [routerLink]="paths.console.proposals">
+    <span class="muted small" i18n="@@console.overview.needsReview">Needs your review</span>
+    <span class="value" [class.attention]="review().length">{{ review().length }}</span>
+  </a>
+  <a class="card stat-card plain" [routerLink]="paths.console.proposals">
+    <span class="muted small"
+      ><ng-container i18n="@@console.overview.withBuyers">With buyers</ng-container></span
+    ><span class="value">{{ withBuyer() }}</span>
+  </a>
+  <div class="card stat-card">
+    <span class="muted small" i18n="@@console.overview.signedValue">Signed value</span>
+    <span class="value">{{ signedValue() | money: currency() }}</span>
+  </div>
+  <a class="card stat-card plain" [routerLink]="paths.console.inventory">
+    <span class="muted small"
+      ><ng-container i18n="@@console.overview.homesAvailable"
+        >Pre-existing homes available</ng-container
+      ></span
+    ><span class="value">{{ available() }}</span>
+  </a>
+</div>
+
+@if (review().length) {
+  <section class="card attention-card">
+    <h2 class="title-3" i18n="@@console.overview.waitingOnYou">Buyers waiting on you</h2>
+    <ul class="list">
+      @for (p of review(); track p.id) {
+        <li>
+          <a class="row-link" [routerLink]="paths.console.proposal(p.id)">
+            <span class="grow">
+              <span class="strong">{{ p.buyer.name || text.buyer }}</span>
+              <span class="muted small">
+                · {{ p.houseName }}{{ p.address ? ', ' + p.address : '' }}</span
+              >
+            </span>
+            <span class="pill orange" i18n="@@console.overview.reviewChanges">Review changes</span>
+            <span class="tiny muted hide-sm when">{{ p.lastActivityAt | ago }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+}
+
+<section class="card recent">
+  <div class="spread">
+    <h2 class="title-3" i18n="@@console.overview.recent">Recent proposals</h2>
+    <a [routerLink]="paths.console.proposals" class="small" i18n="@@console.overview.seeAll"
+      >See all</a
+    >
+  </div>
+  <ul class="list">
+    @for (p of recent(); track p.id) {
+      @let turn = turnOf(p, Party.Seller);
+      <li>
+        <a class="row-link" [routerLink]="paths.console.proposal(p.id)">
+          <span class="thumb-sm">
+            @if (p.imageUrl) {
+              <img [src]="p.imageUrl" alt="" referrerpolicy="no-referrer" />
+            }
+          </span>
+          <span class="grow">
+            <span class="strong">{{ p.buyer.name || text.buyer }}</span>
+            <span class="muted small"> · {{ p.houseName }}</span>
+          </span>
+          <span class="tabular small hide-sm">{{ p.currentTotalCents | money: p.currency }}</span>
+          <span class="pill" [class]="turn.tone">{{ turn.text }}</span>
+          <span class="tiny muted hide-sm when">{{ p.lastActivityAt | ago }}</span>
+        </a>
+      </li>
+    } @empty {
+      <li class="muted" i18n="@@console.overview.empty">
+        No proposals yet. Sit down with a buyer and build the first one.
+      </li>
+    }
+  </ul>
+</section>

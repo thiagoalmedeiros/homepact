@@ -1,0 +1,43 @@
+.estimator {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.head {
+  align-items: center;
+}
+.reference {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.spark polyline {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.range {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.payment {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  transition: opacity 0.2s;
+}
+.payment.dim {
+  opacity: 0.45;
+}
+.amount {
+  font-size: 28px;
+  font-weight: 600;
+}
+.disclaimer {
+  margin: 4px 0 0;
+}
+.kv > span:last-child {
+  white-space: nowrap;
+}

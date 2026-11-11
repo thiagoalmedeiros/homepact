@@ -1,0 +1,362 @@
+<header class="bar chrome">
+  <div class="page spread bar-inner">
+    <span class="row brand"
+      ><span class="mark"><hc-icon name="building" [size]="16" /></span
+      ><span class="strong" i18n="@@platform.brand">Homepact Platform</span></span
+    >
+    <span class="row">
+      <span class="small muted hide-sm">{{ auth.user()?.email }}</span>
+      <button class="btn btn-secondary btn-sm" (click)="logout()">
+        <ng-container i18n="@@common.actions.signOut">Sign out</ng-container>
+      </button>
+    </span>
+  </div>
+</header>
+
+<section class="page section">
+  <div class="console-head">
+    <div>
+      <h1 class="title-1" i18n="@@platform.title">Companies</h1>
+      <p class="muted" i18n="@@platform.subtitle">
+        Each company is a tenant. Its site is identified by the origins it owns; branding is its
+        logo.
+      </p>
+    </div>
+    <button class="btn" (click)="create()">
+      <hc-icon name="plus" [size]="16" />
+      <ng-container i18n="@@platform.newCompany">New company</ng-container>
+    </button>
+  </div>
+
+  <hc-load-state [resource]="companies" />
+  <div [hidden]="!companies.hasValue()" class="card table-wrap table-card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th i18n="@@platform.columns.company">Company</th>
+          <th class="hide-sm" i18n="@@platform.columns.logo">Logo</th>
+          <th i18n="@@platform.columns.origins">Origins</th>
+          <th i18n="@@platform.columns.active">Active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of (companies.hasValue() ? companies.value() : undefined) ?? []; track c.id) {
+          <tr>
+            <td>
+              <span class="strong">{{ c.name }}</span
+              ><br /><span class="tiny muted">{{ c.slug }} · {{ c.currency }}</span>
+            </td>
+            <td class="hide-sm">
+              <span class="logo-cell"
+                ><img [src]="c.logoUrl" alt="" referrerpolicy="no-referrer"
+              /></span>
+            </td>
+            <td>
+              <div class="origins">
+                @for (o of c.origins; track o) {
+                  <a class="chip small" [href]="o" target="_blank" rel="noopener">{{ o }}</a>
+                }
+              </div>
+            </td>
+            <td>
+              <input
+                type="checkbox"
+                class="switch"
+                [checked]="c.active"
+                (change)="toggleActive(c)"
+                [attr.aria-label]="activeLabel(c.name)"
+              />
+            </td>
+            <td class="num">
+              <span class="row actions">
+                <button
+                  class="btn btn-sm btn-secondary"
+                  (click)="addAdmin(c)"
+                  i18n="@@platform.addAdmin"
+                >
+                  Add admin
+                </button>
+                <button
+                  class="btn btn-sm btn-secondary"
+                  (click)="edit(c)"
+                  i18n="@@common.actions.edit"
+                >
+                  Edit
+                </button>
+              </span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="empty" i18n="@@platform.empty">No companies yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="page section" data-testid="tax-presets">
+  <div class="console-head">
+    <div>
+      <h2 class="title-2" i18n="@@platform.taxes.title">Sales tax suggestions</h2>
+      <p class="muted" i18n="@@platform.taxes.subtitle">
+        Rates by province that companies adopt as their own copy.
+      </p>
+    </div>
+    <span class="row actions">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="addStarter()"
+        [disabled]="busy()"
+        data-testid="add-starter"
+        i18n="@@platform.taxes.addStarter"
+      >
+        Add Canadian provinces
+      </button>
+      <button class="btn" type="button" (click)="newPreset()" data-testid="new-preset">
+        <hc-icon name="plus" [size]="16" />
+        <ng-container i18n="@@platform.taxes.new">New suggestion</ng-container>
+      </button>
+    </span>
+  </div>
+  <hc-load-state [resource]="presets" />
+  <div [hidden]="!presets.hasValue()" class="card table-wrap table-card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th i18n="@@platform.taxes.columns.province">Province</th>
+          <th i18n="@@platform.taxes.columns.taxes">Sales tax</th>
+          <th class="hide-sm" i18n="@@platform.taxes.columns.note">Note</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of (presets.hasValue() ? presets.value() : undefined) ?? []; track p.id) {
+          <tr [attr.data-testid]="'preset-' + p.code">
+            <td>
+              <span class="strong">{{ p.name }}</span
+              ><span class="tiny muted"> · {{ p.code }}</span>
+            </td>
+            <td class="tabular">{{ summary(p.components) }}</td>
+            <td class="hide-sm small muted">{{ p.note }}</td>
+            <td class="num">
+              <span class="row actions">
+                <button
+                  class="btn btn-sm btn-secondary"
+                  type="button"
+                  (click)="editPreset(p)"
+                  i18n="@@common.actions.edit"
+                >
+                  Edit
+                </button>
+                <button
+                  class="icon-btn"
+                  type="button"
+                  (click)="removePreset(p)"
+                  [disabled]="busy()"
+                  aria-label="Remove"
+                  i18n-aria-label="@@platform.taxes.remove"
+                >
+                  <hc-icon name="trash" [size]="16" />
+                </button>
+              </span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="empty" i18n="@@platform.taxes.empty">
+              No suggestions yet: companies enter their own rates.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (sheet() === 'preset') {
+  <hc-sheet [title]="presetDraft.id ? text.presetEdit : text.presetNew" (closed)="sheet.set(null)">
+    <form class="stack" (ngSubmit)="savePreset()">
+      <div class="form-grid">
+        <div class="field">
+          <label for="tp-name" i18n="@@platform.taxes.name">Province</label>
+          <input
+            id="tp-name"
+            class="input"
+            name="name"
+            [(ngModel)]="presetDraft.name"
+            (ngModelChange)="touchPreset()"
+            maxlength="80"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="tp-code" i18n="@@platform.taxes.code">Code</label>
+          <input
+            id="tp-code"
+            class="input"
+            name="code"
+            [(ngModel)]="presetDraft.code"
+            (ngModelChange)="touchPreset()"
+            maxlength="6"
+            placeholder="e.g. ON"
+            i18n-placeholder="@@platform.taxes.codePlaceholder"
+            required
+          />
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" i18n="@@platform.taxes.taxes">Taxes charged</span>
+        <hc-tax-components-editor
+          [components]="presetComponents()"
+          (componentsChange)="presetComponents.set($event); touchPreset()"
+        />
+      </div>
+      <div class="field">
+        <label for="tp-note"
+          ><ng-container i18n="@@platform.taxes.note">Note for companies</ng-container>
+          <span class="hint" i18n="@@common.optional">optional</span></label
+        >
+        <input
+          id="tp-note"
+          class="input"
+          name="note"
+          [(ngModel)]="presetDraft.note"
+          maxlength="300"
+          placeholder="e.g. PST is not charged on the sale of a new home."
+          i18n-placeholder="@@platform.taxes.notePlaceholder"
+        />
+      </div>
+      <button
+        class="btn btn-lg btn-block"
+        type="submit"
+        [disabled]="!presetValid() || busy()"
+        data-testid="save-preset"
+      >
+        <ng-container i18n="@@common.actions.save">Save</ng-container>
+      </button>
+    </form>
+  </hc-sheet>
+}
+
+@if (sheet() === 'company') {
+  <hc-sheet [title]="draft.id ? text.sheetEdit : text.sheetNew" (closed)="sheet.set(null)">
+    <form class="stack" #f="ngForm" (ngSubmit)="f.valid && save()">
+      <div class="form-grid">
+        <div class="field">
+          <label for="c-name"><ng-container i18n="@@platform.name">Name</ng-container></label
+          ><input id="c-name" class="input" name="name" [(ngModel)]="draft.name" required />
+        </div>
+        <div class="field">
+          <label for="c-slug"><ng-container i18n="@@platform.slug">Slug</ng-container></label
+          ><input id="c-slug" class="input" name="slug" [(ngModel)]="draft.slug" required />
+        </div>
+      </div>
+      <div class="field">
+        <label for="c-logo"><ng-container i18n="@@platform.logoUrl">Logo URL</ng-container></label
+        ><input id="c-logo" class="input" name="logo" [(ngModel)]="draft.logoUrl" required />
+      </div>
+      <div class="field">
+        <label for="c-origins" i18n="@@platform.origins">Origins</label>
+        <textarea
+          id="c-origins"
+          class="textarea"
+          name="origins"
+          [(ngModel)]="draft.origins"
+          placeholder="https://homes.example.com"
+          i18n-placeholder="@@platform.originsPlaceholder"
+          required
+        ></textarea>
+        <span class="hint" i18n="@@platform.originsHint"
+          >One per line, scheme + host (+ port). An origin can belong to only one company.</span
+        >
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="c-cur" i18n="@@platform.currency">Currency</label>
+          <select id="c-cur" class="select" name="cur" [(ngModel)]="draft.currency">
+            @for (c of currencies; track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label for="c-phone"><ng-container i18n="@@platform.phone">Phone</ng-container></label
+          ><input id="c-phone" class="input" name="phone" [(ngModel)]="draft.phone" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="c-tag"><ng-container i18n="@@platform.tagline">Tagline</ng-container></label
+        ><input id="c-tag" class="input" name="tag" [(ngModel)]="draft.tagline" />
+      </div>
+      <div class="field">
+        <label for="c-hero"
+          ><ng-container i18n="@@platform.heroImage">Hero image URL</ng-container></label
+        ><input id="c-hero" class="input" name="hero" [(ngModel)]="draft.heroImageUrl" />
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="c-email"><ng-container i18n="@@platform.email">Email</ng-container></label
+          ><input id="c-email" class="input" name="email" [(ngModel)]="draft.email" />
+        </div>
+        <div class="field">
+          <label for="c-web"><ng-container i18n="@@platform.website">Website</ng-container></label
+          ><input id="c-web" class="input" name="web" [(ngModel)]="draft.website" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="c-addr"><ng-container i18n="@@platform.address">Address</ng-container></label
+        ><input id="c-addr" class="input" name="addr" [(ngModel)]="draft.address" />
+      </div>
+      <button class="btn btn-lg btn-block" type="submit" [disabled]="f.invalid || busy()">
+        <ng-container i18n="@@common.actions.save">Save</ng-container>
+      </button>
+    </form>
+  </hc-sheet>
+}
+
+@if (sheet() === 'admin') {
+  <hc-sheet [title]="adminSheetTitle(admin.companyName)" (closed)="sheet.set(null)">
+    <form class="stack" #fa="ngForm" (ngSubmit)="fa.valid && saveAdmin()">
+      <div class="field">
+        <label for="a-name"><ng-container i18n="@@platform.adminName">Name</ng-container></label
+        ><input id="a-name" class="input" name="name" [(ngModel)]="admin.name" required />
+      </div>
+      <div class="field">
+        <label for="a-email"><ng-container i18n="@@platform.adminEmail">Email</ng-container></label
+        ><input
+          id="a-email"
+          class="input"
+          type="email"
+          name="email"
+          [(ngModel)]="admin.email"
+          required
+        />
+      </div>
+      <div class="field">
+        <label for="a-pw"
+          ><ng-container i18n="@@platform.adminPassword">Temporary password</ng-container></label
+        ><input
+          id="a-pw"
+          class="input"
+          type="password"
+          name="pw"
+          [(ngModel)]="admin.password"
+          minlength="8"
+          required
+        />
+      </div>
+      <button
+        class="btn btn-lg btn-block"
+        type="submit"
+        [disabled]="fa.invalid || busy()"
+        i18n="@@platform.createAdmin"
+      >
+        Create administrator
+      </button>
+    </form>
+  </hc-sheet>
+}

@@ -1,0 +1,49 @@
+<div class="stack list">
+  @for (c of components(); track $index; let i = $index) {
+    <div class="tax" [attr.data-testid]="'tax-component-' + i">
+      <input
+        class="input"
+        [ngModel]="c.label"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="set(i, { label: $event })"
+        [name]="'tax-label-' + i"
+        maxlength="40"
+        placeholder="e.g. GST, HST, QST"
+        i18n-placeholder="@@taxComponents.labelPlaceholder"
+        aria-label="Tax"
+        i18n-aria-label="@@taxComponents.label"
+      />
+      <span class="rate">
+        <input
+          class="input tabular"
+          type="number"
+          step="0.001"
+          min="0"
+          max="100"
+          [ngModel]="c.ratePercent"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="set(i, { ratePercent: $event === '' ? null : $event })"
+          [name]="'tax-rate-' + i"
+          aria-label="Rate in percent"
+          i18n-aria-label="@@taxComponents.rate"
+        /><span class="muted">%</span>
+      </span>
+      <button
+        class="icon-btn"
+        type="button"
+        (click)="remove(i)"
+        [disabled]="components().length === 1"
+        aria-label="Remove this tax"
+        i18n-aria-label="@@taxComponents.remove"
+      >
+        <hc-icon name="trash" [size]="16" />
+      </button>
+    </div>
+  }
+  @if (components().length < 4) {
+    <button class="link-btn small add" type="button" (click)="add()">
+      <hc-icon name="plus" [size]="14" />
+      <ng-container i18n="@@taxComponents.add">Add a tax</ng-container>
+    </button>
+  }
+</div>

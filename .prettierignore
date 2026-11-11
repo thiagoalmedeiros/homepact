@@ -1,4 +1,5 @@
-dist/
-coverage/
-.angular/
+dist
+coverage
+node_modules
+.angular
 package-lock.json

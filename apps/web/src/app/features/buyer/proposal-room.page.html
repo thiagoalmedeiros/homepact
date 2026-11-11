@@ -1,0 +1,516 @@
+@if (detail.error() && !d()) {
+  <section class="page-narrow center section">
+    <h1 class="title-2" i18n="@@room.unavailableTitle">This proposal isn't available</h1>
+    <p class="lead" i18n="@@room.unavailableLead">
+      It may belong to another account, or its invite link has been replaced.
+    </p>
+    <a class="btn" [routerLink]="paths.home" i18n="@@common.actions.back">Back</a>
+  </section>
+} @else if (d(); as d) {
+  @let p = d.proposal;
+  @let turn = turnOf(p, Party.Buyer);
+  @let cur = p.currency;
+  @let rep = firstName();
+
+  <div class="screen-only">
+    <section class="hero" [class.compact]="mode() === 'change'">
+      <div class="page hero-inner">
+        <div class="hero-media">
+          @if (p.imageUrl) {
+            <img [src]="p.imageUrl" [alt]="p.houseName" referrerpolicy="no-referrer" />
+          } @else {
+            <div class="placeholder-house"><hc-icon name="house" [size]="64" [weight]="1" /></div>
+          }
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow" i18n="@@room.eyebrow">Proposal {{ p.reference }}</p>
+          <h1 class="display-sm">{{ p.houseName }}</h1>
+          <p class="lead">
+            @if (p.kind === 'inventory') {
+              {{ p.address }}{{ p.community ? ', ' + p.community : '' }}
+            } @else {
+              <ng-container i18n="@@room.builtForYou"
+                >Built for you, with the packages you chose.</ng-container
+              >
+            }
+          </p>
+          <div class="row pills">
+            <span class="pill" [class]="turn.tone" data-testid="buyer-status">{{ turn.text }}</span>
+            @if (p.locked) {
+              <span class="pill"
+                ><hc-icon name="shield" [size]="12" />
+                <ng-container i18n="@@room.soldAsBuilt">Sold as built</ng-container></span
+              >
+            }
+          </div>
+          <div class="total-block">
+            <span class="tiny muted" i18n="@@room.revisionUpdated"
+              >Revision {{ p.currentRevision }} · updated {{ p.lastActivityAt | ago }}</span
+            >
+            <span class="total tabular" data-testid="room-total">{{
+              p.currentTotalCents | money: cur
+            }}</span>
+            @if (current()?.quote?.tax; as tax) {
+              <span class="tiny muted" data-testid="room-tax-note" i18n="@@room.taxIncluded"
+                >Sales tax included ({{ tax.regionName }})</span
+              >
+            }
+          </div>
+          @if (mode() === 'view') {
+            <div class="row actions">
+              @if (canSign()) {
+                <button
+                  class="btn btn-lg"
+                  type="button"
+                  (click)="openSign()"
+                  data-testid="open-sign"
+                  i18n="@@room.signProposal"
+                >
+                  Sign proposal
+                </button>
+              }
+              @if (canChange()) {
+                <button
+                  class="btn btn-lg btn-secondary"
+                  type="button"
+                  (click)="startChanges()"
+                  data-testid="request-changes"
+                  i18n="@@room.requestChanges"
+                >
+                  Request changes
+                </button>
+              }
+              @if (p.status === ProposalStatus.Signed) {
+                <button
+                  class="btn btn-lg btn-secondary"
+                  type="button"
+                  (click)="print()"
+                  i18n="@@room.printSummary"
+                >
+                  Print summary
+                </button>
+              }
+            </div>
+          }
+          @if (p.repName) {
+            <p class="small muted rep">
+              <hc-icon name="user" [size]="14" />
+              <ng-container i18n="@@room.yourRepresentative">Your representative:</ng-container>
+              <strong>{{ p.repName }}</strong>
+            </p>
+          }
+        </div>
+      </div>
+    </section>
+
+    <div class="page body">
+      @if (p.signature; as s) {
+        <div class="callout success signed" data-testid="signed-banner">
+          <span class="ok"><hc-icon name="check" [size]="16" [weight]="2.6" /></span>
+          <div>
+            <strong i18n="@@room.signedTitle">You signed this proposal.</strong>
+            <p class="small" i18n="@@room.signedBody">
+              Signed by {{ s.fullName }} on {{ s.signedAt | localDate: 'dateTime' }} for revision
+              {{ s.revision }}, {{ s.totalCents | money: cur }}. {{ rep }} will be in touch about
+              next steps.
+            </p>
+          </div>
+        </div>
+      } @else if (p.status === ProposalStatus.Declined || p.status === ProposalStatus.Withdrawn) {
+        <div class="callout">
+          @if (p.status === ProposalStatus.Declined) {
+            <ng-container i18n="@@room.declined">You declined this proposal.</ng-container>
+          } @else {
+            <ng-container i18n="@@room.withdrawnBySeller"
+              >This proposal was withdrawn by the seller.</ng-container
+            >
+          }
+          <ng-container i18n="@@room.cannotSign">It can no longer be signed.</ng-container>
+        </div>
+      } @else if (p.locked && mode() === 'view') {
+        <div class="callout" data-testid="locked-banner">
+          <strong i18n="@@room.lockedTitle">This home is offered as built.</strong>
+          <ng-container i18n="@@room.lockedBody"
+            >You can review everything that's included and sign it, but its options can't be
+            changed. Questions? Message {{ rep }} below.</ng-container
+          >
+        </div>
+      }
+
+      @if (d.agreement; as a) {
+        <section class="card agreement" data-testid="room-agreement">
+          <span class="agreement-icon"><hc-icon name="doc" [size]="22" /></span>
+          <div class="grow">
+            @if (a.status === AgreementStatus.Executed) {
+              <h2 class="title-3" i18n="@@room.agreement.executedTitle">
+                Your purchase agreement is executed
+              </h2>
+              <p class="small muted" i18n="@@room.agreement.executedLine">
+                Agreement {{ a.reference }} · signed by every party. Keep the PDF for your records.
+              </p>
+            } @else if (a.status === AgreementStatus.Signed) {
+              <h2 class="title-3" i18n="@@room.agreement.signedTitle">
+                Your purchase agreement is signed
+              </h2>
+              <p class="small muted" i18n="@@room.agreement.signedLine">
+                Agreement {{ a.reference }} · waiting for
+                {{ tenant.company()?.name ?? theSeller }} to countersign.
+              </p>
+            } @else {
+              <h2 class="title-3" i18n="@@room.agreement.readyTitle">
+                Your purchase agreement is ready to sign
+              </h2>
+              <p class="small muted" i18n="@@room.agreement.readyLine">
+                Agreement {{ a.reference }} · {{ rep }} sent it for
+                {{ tenant.company()?.name ?? theSeller }}. {{ a.signedCount }} of
+                {{ a.purchaserCount }} purchaser(s) have signed.
+              </p>
+            }
+          </div>
+          <a
+            class="btn"
+            [class.btn-secondary]="a.status !== AgreementStatus.UnderReview"
+            [routerLink]="paths.agreement(a.id)"
+            data-testid="open-room-agreement"
+          >
+            @if (a.status === AgreementStatus.UnderReview) {
+              <ng-container i18n="@@room.agreement.reviewAndSign">Review and sign</ng-container>
+            } @else {
+              <ng-container i18n="@@room.agreement.view">View agreement</ng-container>
+            }
+          </a>
+        </section>
+      }
+
+      @if (openRequest(); as cr) {
+        <section class="card waiting" data-testid="waiting">
+          <div class="spread">
+            <h2 class="title-3" i18n="@@room.waitingFor">Waiting for {{ rep }}</h2>
+            <button
+              class="link-btn small"
+              type="button"
+              (click)="withdrawRequest(cr.id)"
+              [disabled]="busy()"
+              i18n="@@room.withdrawRequest"
+            >
+              Withdraw request
+            </button>
+          </div>
+          <p class="small muted" i18n="@@room.waitingBody">
+            You asked for
+            {cr.changes.length, plural, =1 {1 change} other {{{ cr.changes.length }} changes}}
+            {{ cr.createdAt | ago }}. Each one will be approved or declined, and you'll get an
+            updated proposal.
+          </p>
+          <hc-change-lines [changes]="cr.changes" [currency]="cur" />
+          <div class="kv small preview-total">
+            <span i18n="@@room.ifAllApproved">If everything is approved</span>
+            <span class="strong tabular">{{ cr.previewTotalCents | money: cur }}</span>
+          </div>
+        </section>
+      } @else if (lastAnswer(); as cr) {
+        <section class="card answered" data-testid="answered">
+          <h2 class="title-3" i18n="@@room.answered">
+            {{ cr.resolvedByName?.split(' ')?.[0] ?? rep }} answered your request
+          </h2>
+          <hc-change-lines [changes]="cr.changes" [currency]="cur" />
+          @if (current()?.note; as note) {
+            <p class="note small">“{{ note }}”</p>
+          }
+        </section>
+      }
+
+      @if (mode() === 'change') {
+        <section class="change">
+          <div class="spread change-head">
+            <div>
+              <h2 class="title-2" i18n="@@room.changeTitle">What would you like to change?</h2>
+              <p class="muted" i18n="@@room.changeLead">
+                Remove options, switch to another package or upgrade one. {{ rep }} will review each
+                change.
+              </p>
+            </div>
+            <button
+              class="btn btn-ghost"
+              type="button"
+              (click)="cancelChanges()"
+              i18n="@@common.actions.cancel"
+            >
+              Cancel
+            </button>
+          </div>
+          @if (options.hasValue() ? options.value() : undefined; as o) {
+            <hc-selection-editor
+              [areas]="o.areas"
+              [currency]="o.currency"
+              [base]="current()?.selections ?? null"
+              [(selections)]="draft"
+            />
+          } @else {
+            <div class="skeleton loading-options"></div>
+          }
+        </section>
+        <div class="bar chrome">
+          <div class="page spread">
+            <div>
+              <p class="tiny muted" i18n="@@room.changesNewTotal">
+                {changes().length, plural, =1 {1 change} other {{{ changes().length }} changes}} ·
+                new total
+              </p>
+              <p
+                class="bar-total tabular"
+                [class.dim]="preview.pending()"
+                data-testid="change-total"
+              >
+                {{
+                  (changes().length ? preview.value()?.quote?.totalCents : p.currentTotalCents) ??
+                    p.currentTotalCents | money: cur
+                }}
+              </p>
+              @if (preview.error(); as e) {
+                <p class="tiny bar-error">{{ e }}</p>
+              }
+            </div>
+            <button
+              class="btn btn-lg"
+              type="button"
+              (click)="sheet.set('review')"
+              [disabled]="!changes().length || preview.pending() || !!preview.error()"
+              data-testid="review-changes"
+              i18n="@@room.reviewChanges"
+            >
+              Review changes
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="layout">
+          <div class="main">
+            @if (shown(); as rev) {
+              <section class="card">
+                <div class="spread rev-head">
+                  <h2 class="title-3">
+                    @if (rev.number === p.currentRevision) {
+                      <ng-container i18n="@@room.whatsIncluded">What's included</ng-container>
+                    } @else {
+                      <ng-container i18n="@@room.earlierRevision"
+                        >Revision {{ rev.number }} (earlier)</ng-container
+                      >
+                    }
+                  </h2>
+                  @if (rev.number !== p.currentRevision) {
+                    <button
+                      class="link-btn small"
+                      type="button"
+                      (click)="viewRev.set(null)"
+                      i18n="@@room.showCurrent"
+                    >
+                      Show current
+                    </button>
+                  }
+                </div>
+                <hc-quote-breakdown [quote]="rev.quote" />
+              </section>
+            }
+            @if (cur === 'CAD' && p.status !== ProposalStatus.Declined) {
+              <hc-mortgage-estimator
+                [priceCents]="p.currentTotalCents"
+                [currency]="cur"
+                [regionCode]="current()?.quote?.tax?.regionCode"
+              />
+            }
+            @if (isGuest() && p.status !== ProposalStatus.Declined) {
+              <section class="card save">
+                <div>
+                  <h2 class="title-3" i18n="@@room.saveTitle">Keep this proposal in an account</h2>
+                  <p class="small muted" i18n="@@room.saveBody">
+                    Right now it opens with your private link. Create an account to find it any
+                    time.
+                  </p>
+                </div>
+                <a
+                  class="btn btn-secondary"
+                  [routerLink]="paths.register"
+                  [queryParams]="{ next: paths.myProposals }"
+                  ><ng-container i18n="@@room.createAccount">Create account</ng-container></a
+                >
+              </section>
+            }
+            @if (canSign()) {
+              <p class="small muted decline">
+                <ng-container i18n="@@room.notRightHome">Not the right home?</ng-container>
+                <button
+                  class="link-btn"
+                  type="button"
+                  (click)="decline()"
+                  i18n="@@room.declineProposal"
+                >
+                  Decline this proposal
+                </button>
+              </p>
+            }
+          </div>
+          <aside class="side">
+            <section class="card">
+              <h2 class="title-3" i18n="@@room.messages">Messages</h2>
+              <hc-proposal-messages
+                [messages]="d.messages"
+                [viewer]="Party.Buyer"
+                [canSend]="p.status !== ProposalStatus.Declined"
+                (send)="sendMessage($event)"
+              />
+            </section>
+            <section class="card">
+              <h2 class="title-3" i18n="@@room.history">History</h2>
+              <hc-proposal-timeline [detail]="d" (view)="viewRev.set($event)" />
+            </section>
+          </aside>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (current(); as rev) {
+    <section class="print-only summary">
+      <h1 i18n="@@room.print.title">
+        {{ tenant.company()?.name }}: home proposal {{ p.reference }}
+      </h1>
+      <p>
+        <strong>{{ p.houseName }}</strong>
+        ·
+        @if (p.kind === 'inventory') {
+          {{ p.address }}{{ p.community ? ', ' + p.community : '' }}
+        } @else {
+          <ng-container i18n="@@room.print.builtToOrder">built to order</ng-container>
+        }
+      </p>
+      <p i18n="@@room.print.parties">
+        Buyer: {{ p.buyer.name }} · Representative: {{ p.repName ?? '—' }} · Revision
+        {{ rev.number }}
+      </p>
+      <hc-quote-breakdown [quote]="rev.quote" />
+      @if (p.signature; as s) {
+        <p class="sig">
+          <ng-container i18n="@@room.print.signedBy">Signed electronically by</ng-container>
+          <strong>{{ s.fullName }}</strong>
+          <ng-container i18n="@@room.print.signedOn"
+            >on {{ s.signedAt | localDate: 'dateTime' }} for
+            {{ s.totalCents | money: cur }}.</ng-container
+          >
+        </p>
+      } @else {
+        <p class="sig" i18n="@@room.print.notSigned">
+          Not signed. Prices and availability may change until signed.
+        </p>
+      }
+    </section>
+  }
+
+  @if (sheet() === 'review') {
+    <hc-sheet
+      title="Send your changes"
+      i18n-title="@@room.sendSheet.title"
+      (closed)="sheet.set(null)"
+    >
+      <div class="stack">
+        @if (preview.value(); as pv) {
+          <hc-change-lines [changes]="pv.changes" [currency]="cur" />
+          <div class="inset spread">
+            <span i18n="@@room.sendSheet.newTotal">New total if approved</span>
+            <span class="strong tabular">{{ pv.quote.totalCents | money: cur }}</span>
+          </div>
+        }
+        <div class="field">
+          <label for="r-note"
+            ><ng-container i18n="@@room.sendSheet.noteFor">Note for {{ rep }}</ng-container>
+            <span class="hint" i18n="@@common.optional">optional</span></label
+          >
+          <textarea
+            id="r-note"
+            class="textarea"
+            name="note"
+            [(ngModel)]="requestNote"
+            placeholder="Why these changes, timing, questions…"
+            i18n-placeholder="@@room.sendSheet.notePlaceholder"
+          ></textarea>
+        </div>
+        <button
+          class="btn btn-lg btn-block"
+          type="button"
+          (click)="sendRequest()"
+          [disabled]="busy()"
+          data-testid="send-request"
+        >
+          @if (busy()) {
+            <ng-container i18n="@@room.sendSheet.sending">Sending…</ng-container>
+          } @else {
+            <ng-container i18n="@@room.sendSheet.sendTo">Send to {{ rep }}</ng-container>
+          }
+        </button>
+      </div>
+    </hc-sheet>
+  }
+
+  @if (sheet() === 'sign') {
+    <hc-sheet
+      title="Sign your proposal"
+      i18n-title="@@room.signSheet.title"
+      (closed)="sheet.set(null)"
+    >
+      <form class="stack" (ngSubmit)="sign()">
+        <div class="inset stack summary-box">
+          <span class="strong">{{ p.houseName }}{{ p.address ? ', ' + p.address : '' }}</span>
+          <span class="small muted" i18n="@@room.signSheet.revision"
+            >Revision {{ p.currentRevision }} · {{ p.reference }}</span
+          >
+          <span class="title-3 tabular">{{ p.currentTotalCents | money: cur }}</span>
+          @if (current()?.quote?.tax; as tax) {
+            <span class="tiny muted" i18n="@@room.taxIncluded"
+              >Sales tax included ({{ tax.regionName }})</span
+            >
+          }
+        </div>
+        <div class="field">
+          <label for="s-name" i18n="@@room.signSheet.typeName">Type your full name</label>
+          <input
+            id="s-name"
+            class="input sig-input"
+            name="fullName"
+            [(ngModel)]="fullName"
+            autocomplete="name"
+            required
+            data-testid="sign-name"
+          />
+        </div>
+        <label class="row agree small">
+          <input
+            type="checkbox"
+            class="checkbox"
+            name="agree"
+            [(ngModel)]="agree"
+            data-testid="sign-agree"
+          />
+          <span i18n="@@room.signSheet.agree">
+            I accept this proposal for {{ p.currentTotalCents | money: cur }} as described in
+            revision {{ p.currentRevision }}, and I understand that typing my name is my electronic
+            signature.
+          </span>
+        </label>
+        <button
+          class="btn btn-lg btn-block"
+          type="submit"
+          [disabled]="busy() || !agree || fullName.trim().length < 2"
+          data-testid="sign-submit"
+        >
+          @if (busy()) {
+            <ng-container i18n="@@room.signSheet.signing">Signing…</ng-container>
+          } @else {
+            <ng-container i18n="@@room.signSheet.sign">Sign</ng-container>
+          }
+        </button>
+      </form>
+    </hc-sheet>
+  }
+} @else {
+  <div class="page section"><div class="skeleton loading-page"></div></div>
+}

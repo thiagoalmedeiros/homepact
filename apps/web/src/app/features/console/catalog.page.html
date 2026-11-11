@@ -1,0 +1,277 @@
+<header class="console-head">
+  <div>
+    <h1 class="title-1" i18n="@@console.catalog.title">Catalog</h1>
+    <p class="muted" i18n="@@console.catalog.subtitle">
+      Everything you sell, grouped by area. Every package and option can be proposed on every home.
+    </p>
+  </div>
+  <button class="btn" (click)="add(tab())">
+    <hc-icon name="plus" [size]="16" /> {{ addLabel[tab()] }}
+  </button>
+</header>
+
+<div class="spread tabs">
+  <div
+    class="segmented"
+    role="group"
+    aria-label="Catalog section"
+    i18n-aria-label="@@console.catalog.section"
+  >
+    @for (t of tabs; track t) {
+      <button [attr.aria-pressed]="tab() === t" (click)="tab.set(t)">
+        {{ tabLabel[t] }}
+      </button>
+    }
+  </div>
+  @if (tab() !== 'areas') {
+    <select
+      class="select area-filter"
+      [value]="area() ?? ''"
+      (change)="area.set($any($event.target).value || null)"
+      aria-label="Filter by area"
+      i18n-aria-label="@@console.catalog.filterByArea"
+    >
+      <option value="" i18n="@@console.catalog.allAreas">All areas</option>
+      @for (a of areas(); track a.slug) {
+        <option [value]="a.slug">{{ a.label }}</option>
+      }
+    </select>
+  }
+</div>
+
+<div class="card table-wrap table-card">
+  @switch (tab()) {
+    @case ('items') {
+      <table class="table">
+        <thead>
+          <tr>
+            <th i18n="@@console.catalog.columns.option">Option</th>
+            <th i18n="@@console.catalog.columns.area">Area</th>
+            <th class="num" i18n="@@console.catalog.columns.price">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (i of items(); track i.id) {
+            <tr
+              role="button"
+              tabindex="0"
+              (click)="editItem(i)"
+              (keydown.enter)="editItem(i)"
+              (keydown.space)="$event.preventDefault(); editItem(i)"
+            >
+              <td>
+                <span class="strong">{{ i.name }}</span>
+                @if (i.soldSeparately === false) {
+                  <span class="pill" i18n="@@console.catalog.packagesOnly">In packages only</span>
+                }
+                @if (i.description) {
+                  <br /><span class="tiny muted">{{ i.description }}</span>
+                }
+              </td>
+              <td class="muted">{{ areaLabel(i.areaSlug) }}</td>
+              <td class="num">{{ i.priceCents | money }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3" class="empty" i18n="@@console.catalog.noOptions">No options yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+    @case ('packages') {
+      <table class="table">
+        <thead>
+          <tr>
+            <th i18n="@@console.catalog.columns.package">Package</th>
+            <th i18n="@@console.catalog.columns.area">Area</th>
+            <th class="hide-sm" i18n="@@console.catalog.columns.includes">Includes</th>
+            <th class="num" i18n="@@console.catalog.columns.price">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of packages(); track p.id) {
+            <tr
+              role="button"
+              tabindex="0"
+              (click)="editPackage(p)"
+              (keydown.enter)="editPackage(p)"
+              (keydown.space)="$event.preventDefault(); editPackage(p)"
+            >
+              <td class="strong">{{ p.name }}</td>
+              <td class="muted">{{ areaLabel(p.areaSlug) }}</td>
+              <td class="hide-sm small muted" i18n="@@console.catalog.optionCount">
+                {p.itemIds.length, plural, =1 {1 option} other {{{ p.itemIds.length }} options}}
+              </td>
+              <td class="num">{{ p.priceCents | money }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty" i18n="@@console.catalog.noPackages">
+                No packages yet.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+    @case ('areas') {
+      <table class="table">
+        <thead>
+          <tr>
+            <th i18n="@@console.catalog.columns.area">Area</th>
+            <th i18n="@@console.catalog.columns.slug">Slug</th>
+            <th class="num" i18n="@@console.catalog.columns.order">Order</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of areas(); track a.slug) {
+            <tr
+              class="area-row"
+              role="button"
+              tabindex="0"
+              (click)="editArea(a)"
+              (keydown.enter)="editArea(a)"
+              (keydown.space)="$event.preventDefault(); editArea(a)"
+            >
+              <td>
+                <span class="strong">{{ a.label }}</span>
+                @if (a.description) {
+                  <br /><span class="tiny muted">{{ a.description }}</span>
+                }
+              </td>
+              <td class="muted small">{{ a.slug }}</td>
+              <td class="num">{{ a.order }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3" class="empty" i18n="@@console.catalog.noAreas">
+                Start by adding an area, such as Kitchen or Exterior.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+</div>
+
+@if (editing(); as kind) {
+  <hc-sheet [title]="draft.id ? editTitle[kind] : newTitle[kind]" (closed)="editing.set(null)">
+    <form class="stack" #f="ngForm" (ngSubmit)="f.valid && save()">
+      @if (kind === 'areas') {
+        <div class="form-grid">
+          <div class="field">
+            <label for="a-label"
+              ><ng-container i18n="@@console.catalog.label">Label</ng-container></label
+            ><input id="a-label" class="input" name="label" [(ngModel)]="draft.label" required />
+          </div>
+          <div class="field">
+            <label for="a-slug"
+              ><ng-container i18n="@@console.catalog.slug">Slug</ng-container></label
+            ><input
+              id="a-slug"
+              class="input"
+              name="slug"
+              [(ngModel)]="draft.slug"
+              [disabled]="!!draft.id"
+              placeholder="kitchen"
+              i18n-placeholder="@@console.catalog.slugPlaceholder"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label for="a-order"
+            ><ng-container i18n="@@console.catalog.order">Order</ng-container></label
+          ><input id="a-order" class="input" type="number" name="order" [(ngModel)]="draft.order" />
+        </div>
+      } @else {
+        <div class="field">
+          <label for="i-name"><ng-container i18n="@@console.catalog.name">Name</ng-container></label
+          ><input id="i-name" class="input" name="name" [(ngModel)]="draft.name" required />
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="i-area" i18n="@@console.catalog.area">Area</label>
+            <select id="i-area" class="select" name="area" [(ngModel)]="draft.areaSlug">
+              @for (a of areas(); track a.slug) {
+                <option [value]="a.slug">{{ a.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="i-price" i18n="@@console.catalog.price">Price ({{ currencyCode }})</label
+            ><input
+              id="i-price"
+              class="input"
+              type="number"
+              step="50"
+              min="0"
+              name="price"
+              [(ngModel)]="draft.price"
+            />
+          </div>
+        </div>
+        @if (kind === 'items') {
+          <label class="checkbox">
+            <input type="checkbox" name="sold" [(ngModel)]="draft.soldSeparately" />
+            <ng-container i18n="@@console.catalog.soldSeparately"
+              >Can be sold on its own</ng-container
+            >
+            <span class="hint" i18n="@@console.catalog.soldSeparatelyHint"
+              >Untick for building blocks only sold inside a package.</span
+            >
+          </label>
+        }
+        <div class="field">
+          <label for="i-img"
+            ><ng-container i18n="@@console.catalog.imageUrl">Image URL</ng-container>
+            <span class="hint" i18n="@@common.optional">optional</span></label
+          ><input id="i-img" class="input" name="img" [(ngModel)]="draft.imageUrl" />
+        </div>
+        @if (kind === 'packages') {
+          <div class="field">
+            <span class="label" i18n="@@console.catalog.includedOptions">Included options</span>
+            <div class="pick inset">
+              @for (i of itemsInArea(draft.areaSlug); track i.id) {
+                <label class="checkbox"
+                  ><input
+                    type="checkbox"
+                    [checked]="draft.itemIds.includes(i.id)"
+                    (change)="togglePackageItem(i.id)"
+                  />
+                  {{ i.name }}</label
+                >
+              } @empty {
+                <span class="small muted" i18n="@@console.catalog.noOptionsInArea"
+                  >No options in this area yet.</span
+                >
+              }
+            </div>
+          </div>
+        }
+      }
+      <div class="field">
+        <label for="i-desc"
+          ><ng-container i18n="@@console.catalog.description">Description</ng-container>
+          <span class="hint" i18n="@@common.optional">optional</span></label
+        ><textarea
+          id="i-desc"
+          class="textarea"
+          name="desc"
+          [(ngModel)]="draft.description"
+        ></textarea>
+      </div>
+      <div class="row">
+        <button class="btn" type="submit" [disabled]="f.invalid || busy()">
+          <ng-container i18n="@@common.actions.save">Save</ng-container>
+        </button>
+        @if (draft.id) {
+          <button class="btn btn-danger" type="button" (click)="remove()">
+            <ng-container i18n="@@common.actions.delete">Delete</ng-container>
+          </button>
+        }
+      </div>
+    </form>
+  </hc-sheet>
+}

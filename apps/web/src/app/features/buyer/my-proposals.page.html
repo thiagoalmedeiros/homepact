@@ -1,0 +1,69 @@
+<section class="page section">
+  <div class="spread head">
+    <div>
+      <p class="eyebrow" i18n="@@myProposals.greeting">
+        Hi {{ auth.user()?.name?.split(' ')?.[0] }}
+      </p>
+      <h1 class="title-1" i18n="@@myProposals.title">Your proposals</h1>
+    </div>
+    <button class="btn btn-ghost btn-sm" type="button" (click)="logout()">
+      <ng-container i18n="@@common.actions.signOut">Sign out</ng-container>
+    </button>
+  </div>
+  @if (pending()) {
+    <div class="callout row claim">
+      <span class="grow" i18n="@@myProposals.claimPrompt"
+        >You opened a proposal with an invite link. Add it to your account?</span
+      >
+      <button
+        class="btn btn-sm"
+        type="button"
+        (click)="claim()"
+        [disabled]="busy()"
+        i18n="@@myProposals.addToAccount"
+      >
+        Add to my account
+      </button>
+    </div>
+  }
+  <hc-load-state [resource]="list" [height]="120" />
+  <div class="cards">
+    @for (p of (list.hasValue() ? list.value() : undefined) ?? []; track p.id) {
+      @let turn = turnOf(p, Party.Buyer);
+      <a
+        class="card proposal"
+        [routerLink]="paths.proposal(p.id)"
+        [attr.data-testid]="'my-' + p.reference"
+      >
+        <span class="media">
+          @if (p.imageUrl) {
+            <img [src]="p.imageUrl" alt="" referrerpolicy="no-referrer" />
+          } @else {
+            <hc-icon name="house" [size]="40" [weight]="1" />
+          }
+        </span>
+        <span class="body">
+          <span class="pill" [class]="turn.tone">{{ turn.text }}</span>
+          <span class="title-3">{{ p.houseName }}</span>
+          <span class="small muted">
+            @if (p.address) {
+              {{ p.address }}
+            } @else {
+              <ng-container i18n="@@myProposals.builtToOrder">Built to order</ng-container>
+            }
+          </span>
+          <span class="spread">
+            <span class="strong tabular">{{ p.currentTotalCents | money: p.currency }}</span>
+            <span class="tiny muted">{{ p.lastActivityAt | ago }}</span>
+          </span>
+        </span>
+      </a>
+    } @empty {
+      @if (list.hasValue()) {
+        <div class="inset" i18n="@@myProposals.empty">
+          No proposals yet. When your sales representative sends you one, it will appear here.
+        </div>
+      }
+    }
+  </div>
+</section>

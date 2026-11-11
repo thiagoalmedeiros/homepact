@@ -1,0 +1,45 @@
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid var(--border);
+}
+.bar-inner {
+  height: var(--nav-h);
+}
+.mark {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--text);
+  color: var(--bg);
+}
+.logo-cell {
+  width: 120px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+.logo-cell img {
+  max-height: 32px;
+  max-width: 120px;
+  object-fit: contain;
+}
+.origins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.brand {
+  --gap: 10px;
+}
+.table-card {
+  padding: 8px 16px;
+}
+.actions {
+  --gap: 6px;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}

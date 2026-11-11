@@ -1,0 +1,355 @@
+<a class="back small" [routerLink]="paths.console.agreements"
+  ><hc-icon name="back" [size]="14" />
+  <ng-container i18n="@@console.agreement.back">Agreements</ng-container></a
+>
+<hc-load-state [resource]="agreement" [height]="120" />
+@if (a(); as a) {
+  @let label = LABEL[a.status];
+  <header class="console-head">
+    <div>
+      <p class="tiny muted" i18n="@@console.agreement.updated">
+        {{ a.reference }} · updated {{ a.updatedAt | ago }}
+      </p>
+      <h1 class="title-2" i18n="@@console.agreement.title">
+        {{ a.buyer.name }} · {{ a.home.model }}
+      </h1>
+      <span class="pill" [class]="label.tone" data-testid="agreement-status">{{ label.text }}</span>
+    </div>
+    <div class="row">
+      <button
+        class="btn btn-secondary btn-sm"
+        type="button"
+        (click)="download(a)"
+        [disabled]="downloading()"
+        data-testid="download-pdf"
+      >
+        <hc-icon name="download" [size]="14" />
+        <ng-container i18n="@@console.agreement.pdf">PDF</ng-container>
+      </button>
+      @if (open()) {
+        <button
+          class="btn btn-secondary btn-sm"
+          type="button"
+          (click)="editing.set(true)"
+          data-testid="edit-terms"
+        >
+          <hc-icon name="edit" [size]="14" />
+          @if (a.status === AgreementStatus.Draft) {
+            <ng-container i18n="@@console.agreement.editTerms">Edit terms</ng-container>
+          } @else {
+            <ng-container i18n="@@console.agreement.amend">Change clauses</ng-container>
+          }
+        </button>
+      }
+      @if (a.status === AgreementStatus.Draft) {
+        <button class="btn btn-sm" type="button" (click)="issue(a)" data-testid="issue">
+          <hc-icon name="send" [size]="14" />
+          <ng-container i18n="@@console.agreement.send">Send for signature</ng-container>
+        </button>
+      }
+      @if (a.status === AgreementStatus.Signed && auth.isAdmin()) {
+        <button
+          class="btn btn-sm"
+          type="button"
+          (click)="openCountersign()"
+          data-testid="countersign"
+        >
+          <hc-icon name="pen" [size]="14" />
+          <ng-container i18n="@@console.agreement.countersign">Countersign</ng-container>
+        </button>
+      }
+      @if (open()) {
+        <button
+          class="btn btn-ghost btn-sm"
+          type="button"
+          (click)="cancelling.set(true)"
+          data-testid="cancel"
+        >
+          @if (a.status === AgreementStatus.Draft) {
+            <ng-container i18n="@@console.agreement.discardDraft">Discard draft</ng-container>
+          } @else {
+            <ng-container i18n="@@console.agreement.cancel">Void</ng-container>
+          }
+        </button>
+      }
+    </div>
+  </header>
+
+  @switch (a.status) {
+    @case (AgreementStatus.Draft) {
+      <div class="callout warn banner" data-testid="draft-banner">
+        <strong i18n="@@console.agreement.draftTitle">Draft.</strong>
+        <ng-container i18n="@@console.agreement.draftBody"
+          >Only your team can see it. Check every clause and Schedule A, then send it to the
+          purchasers for signature.</ng-container
+        >
+      </div>
+    }
+    @case (AgreementStatus.UnderReview) {
+      <div class="callout banner" data-testid="sent-banner" i18n="@@console.agreement.sent">
+        Sent on {{ a.issuedAt | localDate: 'dateTime' }} by {{ a.issuedByName }}.
+        {{ signedCount() }} of {{ a.purchasers.length }} purchaser(s) have signed.
+      </div>
+    }
+    @case (AgreementStatus.Signed) {
+      <div class="callout warn banner" data-testid="signed-banner">
+        <strong i18n="@@console.agreement.signedTitle">Every purchaser has signed</strong>
+        <ng-container i18n="@@console.agreement.signedBody"
+          >on {{ a.signedAt | localDate: 'dateTime' }}. An administrator countersigns to execute
+          it.</ng-container
+        >
+      </div>
+    }
+    @case (AgreementStatus.Executed) {
+      <div class="callout success banner" data-testid="executed-banner">
+        <strong i18n="@@console.agreement.executedTitle">Executed</strong>
+        <ng-container i18n="@@console.agreement.executedBody"
+          >on {{ a.executedAt | localDate: 'dateTime' }} by {{ a.counterSignature?.fullName }}. The
+          PDF, with its certificate of signatures, is kept exactly as executed.</ng-container
+        >
+      </div>
+    }
+    @case (AgreementStatus.Cancelled) {
+      <div class="callout banner">
+        @if (a.cancelReason) {
+          <ng-container i18n="@@console.agreement.cancelledWithReason"
+            >Void since {{ a.cancelledAt | localDate: 'dateTime' }}:
+            {{ a.cancelReason }}</ng-container
+          >
+        } @else {
+          <ng-container i18n="@@console.agreement.cancelled"
+            >Void since {{ a.cancelledAt | localDate: 'dateTime' }}, cancelled by
+            {{ a.cancelledByName }}.</ng-container
+          >
+        }
+      </div>
+    }
+  }
+
+  <div class="layout">
+    <section class="card">
+      <hc-agreement-document [agreement]="a" />
+    </section>
+    <aside class="stack side">
+      <section class="card stack info">
+        <h2 class="title-3" i18n="@@console.agreement.purchasers">Purchasers</h2>
+        @for (p of a.purchasers; track p.id) {
+          <div class="stack signer" [attr.data-testid]="'signer-' + p.id">
+            <span class="strong">{{ p.name }}</span>
+            @if (p.email) {
+              <span class="tiny muted">{{ p.email }}</span>
+            }
+            @switch (p.status) {
+              @case (SignerStatus.Signed) {
+                <span class="pill green" i18n="@@console.agreement.signerSigned"
+                  >Signed {{ p.signature?.signedAt | localDate: 'dateTime' }}</span
+                >
+              }
+              @case (SignerStatus.Invalidated) {
+                <span class="pill orange" i18n="@@console.agreement.signerInvalidated"
+                  >Must sign again</span
+                >
+              }
+              @default {
+                @if (p.invitedAt) {
+                  <span class="pill blue" i18n="@@console.agreement.signerWaiting"
+                    >Waiting for signature</span
+                  >
+                } @else {
+                  <span class="pill" i18n="@@console.agreement.signerNotSent">Not sent yet</span>
+                }
+              }
+            }
+            @if (p.invitedAt && a.status !== AgreementStatus.Cancelled) {
+              <button
+                class="btn btn-secondary btn-sm"
+                type="button"
+                (click)="reinvite(p.id)"
+                [disabled]="busy()"
+                [attr.data-testid]="'reinvite-' + p.id"
+              >
+                <ng-container i18n="@@console.agreement.reinvite">New link and code</ng-container>
+              </button>
+            }
+          </div>
+        }
+      </section>
+      <section class="card stack info">
+        <h2 class="title-3" i18n="@@console.agreement.fromProposal">From proposal</h2>
+        <a [routerLink]="paths.console.proposal(a.proposalId)" class="strong">{{
+          a.proposalReference
+        }}</a>
+        <span class="small muted" i18n="@@console.agreement.revisionSigned"
+          >Revision {{ a.proposalSignature.revision }} signed by
+          {{ a.proposalSignature.fullName }} on
+          {{ a.proposalSignature.signedAt | localDate: 'dateTime' }}</span
+        >
+      </section>
+      <section class="card stack info">
+        <h2 class="title-3" i18n="@@console.agreement.template">Template</h2>
+        <span>{{ a.template.name }}</span>
+        <span class="small muted" i18n="@@console.agreement.templateMeta"
+          >Version {{ a.template.version }} · prepared by {{ a.createdByName }}</span
+        >
+        @if (a.status === AgreementStatus.Draft) {
+          <span class="tiny muted" i18n="@@console.agreement.templateEdited"
+            >Edited the template since? Edit the terms to use its latest version.</span
+          >
+        }
+      </section>
+    </aside>
+  </div>
+
+  @if (handouts().length) {
+    <hc-sheet
+      title="Signing links and codes"
+      i18n-title="@@console.agreement.handoutTitle"
+      (closed)="handouts.set([])"
+    >
+      <div class="stack">
+        <p class="small muted" i18n="@@console.agreement.handoutBody">
+          Give each purchaser their link and read them their code over the phone. This is the only
+          time the codes can be seen; you can always issue new ones.
+        </p>
+        @for (h of handouts(); track h.purchaserId) {
+          <div class="inset stack handout" [attr.data-testid]="'handout-' + h.purchaserId">
+            <span class="strong">{{ h.name }}</span>
+            @if (h.email) {
+              <span class="tiny muted">{{ h.email }}</span>
+            }
+            <code class="tiny break" [attr.data-testid]="'link-' + h.purchaserId">{{
+              h.link
+            }}</code>
+            <span class="title-3 tabular code" [attr.data-testid]="'code-' + h.purchaserId">{{
+              h.code
+            }}</span>
+            <button
+              class="btn btn-secondary btn-sm"
+              type="button"
+              (click)="copy(h)"
+              [attr.data-testid]="'copy-' + h.purchaserId"
+            >
+              <hc-icon name="copy" [size]="14" />
+              {{ copyLabel }}
+            </button>
+          </div>
+        }
+      </div>
+    </hc-sheet>
+  }
+
+  @if (editing()) {
+    <hc-agreement-terms-sheet
+      [title]="a.status === AgreementStatus.Draft ? editDraftTitle : amendTitle"
+      submitLabel="Update agreement"
+      i18n-submitLabel="@@console.terms.editSubmit"
+      [totalCents]="a.quote.totalCents"
+      [currency]="a.currency"
+      [initial]="terms()"
+      [busy]="busy()"
+      (submitted)="update($event)"
+      (closed)="editing.set(false)"
+    />
+  }
+
+  @if (countersigning()) {
+    <hc-sheet
+      title="Countersign and execute"
+      i18n-title="@@console.agreement.countersignTitle"
+      (closed)="countersigning.set(false)"
+    >
+      <form class="stack" (ngSubmit)="countersign(a)">
+        <p class="small muted" i18n="@@console.agreement.countersignBody">
+          Every purchaser has signed {{ a.reference }}. Your signature executes the agreement and
+          stores the final PDF with its certificate of signatures.
+        </p>
+        <div class="field">
+          <label for="cs-name" i18n="@@console.agreement.countersignName"
+            >Type your full name</label
+          >
+          <input
+            id="cs-name"
+            class="input"
+            name="fullName"
+            [(ngModel)]="counterName"
+            autocomplete="name"
+            required
+            data-testid="countersign-name"
+          />
+        </div>
+        <label class="row agree small">
+          <input
+            type="checkbox"
+            class="checkbox"
+            name="agree"
+            [(ngModel)]="counterAgree"
+            data-testid="countersign-agree"
+          />
+          <span i18n="@@console.agreement.countersignAgree">
+            I am authorised to sign for {{ a.seller.name }} and I execute this agreement on its
+            behalf.
+          </span>
+        </label>
+        <button
+          class="btn btn-lg btn-block"
+          type="submit"
+          [disabled]="busy() || !counterAgree || counterName.trim().length < 2"
+          data-testid="countersign-submit"
+        >
+          <ng-container i18n="@@console.agreement.countersignSubmit">Countersign</ng-container>
+        </button>
+      </form>
+    </hc-sheet>
+  }
+
+  @if (cancelling()) {
+    <hc-sheet
+      [title]="a.status === AgreementStatus.Draft ? discardTitle : cancelTitle"
+      (closed)="cancelling.set(false)"
+    >
+      <form class="stack" (ngSubmit)="cancel()">
+        <p class="muted small">
+          @if (a.status === AgreementStatus.Draft) {
+            <ng-container i18n="@@console.agreement.discardBody"
+              >You can prepare a new agreement from the proposal afterwards.</ng-container
+            >
+          } @else {
+            <ng-container i18n="@@console.agreement.cancelBody"
+              >The purchasers are told it is void, their signing links stop working and any
+              signature given no longer counts. You can then prepare a new one.</ng-container
+            >
+          }
+        </p>
+        @if (a.status !== AgreementStatus.Draft) {
+          <div class="field">
+            <label for="c-reason"
+              ><ng-container i18n="@@console.agreement.reason">Reason</ng-container>
+              <span class="hint" i18n="@@console.agreement.reasonHint"
+                >shown to the buyer</span
+              ></label
+            >
+            <input
+              id="c-reason"
+              class="input"
+              name="reason"
+              maxlength="500"
+              [(ngModel)]="cancelReason"
+            />
+          </div>
+        }
+        <button
+          class="btn btn-danger btn-block"
+          type="submit"
+          [disabled]="busy()"
+          data-testid="confirm-cancel"
+        >
+          @if (a.status === AgreementStatus.Draft) {
+            <ng-container i18n="@@console.agreement.confirmDiscard">Discard draft</ng-container>
+          } @else {
+            <ng-container i18n="@@console.agreement.confirmCancel">Void agreement</ng-container>
+          }
+        </button>
+      </form>
+    </hc-sheet>
+  }
+}

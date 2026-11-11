@@ -1,0 +1,165 @@
+@let a = agreement();
+<article class="doc" data-testid="agreement-document">
+  <header>
+    <p class="tiny muted">{{ sellerLine() }}</p>
+    <h2 class="title-2">{{ a.title }}</h2>
+    <p class="small muted" i18n="@@agreementDoc.meta">
+      Agreement {{ a.reference }} · prepared {{ a.preparedAt | localDate }} · from proposal
+      {{ a.proposalReference }}, revision {{ a.proposalSignature.revision }}
+    </p>
+  </header>
+
+  <div class="two">
+    @for (p of parties(); track p.role) {
+      <div>
+        <p class="label">{{ p.role }}</p>
+        <p class="strong">{{ p.party.name }}</p>
+        @for (line of [p.party.address, p.party.phone, p.party.email]; track $index) {
+          @if (line) {
+            <p class="small">{{ line }}</p>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  <ol class="clauses">
+    @for (s of a.sections; track $index; let i = $index) {
+      <li [attr.data-testid]="'clause-' + (i + 1)">
+        <h3 class="title-3">{{ s.heading }}</h3>
+        @for (p of paragraphs(s.body); track $index) {
+          <p>{{ p }}</p>
+        }
+        @if (s.requiresInitials) {
+          @if (initialling()) {
+            <label class="row initials-box" [attr.data-testid]="'initial-' + (i + 1)">
+              <input
+                type="checkbox"
+                class="checkbox"
+                [checked]="hasInitialled(i + 1)"
+                (change)="initialled.emit(i + 1)"
+              />
+              <span class="small" i18n="@@agreementDoc.initialThis"
+                >I have read and accept this clause</span
+              >
+            </label>
+          } @else {
+            <p class="tiny muted" i18n="@@agreementDoc.keyClause">
+              Key clause: each purchaser initials it.
+            </p>
+          }
+        }
+      </li>
+    }
+  </ol>
+
+  <section
+    class="two signatures"
+    aria-label="Signatures"
+    i18n-aria-label="@@agreementDoc.signatures"
+  >
+    @for (s of signatures(); track s.key) {
+      <div [attr.data-testid]="'signature-' + s.key">
+        <p class="label">{{ s.role }}</p>
+        <p class="strong">{{ s.name }}</p>
+        @if (s.signed; as sig) {
+          <p class="sig">{{ sig.fullName }}</p>
+          <p class="tiny muted" i18n="@@agreementDoc.signedOn">
+            Signed electronically on {{ sig.signedAt | localDate: 'dateTime' }}
+          </p>
+          @if (sig.initials?.length) {
+            <p class="tiny muted" i18n="@@agreementDoc.initialledClauses">
+              Initialled clauses {{ sig.initials!.join(', ') }}
+            </p>
+          }
+        } @else if (s.invalidated) {
+          <p class="line"></p>
+          <p class="tiny error-text" i18n="@@agreementDoc.invalidated">
+            Signed before a clause changed; must be signed again
+          </p>
+        } @else {
+          <p class="line"></p>
+          <p class="tiny muted" i18n="@@agreementDoc.notSigned">Not signed yet</p>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="schedule">
+    <h3 class="title-3" i18n="@@agreementDoc.schedule">Schedule A: the home and its price</h3>
+    <p class="small muted">
+      {{ a.home.model }}{{ a.home.address ? ', ' + a.home.address : ''
+      }}{{ a.home.community ? ', ' + a.home.community : '' }} ·
+      @if (a.home.kind === 'inventory') {
+        <ng-container i18n="@@agreementDoc.inventoryHome">pre-existing home</ng-container>
+      } @else {
+        <ng-container i18n="@@agreementDoc.builtToOrder">built to order</ng-container>
+      }
+    </p>
+    <hc-quote-breakdown [quote]="a.quote" />
+    <div class="terms">
+      <p class="label" i18n="@@agreementDoc.depositSchedule">Deposit schedule</p>
+      @for (d of a.terms.deposits; track $index) {
+        <div class="kv" [attr.data-testid]="'deposit-line-' + $index">
+          <span>
+            {{ d.label }}
+            @if (d.dueDate) {
+              <span class="muted" i18n="@@agreementDoc.dueOn"
+                >· due {{ d.dueDate | localDate: 'calendar' }}</span
+              >
+            }
+          </span>
+          <span class="tabular">{{ d.amountCents | money: a.currency }}</span>
+        </div>
+      }
+      <div class="kv strong">
+        <span><ng-container i18n="@@agreementDoc.deposit">Deposit</ng-container></span
+        ><span class="tabular">{{ a.terms.depositCents | money: a.currency }}</span>
+      </div>
+      <div class="kv">
+        <span
+          ><ng-container i18n="@@agreementDoc.balance">Balance due on closing</ng-container></span
+        ><span class="tabular">{{
+          a.quote.totalCents - a.terms.depositCents | money: a.currency
+        }}</span>
+      </div>
+      <div class="kv">
+        <span
+          ><ng-container i18n="@@agreementDoc.closing">Closing and possession</ng-container></span
+        ><span>
+          @if (a.terms.closingDate) {
+            {{ a.terms.closingDate | localDate: 'calendar' }}
+          } @else {
+            <ng-container i18n="@@agreementDoc.toBeConfirmed">To be confirmed</ng-container>
+          }
+        </span>
+      </div>
+    </div>
+    <div class="terms">
+      <p class="label" i18n="@@agreementDoc.conditions">Conditions</p>
+      @for (c of a.terms.conditions; track $index) {
+        <div class="kv" [attr.data-testid]="'condition-line-' + $index">
+          <span
+            ><span class="strong">{{ c.label }}</span>
+            @if (c.details) {
+              <span class="small">{{ c.details }}</span>
+            }
+          </span>
+          <span>
+            @if (c.dueDate) {
+              <ng-container i18n="@@agreementDoc.byDate"
+                >by {{ c.dueDate | localDate: 'calendar' }}</ng-container
+              >
+            }
+          </span>
+        </div>
+      }
+      @if (!a.terms.conditions.length) {
+        <p class="small muted" i18n="@@agreementDoc.noConditions">None. This agreement is firm.</p>
+      }
+    </div>
+  </section>
+  <p class="tiny muted fingerprint" [title]="a.contentHash" i18n="@@agreementDoc.fingerprint">
+    Content fingerprint {{ a.contentHash.slice(0, 12) }}…
+  </p>
+</article>

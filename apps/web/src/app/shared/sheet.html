@@ -1,0 +1,19 @@
+<dialog #dialog class="sheet-dialog" [attr.aria-labelledby]="titleId" (cancel)="onCancel($event)">
+  <div class="sheet">
+    <div class="spread head">
+      <h2 class="title-3" [id]="titleId">{{ title() }}</h2>
+      @if (dismissible()) {
+        <button
+          class="icon-btn"
+          type="button"
+          (click)="closed.emit()"
+          aria-label="Close"
+          i18n-aria-label="@@common.actions.close"
+        >
+          <hc-icon name="close" [size]="16" />
+        </button>
+      }
+    </div>
+    <ng-content />
+  </div>
+</dialog>

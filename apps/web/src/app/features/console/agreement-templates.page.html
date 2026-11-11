@@ -1,0 +1,70 @@
+<a class="back small" [routerLink]="paths.console.agreements"
+  ><hc-icon name="back" [size]="14" />
+  <ng-container i18n="@@console.templates.back">Agreements</ng-container></a
+>
+<header class="console-head">
+  <div>
+    <h1 class="title-1" i18n="@@console.templates.title">Agreement templates</h1>
+    <p class="muted" i18n="@@console.templates.subtitle">
+      The wording of your purchase agreements. Every agreement keeps a copy of the text it was
+      prepared from, so editing a template never changes an agreement already prepared.
+    </p>
+  </div>
+  @if (isAdmin()) {
+    <a class="btn" [routerLink]="paths.console.newTemplate" data-testid="new-template"
+      ><hc-icon name="plus" [size]="16" />
+      <ng-container i18n="@@console.templates.new">New template</ng-container></a
+    >
+  }
+</header>
+<hc-load-state [resource]="templates" />
+@if (templates.hasValue()) {
+  <div class="card list-card">
+    <ul class="list">
+      @for (t of templates.value(); track t.id) {
+        <li>
+          <a
+            class="spread row-link"
+            [routerLink]="paths.console.template(t.id)"
+            [attr.data-testid]="'template-' + t.name"
+          >
+            <span class="stack name">
+              <span class="strong"
+                >{{ t.name }}
+                @if (t.isDefault) {
+                  <span class="pill blue" i18n="@@console.templates.default">Default</span>
+                }
+              </span>
+              <span class="small muted">{{ t.title }}</span>
+            </span>
+            <span class="tiny muted right"
+              ><ng-container i18n="@@console.templates.meta"
+                >Version {{ t.version }} ·
+                {t.sections.length, plural,
+                  =1 {1 clause}
+                  other {{{ t.sections.length }} clauses}
+                }</ng-container
+              ><br /><ng-container i18n="@@console.templates.updated"
+                >updated {{ t.updatedAt | ago }} by {{ t.updatedByName }}</ng-container
+              ></span
+            >
+          </a>
+        </li>
+      } @empty {
+        <li class="muted">
+          @if (isAdmin()) {
+            <ng-container i18n="@@console.templates.emptyAdmin"
+              >No templates yet. Create one to start preparing purchase agreements; it starts from a
+              plain-language example you can adapt.</ng-container
+            >
+          } @else {
+            <ng-container i18n="@@console.templates.emptyStaff"
+              >No templates yet. An administrator needs to create one before agreements can be
+              prepared.</ng-container
+            >
+          }
+        </li>
+      }
+    </ul>
+  </div>
+}

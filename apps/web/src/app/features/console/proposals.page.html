@@ -1,0 +1,99 @@
+<header class="console-head">
+  <div>
+    <h1 class="title-1" i18n="@@console.proposals.title">Proposals</h1>
+    <p class="muted" i18n="@@console.proposals.subtitle">
+      Every quote you've built with a buyer, and where it stands.
+    </p>
+  </div>
+  <a class="btn" [routerLink]="paths.console.newProposal" data-testid="new-proposal"
+    ><hc-icon name="plus" [size]="16" />
+    <ng-container i18n="@@console.proposals.newProposal">New proposal</ng-container></a
+  >
+</header>
+<div class="row filters">
+  <div
+    class="segmented"
+    role="group"
+    aria-label="Filter"
+    i18n-aria-label="@@console.proposals.filter"
+  >
+    @for (f of filters; track f.id) {
+      <button [attr.aria-pressed]="filter() === f.id" (click)="filter.set(f.id)">
+        {{ f.label }}
+        @if (f.id === 'review' && reviewCount()) {
+          <span class="count">{{ reviewCount() }}</span>
+        }
+      </button>
+    }
+  </div>
+  <label class="row mine small">
+    <input type="checkbox" class="checkbox" [checked]="mine()" (change)="mine.set(!mine())" />
+    <ng-container i18n="@@console.proposals.mineOnly">Mine only</ng-container>
+  </label>
+</div>
+<hc-load-state [resource]="list" />
+<div [hidden]="!list.hasValue()" class="card table-wrap table-card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th i18n="@@console.proposals.columns.buyer">Buyer</th>
+        <th i18n="@@console.proposals.columns.home">Home</th>
+        <th i18n="@@console.proposals.columns.status">Status</th>
+        <th class="hide-sm" i18n="@@console.proposals.columns.rep">Rep</th>
+        <th class="num" i18n="@@console.proposals.columns.total">Total</th>
+        <th class="num hide-sm" i18n="@@console.proposals.columns.activity">Activity</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of visible(); track p.id) {
+        @let turn = turnOf(p, Party.Seller);
+        <tr
+          role="button"
+          tabindex="0"
+          (click)="open(p)"
+          (keydown.enter)="open(p)"
+          (keydown.space)="$event.preventDefault(); open(p)"
+          [attr.data-testid]="'proposal-row-' + p.reference"
+        >
+          <td>
+            <div class="strong">{{ p.buyer.name || text.buyer }}</div>
+            <div class="tiny muted" i18n="@@console.proposals.referenceRevision">
+              {{ p.reference }} · revision {{ p.currentRevision }}
+            </div>
+          </td>
+          <td>
+            <div>{{ p.houseName }}</div>
+            <div class="tiny muted">
+              @if (p.kind === 'inventory') {
+                {{ p.address }}
+              } @else {
+                <ng-container i18n="@@console.proposals.floorPlan">Floor plan</ng-container>
+              }
+              @if (p.locked) {
+                · <ng-container i18n="@@console.proposals.soldAsBuilt">sold as built</ng-container>
+              }
+            </div>
+          </td>
+          <td>
+            <span class="pill" [class]="turn.tone">{{ turn.text }}</span>
+          </td>
+          <td class="hide-sm muted">{{ p.repName || '—' }}</td>
+          <td class="num tabular">{{ p.currentTotalCents | money: p.currency }}</td>
+          <td class="num hide-sm muted small">{{ p.lastActivityAt | ago }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty">
+            @if (filter() === 'review') {
+              <ng-container i18n="@@console.proposals.emptyReview"
+                >Nothing to review. Buyers’ change requests show up here.</ng-container
+              >
+            } @else {
+              <ng-container i18n="@@console.proposals.empty">No proposals here.</ng-container>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

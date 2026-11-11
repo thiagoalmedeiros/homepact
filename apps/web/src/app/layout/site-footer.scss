@@ -1,0 +1,22 @@
+.footer {
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12px;
+  padding: 40px 0 24px;
+  margin-top: 64px;
+}
+.cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  padding-bottom: 24px;
+}
+.strong {
+  color: var(--text);
+}
+a {
+  color: var(--text-2);
+}
+.legal {
+  margin: 16px 0 0;
+}

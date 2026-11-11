@@ -1,0 +1,22 @@
+<div class="toasts">
+  @for (t of toasts.toasts(); track t.id) {
+    <div
+      class="toast chrome"
+      [class]="t.tone"
+      [attr.role]="t.tone === 'error' ? 'alert' : 'status'"
+      (mouseenter)="toasts.hold(t.id)"
+      (mouseleave)="toasts.release(t.id)"
+      (focusin)="toasts.hold(t.id)"
+    >
+      <span>{{ t.text }}</span>
+      <button
+        class="icon-btn"
+        (click)="toasts.dismiss(t.id)"
+        aria-label="Dismiss"
+        i18n-aria-label="@@common.actions.dismiss"
+      >
+        <hc-icon name="close" [size]="14" />
+      </button>
+    </div>
+  }
+</div>

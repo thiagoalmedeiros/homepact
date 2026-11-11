@@ -1,0 +1,293 @@
+<hc-sheet [title]="title() ?? defaultTitle" (closed)="closed.emit()">
+  <hc-load-state [resource]="templates" />
+  @if (templates.hasValue() && !templates.value().length) {
+    <div class="callout warn small" data-testid="no-templates">
+      <ng-container i18n="@@console.terms.noTemplates"
+        >Your company has no agreement templates yet.</ng-container
+      >
+      @if (auth.isAdmin()) {
+        <a [routerLink]="paths.console.newTemplate"
+          ><ng-container i18n="@@console.terms.createFirst">Create the first one</ng-container></a
+        >.
+      } @else {
+        <ng-container i18n="@@console.terms.askAdmin"
+          >Ask an administrator to create one.</ng-container
+        >
+      }
+    </div>
+  } @else if (templates.hasValue()) {
+    <form class="stack" #f="ngForm" (ngSubmit)="f.valid && valid() && submit()">
+      <div class="field">
+        <label for="a-template" i18n="@@console.terms.template">Template</label>
+        <select
+          id="a-template"
+          class="select"
+          name="templateId"
+          [ngModel]="templateId()"
+          (ngModelChange)="templateId.set($event)"
+          required
+          data-testid="terms-template"
+        >
+          @for (t of templates.value(); track t.id) {
+            @if (t.isDefault) {
+              <option [value]="t.id" i18n="@@console.terms.templateOptionDefault">
+                {{ t.name }} (default) · version {{ t.version }}
+              </option>
+            } @else {
+              <option [value]="t.id" i18n="@@console.terms.templateOption">
+                {{ t.name }} · version {{ t.version }}
+              </option>
+            }
+          }
+        </select>
+      </div>
+
+      <fieldset class="group">
+        <legend i18n="@@console.terms.purchasers">Purchasers</legend>
+        <p class="tiny muted" i18n="@@console.terms.purchasersHint">
+          Everyone who signs. Each one gets their own signing link and code.
+        </p>
+        @for (p of purchasers(); track $index; let i = $index) {
+          <div class="row line" [attr.data-testid]="'purchaser-' + i">
+            <input
+              class="input grow"
+              [name]="'purchaser-name-' + i"
+              [(ngModel)]="p.name"
+              (ngModelChange)="touch()"
+              maxlength="120"
+              required
+              placeholder="Full name"
+              i18n-placeholder="@@console.terms.purchaserName"
+              [attr.data-testid]="'purchaser-name-' + i"
+            />
+            <input
+              class="input grow"
+              type="email"
+              [name]="'purchaser-email-' + i"
+              [(ngModel)]="p.email"
+              (ngModelChange)="touch()"
+              maxlength="200"
+              placeholder="Email (optional)"
+              i18n-placeholder="@@console.terms.purchaserEmail"
+              [attr.data-testid]="'purchaser-email-' + i"
+            />
+            <button
+              class="icon-btn"
+              type="button"
+              (click)="removePurchaser(i)"
+              [disabled]="purchasers().length === 1"
+              [attr.aria-label]="removeLabel"
+              [attr.data-testid]="'purchaser-remove-' + i"
+            >
+              <hc-icon name="trash" [size]="16" />
+            </button>
+          </div>
+        }
+        <button
+          class="btn btn-secondary btn-sm"
+          type="button"
+          (click)="addPurchaser()"
+          data-testid="add-purchaser"
+        >
+          <hc-icon name="plus" [size]="14" />
+          <ng-container i18n="@@console.terms.addPurchaser">Add a co-purchaser</ng-container>
+        </button>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend i18n="@@console.terms.deposits">Deposit schedule</legend>
+        @for (d of deposits(); track $index; let i = $index) {
+          <div class="row line" [attr.data-testid]="'deposit-' + i">
+            <input
+              class="input grow"
+              [name]="'deposit-label-' + i"
+              [(ngModel)]="d.label"
+              (ngModelChange)="touch()"
+              maxlength="80"
+              required
+              placeholder="e.g. on signing"
+              i18n-placeholder="@@console.terms.depositLabel"
+              [attr.data-testid]="'deposit-label-' + i"
+            />
+            <input
+              class="input tabular amount"
+              type="number"
+              min="1"
+              step="100"
+              [name]="'deposit-amount-' + i"
+              [(ngModel)]="d.amount"
+              (ngModelChange)="touch()"
+              required
+              [attr.aria-label]="amountLabel"
+              [attr.data-testid]="'deposit-amount-' + i"
+            />
+            <input
+              class="input"
+              type="date"
+              [name]="'deposit-due-' + i"
+              [(ngModel)]="d.dueDate"
+              (ngModelChange)="touch()"
+              [attr.aria-label]="dueLabel"
+              [attr.data-testid]="'deposit-due-' + i"
+            />
+            <button
+              class="icon-btn"
+              type="button"
+              (click)="removeDeposit(i)"
+              [disabled]="deposits().length === 1"
+              [attr.aria-label]="removeLabel"
+              [attr.data-testid]="'deposit-remove-' + i"
+            >
+              <hc-icon name="trash" [size]="16" />
+            </button>
+          </div>
+        }
+        <button
+          class="btn btn-secondary btn-sm"
+          type="button"
+          (click)="addDeposit()"
+          data-testid="add-deposit"
+        >
+          <hc-icon name="plus" [size]="14" />
+          <ng-container i18n="@@console.terms.addDeposit">Add an instalment</ng-container>
+        </button>
+        @if (depositCents() > totalCents()) {
+          <p class="tiny error-text" i18n="@@console.terms.depositTooHigh">
+            The deposit cannot be more than the purchase price.
+          </p>
+        } @else {
+          <p class="tiny muted" data-testid="deposit-total" i18n="@@console.terms.depositTotal">
+            Deposit {{ depositCents() | money: currency() }} of
+            {{ totalCents() | money: currency() }} · balance due on closing
+            {{ totalCents() - depositCents() | money: currency() }}
+          </p>
+        }
+      </fieldset>
+
+      <fieldset class="group">
+        <legend i18n="@@console.terms.conditions">Conditions</legend>
+        <div class="row wrap">
+          @for (preset of presets; track preset.label) {
+            <button
+              class="btn btn-secondary btn-sm"
+              type="button"
+              (click)="addCondition(preset)"
+              [disabled]="used(preset)"
+              [attr.data-testid]="'condition-preset-' + $index"
+            >
+              <hc-icon name="plus" [size]="14" />{{ preset.label }}
+            </button>
+          }
+          <button
+            class="btn btn-secondary btn-sm"
+            type="button"
+            (click)="addCondition()"
+            data-testid="add-condition"
+          >
+            <hc-icon name="plus" [size]="14" />
+            <ng-container i18n="@@console.terms.addCondition">Other</ng-container>
+          </button>
+        </div>
+        @for (c of conditions(); track $index; let i = $index) {
+          <div class="stack line" [attr.data-testid]="'condition-' + i">
+            <div class="row">
+              <input
+                class="input grow"
+                [name]="'condition-label-' + i"
+                [(ngModel)]="c.label"
+                (ngModelChange)="touch()"
+                maxlength="120"
+                required
+                placeholder="Condition"
+                i18n-placeholder="@@console.terms.conditionLabel"
+                [attr.data-testid]="'condition-label-' + i"
+              />
+              <input
+                class="input"
+                type="date"
+                [name]="'condition-due-' + i"
+                [(ngModel)]="c.dueDate"
+                (ngModelChange)="touch()"
+                [attr.aria-label]="byLabel"
+                [attr.data-testid]="'condition-due-' + i"
+              />
+              <button
+                class="icon-btn"
+                type="button"
+                (click)="removeCondition(i)"
+                [attr.aria-label]="removeLabel"
+                [attr.data-testid]="'condition-remove-' + i"
+              >
+                <hc-icon name="trash" [size]="16" />
+              </button>
+            </div>
+            <textarea
+              class="textarea"
+              [name]="'condition-details-' + i"
+              [(ngModel)]="c.details"
+              (ngModelChange)="touch()"
+              maxlength="500"
+              rows="2"
+              [attr.aria-label]="detailsLabel"
+              [attr.data-testid]="'condition-details-' + i"
+            ></textarea>
+          </div>
+        }
+        @if (!conditions().length) {
+          <p class="tiny muted" i18n="@@console.terms.noConditions">
+            No conditions: the sale is firm when it is signed.
+          </p>
+        }
+      </fieldset>
+
+      <div class="field">
+        <label for="a-closing"
+          ><ng-container i18n="@@console.terms.closing">Closing and possession</ng-container>
+          <span class="hint" i18n="@@common.optional">optional</span></label
+        >
+        <input
+          id="a-closing"
+          class="input"
+          type="date"
+          name="closingDate"
+          [(ngModel)]="closingDate"
+          data-testid="terms-closing"
+        />
+      </div>
+      <div class="field">
+        <label for="a-terms"
+          ><ng-container i18n="@@console.terms.specialTerms">Special terms</ng-container>
+          <span class="hint" i18n="@@common.optional">optional</span></label
+        >
+        <textarea
+          id="a-terms"
+          class="textarea"
+          name="specialTerms"
+          [(ngModel)]="specialTerms"
+          maxlength="4000"
+          placeholder="e.g. The Seller will complete the rear deck before possession."
+          i18n-placeholder="@@console.terms.specialPlaceholder"
+          data-testid="terms-special"
+        ></textarea>
+      </div>
+      <button
+        class="btn btn-lg btn-block"
+        type="submit"
+        [disabled]="busy() || !valid()"
+        data-testid="terms-submit"
+      >
+        @if (busy()) {
+          <ng-container i18n="@@console.terms.preparing">Preparing…</ng-container>
+        } @else if (submitLabel(); as label) {
+          {{ label }}
+        } @else {
+          <ng-container i18n="@@console.terms.prepareSubmit">Prepare draft</ng-container>
+        }
+      </button>
+      <p class="tiny muted center" i18n="@@console.terms.reviewNote">
+        Options, prices and the total come from the revision the buyer signed. You'll review the
+        draft before anything is sent.
+      </p>
+    </form>
+  }
+</hc-sheet>

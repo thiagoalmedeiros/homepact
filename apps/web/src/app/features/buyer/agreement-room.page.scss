@@ -1,0 +1,26 @@
+.room {
+  --gap: 20px;
+}
+.head {
+  --gap: 6px;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+header p,
+header h1 {
+  margin: 0;
+}
+.summary-box {
+  --gap: 4px;
+}
+.agree {
+  --gap: 10px;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+.loading {
+  height: 60vh;
+}

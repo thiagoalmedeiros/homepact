@@ -1,0 +1,34 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.area-head {
+  align-items: center;
+}
+.title-row {
+  --gap: 10px;
+}
+.desc {
+  margin: 4px 0 0;
+}
+.mode {
+  margin-top: 12px;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.current {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 980px;
+  background: var(--fill);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 500;
+  vertical-align: 2px;
+}

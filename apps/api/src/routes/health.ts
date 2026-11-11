@@ -1,31 +1,20 @@
+import { HealthStatus, ServiceState, type HealthResponse } from '@homepact/shared';
 import { Router } from 'express';
 
-export type HealthResponse = {
-  status: 'ok' | 'degraded';
-  database: 'up' | 'down';
-  uptimeSeconds: number;
-  version: string;
-};
-
-export type HealthDeps = {
-  pingDatabase: () => Promise<boolean>;
-  version: string;
-  uptime?: () => number;
-};
-
-export function healthRouter({ pingDatabase, version, uptime = process.uptime }: HealthDeps) {
+export const healthRouter = ({ pingDatabase }: { pingDatabase: () => Promise<void> }): Router => {
   const router = Router();
 
-  router.get('/health', async (_req, res) => {
-    const databaseUp = await pingDatabase().catch(() => false);
-    const body: HealthResponse = {
-      status: databaseUp ? 'ok' : 'degraded',
-      database: databaseUp ? 'up' : 'down',
-      uptimeSeconds: Math.floor(uptime()),
-      version,
-    };
-    res.status(databaseUp ? 200 : 503).json(body);
+  router.get('/', async (_req, res) => {
+    try {
+      await pingDatabase();
+      res.json({ status: HealthStatus.Ok, database: ServiceState.Up } satisfies HealthResponse);
+    } catch {
+      res.status(503).json({
+        status: HealthStatus.Degraded,
+        database: ServiceState.Down,
+      } satisfies HealthResponse);
+    }
   });
 
   return router;
-}
+};

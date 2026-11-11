@@ -1,0 +1,118 @@
+<div class="stack editor">
+  <div class="field">
+    <label for="tr-region" i18n="@@taxReferral.province">Province (sales tax)</label>
+    <select
+      id="tr-region"
+      class="select"
+      name="taxRegion"
+      [ngModel]="taxRegion() ?? ''"
+      [ngModelOptions]="{ standalone: true }"
+      (ngModelChange)="setRegion($event)"
+      data-testid="tax-region"
+    >
+      @for (r of regions(); track r.code) {
+        <option [value]="r.code">{{ r.name }} · {{ r.rates }}</option>
+      }
+      <option value="" i18n="@@taxReferral.noTax">No sales tax</option>
+    </select>
+    @if (!rates().length) {
+      <span class="hint">
+        <ng-container i18n="@@taxReferral.noRates"
+          >Your company has no sales tax set up.</ng-container
+        >
+        @if (auth.isAdmin()) {
+          <a [routerLink]="paths.console.taxesAndReferrals"
+            ><ng-container i18n="@@taxReferral.setUp">Set it up</ng-container></a
+          >.
+        }
+      </span>
+    }
+  </div>
+
+  <label class="row toggle small">
+    <input
+      type="checkbox"
+      class="switch"
+      [checked]="!!referral()"
+      (change)="toggleReferral($any($event.target).checked)"
+      [disabled]="!referral() && !programOptions().length"
+      data-testid="referral-toggle"
+    />
+    <span>
+      <span class="strong" i18n="@@taxReferral.referred">Referred by someone</span><br />
+      @if (!programOptions().length) {
+        <span class="tiny muted" i18n="@@taxReferral.noPrograms"
+          >Your company has no active referral program.</span
+        >
+      } @else {
+        <span class="tiny muted" i18n="@@taxReferral.referredHint"
+          >The program's credit comes off the price before tax.</span
+        >
+      }
+    </span>
+  </label>
+
+  @if (referral(); as r) {
+    <div class="stack referral" data-testid="referral-fields">
+      <div class="field">
+        <label for="tr-program" i18n="@@taxReferral.program">Referral program</label>
+        <select
+          id="tr-program"
+          class="select"
+          name="referralProgram"
+          [ngModel]="r.programId"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="patchReferral({ programId: $event })"
+          data-testid="referral-program"
+        >
+          @for (p of programOptions(); track p.id) {
+            @if (p.creditCents) {
+              <option [value]="p.id" i18n="@@taxReferral.programWithCredit">
+                {{ p.name }} · {{ -p.creditCents | money: currency() }} credit
+              </option>
+            } @else {
+              <option [value]="p.id" i18n="@@taxReferral.programNoCredit">
+                {{ p.name }} · no credit
+              </option>
+            }
+          }
+        </select>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="tr-name" i18n="@@taxReferral.referrerName">Referred by</label>
+          <input
+            id="tr-name"
+            class="input"
+            name="referrerName"
+            [ngModel]="r.referrerName"
+            [ngModelOptions]="{ standalone: true }"
+            (ngModelChange)="patchReferral({ referrerName: $event })"
+            maxlength="120"
+            autocomplete="off"
+            placeholder="Full name"
+            i18n-placeholder="@@taxReferral.referrerNamePlaceholder"
+            data-testid="referrer-name"
+          />
+        </div>
+        <div class="field">
+          <label for="tr-email"
+            ><ng-container i18n="@@taxReferral.referrerEmail">Their email</ng-container>
+            <span class="hint" i18n="@@common.optional">optional</span></label
+          >
+          <input
+            id="tr-email"
+            class="input"
+            type="email"
+            name="referrerEmail"
+            [ngModel]="r.referrerEmail"
+            [ngModelOptions]="{ standalone: true }"
+            (ngModelChange)="patchReferral({ referrerEmail: $event })"
+            maxlength="200"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+    </div>
+  }
+</div>

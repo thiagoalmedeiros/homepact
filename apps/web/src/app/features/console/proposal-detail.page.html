@@ -1,0 +1,485 @@
+<a class="back small" [routerLink]="paths.console.proposals"
+  ><hc-icon name="back" [size]="14" />
+  <ng-container i18n="@@console.detail.back">Proposals</ng-container></a
+>
+<hc-load-state [resource]="detail" [height]="120" />
+@if (detail.hasValue() ? detail.value() : undefined; as d) {
+  @let p = d.proposal;
+  @let turn = turnOf(p, Party.Seller);
+  @let buyerName = p.buyer.name || defaultBuyer;
+  <header class="console-head head">
+    <div class="row head-main">
+      <span class="thumb">
+        @if (p.imageUrl) {
+          <img [src]="p.imageUrl" alt="" referrerpolicy="no-referrer" />
+        } @else {
+          <hc-icon name="house" [size]="28" [weight]="1.2" />
+        }
+      </span>
+      <div>
+        <p class="tiny muted" i18n="@@console.detail.created">
+          {{ p.reference }} · created {{ p.createdAt | ago }}
+        </p>
+        <h1 class="title-2" i18n="@@console.detail.title">{{ buyerName }} · {{ p.houseName }}</h1>
+        <div class="row pills">
+          <span class="pill" [class]="turn.tone" data-testid="status">{{ turn.text }}</span>
+          @if (p.kind === 'inventory') {
+            <span class="pill"><hc-icon name="location" [size]="12" /> {{ p.address }}</span>
+          }
+          @if (p.locked) {
+            <span class="pill" data-testid="locked-pill"
+              ><hc-icon name="shield" [size]="12" />
+              <ng-container i18n="@@console.detail.soldAsBuilt">Sold as built</ng-container></span
+            >
+          }
+          @if (p.repName) {
+            <span class="pill"><hc-icon name="user" [size]="12" /> {{ p.repName }}</span>
+          }
+        </div>
+      </div>
+    </div>
+    @if (active()) {
+      <div class="row">
+        @if (p.kind === 'inventory') {
+          <label class="row lock small" [title]="p.openChangeRequestId ? answerFirst : ''">
+            <input
+              class="switch"
+              type="checkbox"
+              [checked]="p.locked"
+              [disabled]="busy() || (!!p.openChangeRequestId && !p.locked)"
+              (change)="toggleLock(!p.locked)"
+              data-testid="lock-toggle"
+            />
+            <ng-container i18n="@@console.detail.soldAsBuilt">Sold as built</ng-container>
+          </label>
+        }
+        <button
+          class="btn btn-secondary btn-sm"
+          type="button"
+          (click)="rotate()"
+          [disabled]="busy() || !p.accessKeyId"
+        >
+          <hc-icon name="key" [size]="14" />
+          <ng-container i18n="@@console.detail.newInvite">New invite link</ng-container>
+        </button>
+        @if (!p.openChangeRequestId && mode() === 'view') {
+          <button
+            class="btn btn-secondary btn-sm"
+            type="button"
+            (click)="startRevise()"
+            data-testid="revise"
+          >
+            <hc-icon name="edit" [size]="14" />
+            <ng-container i18n="@@console.detail.revise">Revise</ng-container>
+          </button>
+        }
+        <button
+          class="btn btn-ghost btn-sm"
+          type="button"
+          (click)="withdraw()"
+          i18n="@@console.detail.withdraw"
+        >
+          Withdraw
+        </button>
+      </div>
+    }
+  </header>
+
+  @if (p.signature; as s) {
+    <div class="callout success signed" data-testid="signed-banner">
+      <strong i18n="@@console.detail.signedBy">Signed by {{ s.fullName }}</strong>
+      <ng-container i18n="@@console.detail.signedMeta"
+        >on {{ s.signedAt | localDate: 'dateTime' }} · revision {{ s.revision }} ·
+        {{ s.totalCents | money: p.currency }}</ng-container
+      >
+    </div>
+    <section class="card agreement spread" data-testid="agreement-card">
+      @if (d.agreement; as a) {
+        <div>
+          <h2 class="title-3" i18n="@@console.detail.agreement.title">
+            Purchase agreement {{ a.reference }}
+          </h2>
+          <span class="pill" [class]="agreementLabel[a.status].tone">{{
+            agreementLabel[a.status].text
+          }}</span>
+        </div>
+        <a
+          class="btn btn-secondary"
+          [routerLink]="paths.console.agreement(a.id)"
+          data-testid="open-agreement"
+          ><hc-icon name="doc" [size]="16" />
+          <ng-container i18n="@@console.detail.agreement.open">Open agreement</ng-container></a
+        >
+      } @else {
+        <div>
+          <h2 class="title-3" i18n="@@console.detail.agreement.nextTitle">
+            Next: the purchase agreement
+          </h2>
+          <p class="small muted">
+            <ng-container i18n="@@console.detail.agreement.nextBody"
+              >Turn this signed proposal into an agreement of purchase and sale, from one of your
+              templates. You review it before {{ p.buyer.name || theBuyer }} sees it.</ng-container
+            >
+          </p>
+        </div>
+        <button
+          class="btn"
+          type="button"
+          (click)="preparing.set(true)"
+          data-testid="prepare-agreement"
+        >
+          <hc-icon name="doc" [size]="16" />
+          <ng-container i18n="@@console.detail.agreement.prepare">Prepare agreement</ng-container>
+        </button>
+      }
+    </section>
+    @if (preparing()) {
+      <hc-agreement-terms-sheet
+        [totalCents]="s.totalCents"
+        [currency]="p.currency"
+        [initial]="initialTerms()"
+        [busy]="busy()"
+        (submitted)="prepareAgreement($event)"
+        (closed)="preparing.set(false)"
+      />
+    }
+  }
+
+  <div class="layout">
+    <div class="main">
+      @if (openRequest(); as cr) {
+        <section class="card review" data-testid="review">
+          <div class="spread">
+            <h2 class="title-3" i18n="@@console.detail.review.asked">
+              {{ cr.authorName }} asked for
+              {cr.changes.length, plural, =1 {1 change} other {{{ cr.changes.length }} changes}}
+            </h2>
+            <span class="tiny muted" i18n="@@console.detail.review.onRevision"
+              >{{ cr.createdAt | ago }} · on revision {{ cr.baseRevision }}</span
+            >
+          </div>
+          @if (cr.note) {
+            <p class="quote">“{{ cr.note }}”</p>
+          }
+          <ul class="decisions">
+            @for (c of cr.changes; track c.id) {
+              @let dec = decisions()[c.id];
+              <li [attr.data-testid]="'decision-' + $index">
+                <div class="spread line">
+                  <span class="strong">{{ c.label }}</span>
+                  <span class="tabular small" [class.credit]="c.deltaCents < 0">
+                    @if (c.deltaCents) {
+                      {{ c.deltaCents | money: p.currency : true }}
+                    } @else {
+                      <ng-container i18n="@@console.detail.review.noPriceChange"
+                        >No price change</ng-container
+                      >
+                    }
+                  </span>
+                </div>
+                <div class="row decision-row">
+                  <div class="segmented" role="group" [attr.aria-label]="decisionLabel(c.label)">
+                    <button
+                      type="button"
+                      [attr.aria-pressed]="dec?.approved === true"
+                      (click)="decide(c.id, true)"
+                      data-testid="approve"
+                      i18n="@@console.detail.review.approve"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      [attr.aria-pressed]="dec?.approved === false"
+                      (click)="decide(c.id, false)"
+                      data-testid="decline"
+                      i18n="@@console.detail.review.decline"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                  @if (dec?.approved === false) {
+                    <input
+                      class="input note-input"
+                      [ngModel]="dec?.note"
+                      (ngModelChange)="decideNote(c.id, $event)"
+                      [name]="'note-' + c.id"
+                      placeholder="Why not? (shown to the buyer)"
+                      i18n-placeholder="@@console.detail.review.reasonPlaceholder"
+                      aria-label="Reason"
+                      i18n-aria-label="@@console.detail.review.reason"
+                    />
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+          <div class="row quick">
+            <button
+              class="link-btn small"
+              type="button"
+              (click)="decideAll(cr, true)"
+              i18n="@@console.detail.review.approveAll"
+            >
+              Approve all
+            </button>
+            <button
+              class="link-btn small"
+              type="button"
+              (click)="decideAll(cr, false)"
+              i18n="@@console.detail.review.declineAll"
+            >
+              Decline all
+            </button>
+          </div>
+          <details class="adjust" [open]="answerAdjustments().length > 0">
+            <summary class="small strong" i18n="@@console.detail.review.adjustments">
+              Price adjustments
+            </summary>
+            <hc-adjustments-editor [(adjustments)]="answerAdjustments" />
+          </details>
+          <div class="field">
+            <label for="answer-note"
+              ><ng-container i18n="@@console.detail.review.noteTo"
+                >Note to {{ p.buyer.name?.split(' ')?.[0] || theBuyer }}</ng-container
+              >
+              <span class="hint" i18n="@@common.optional">optional</span></label
+            >
+            <textarea
+              id="answer-note"
+              class="textarea"
+              name="answerNote"
+              [(ngModel)]="answerNote"
+            ></textarea>
+          </div>
+          <div class="spread answer-bar">
+            <div>
+              <p class="tiny muted">
+                @if (willRevise()) {
+                  <ng-container i18n="@@console.detail.review.nextTotal"
+                    >Revision {{ p.currentRevision + 1 }} total</ng-container
+                  >
+                } @else {
+                  <ng-container i18n="@@console.detail.review.totalStays">Total stays</ng-container>
+                }
+              </p>
+              <p
+                class="title-3 tabular"
+                [class.dim]="answerPreview.pending()"
+                data-testid="answer-total"
+              >
+                {{
+                  answerPreview.value()?.quote?.totalCents ?? p.currentTotalCents
+                    | money: p.currency
+                }}
+              </p>
+            </div>
+            <button
+              class="btn"
+              type="button"
+              (click)="sendAnswer(cr)"
+              [disabled]="!allDecided() || busy() || !!answerPreview.error()"
+              data-testid="send-answer"
+            >
+              @if (willRevise()) {
+                <ng-container i18n="@@console.detail.review.sendRevision"
+                  >Send revision {{ p.currentRevision + 1 }}</ng-container
+                >
+              } @else {
+                <ng-container i18n="@@console.detail.review.sendAnswer">Send answer</ng-container>
+              }
+            </button>
+          </div>
+          @if (answerPreview.error(); as e) {
+            <p class="callout error small">{{ e }}</p>
+          }
+        </section>
+      }
+
+      @if (mode() === 'revise') {
+        <section class="card revise">
+          <div class="spread">
+            <h2 class="title-3" i18n="@@console.detail.revisePanel.title">Revise the proposal</h2>
+            <button
+              class="link-btn small"
+              type="button"
+              (click)="mode.set('view')"
+              i18n="@@common.actions.cancel"
+            >
+              Cancel
+            </button>
+          </div>
+          <hc-load-state [resource]="options" />
+          @if (options.hasValue() ? options.value() : undefined; as o) {
+            <hc-selection-editor
+              [areas]="o.areas"
+              [currency]="o.currency"
+              [base]="currentRev()?.selections ?? null"
+              [(selections)]="reviseSelections"
+            />
+          }
+          <h3 class="title-3" i18n="@@console.detail.revisePanel.adjustments">Price adjustments</h3>
+          <hc-adjustments-editor [(adjustments)]="reviseAdjustments" />
+          <h3 class="title-3" i18n="@@console.detail.revisePanel.taxAndReferral">
+            Sales tax and referral
+          </h3>
+          @if (taxRates.hasValue() && programs.hasValue()) {
+            <hc-tax-referral-editor
+              [rates]="taxRates.value()"
+              [programs]="programs.value()"
+              [currency]="p.currency"
+              [base]="currentRev()?.quote"
+              [(taxRegion)]="reviseTaxRegion"
+              [(referral)]="reviseReferral"
+            />
+          } @else {
+            <hc-load-state [resource]="taxRates" [height]="60" />
+            <hc-load-state [resource]="programs" [height]="60" />
+          }
+          <div class="field">
+            <label for="revise-note"
+              ><ng-container i18n="@@console.detail.revisePanel.whatChanged"
+                >What changed</ng-container
+              >
+              <span class="hint" i18n="@@console.detail.revisePanel.shownToBuyer"
+                >shown to the buyer</span
+              ></label
+            >
+            <textarea
+              id="revise-note"
+              class="textarea"
+              name="reviseNote"
+              [(ngModel)]="reviseNote"
+            ></textarea>
+          </div>
+          <div class="spread answer-bar">
+            <div>
+              <p
+                class="title-3 tabular"
+                [class.dim]="revisePreview.pending()"
+                data-testid="revise-total"
+              >
+                {{ revisePreview.value()?.totalCents ?? p.currentTotalCents | money: p.currency }}
+              </p>
+              @if (revisePreview.value(); as q) {
+                <p class="tiny muted tabular" data-testid="revise-tax">
+                  @if (q.tax) {
+                    <ng-container i18n="@@console.detail.revisePanel.withTax"
+                      >{{ q.subtotalCents | money: p.currency }} before tax +
+                      {{ q.tax.totalCents | money: p.currency }} sales tax ({{
+                        q.tax.regionName
+                      }})</ng-container
+                    >
+                  } @else {
+                    <ng-container i18n="@@console.detail.revisePanel.noTax"
+                      >No sales tax</ng-container
+                    >
+                  }
+                </p>
+              }
+            </div>
+            <button
+              class="btn"
+              type="button"
+              (click)="sendRevision()"
+              [disabled]="busy() || !!revisePreview.error() || reviseReferralIncomplete()"
+              data-testid="send-revision"
+            >
+              <ng-container i18n="@@console.detail.revisePanel.send"
+                >Send revision {{ p.currentRevision + 1 }}</ng-container
+              >
+            </button>
+          </div>
+          @if (revisePreview.error(); as e) {
+            <p class="callout error small">{{ e }}</p>
+          }
+        </section>
+      }
+
+      @if (shownRev(); as rev) {
+        <section class="card">
+          <div class="spread rev-head">
+            <h2 class="title-3">
+              @if (rev.number === p.currentRevision) {
+                <ng-container i18n="@@console.detail.revision"
+                  >Revision {{ rev.number }}</ng-container
+                >
+              } @else {
+                <ng-container i18n="@@console.detail.earlierRevision"
+                  >Revision {{ rev.number }} (earlier)</ng-container
+                >
+              }
+            </h2>
+            @if (d.revisions.length > 1) {
+              <select
+                class="select small rev-select"
+                [ngModel]="rev.number"
+                (ngModelChange)="viewRev.set(+$event)"
+                name="rev"
+                aria-label="Revision"
+                i18n-aria-label="@@console.detail.revisionSelect"
+              >
+                @for (r of d.revisions; track r.id) {
+                  <option [value]="r.number" i18n="@@console.detail.revisionOption">
+                    Revision {{ r.number }} · {{ r.quote.totalCents | money: p.currency }}
+                  </option>
+                }
+              </select>
+            }
+          </div>
+          <hc-quote-breakdown [quote]="rev.quote" />
+        </section>
+      }
+    </div>
+
+    <aside class="side">
+      <section class="card">
+        <h2 class="title-3" i18n="@@console.detail.buyer">Buyer</h2>
+        <div class="stack small buyer-info">
+          <span class="strong">{{ p.buyer.name || '—' }}</span>
+          @if (p.buyer.email) {
+            <a [href]="'mailto:' + p.buyer.email">{{ p.buyer.email }}</a>
+          }
+          @if (p.buyer.phone) {
+            <a [href]="'tel:' + p.buyer.phone">{{ p.buyer.phone }}</a>
+          }
+          <span class="tiny muted">
+            @if (p.buyerUserId) {
+              <ng-container i18n="@@console.detail.withAccount"
+                >Signed in with an account</ng-container
+              >
+            } @else {
+              <ng-container i18n="@@console.detail.withLink"
+                >Opens with a private link</ng-container
+              >
+            }
+          </span>
+        </div>
+      </section>
+      <section class="card">
+        <h2 class="title-3" i18n="@@console.detail.messages">Messages</h2>
+        <hc-proposal-messages
+          [messages]="d.messages"
+          [viewer]="Party.Seller"
+          [sending]="busy()"
+          (send)="sendMessage($event)"
+        />
+      </section>
+      <section class="card">
+        <h2 class="title-3" i18n="@@console.detail.history">History</h2>
+        <hc-proposal-timeline [detail]="d" (view)="viewRev.set($event)" />
+      </section>
+    </aside>
+  </div>
+}
+
+@if (newKey(); as k) {
+  <hc-invite-sheet
+    [accessKey]="k"
+    title="New invite link"
+    i18n-title="@@console.detail.newInvite"
+    [buyerName]="(detail.hasValue() ? detail.value() : undefined)?.proposal?.buyer?.name"
+    [buyerEmail]="(detail.hasValue() ? detail.value() : undefined)?.proposal?.buyer?.email"
+    (done)="newKey.set(null)"
+  />
+}

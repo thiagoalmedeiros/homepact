@@ -1,0 +1,28 @@
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.group {
+  padding-top: 6px;
+}
+.group-label {
+  margin: 0 0 2px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.credit span:last-child {
+  color: var(--success);
+}
+.total {
+  font-size: 19px;
+  font-weight: 600;
+  padding-top: 10px;
+}
+.total span:first-child {
+  color: var(--text);
+}
+.kv > span:last-child {
+  white-space: nowrap;
+}

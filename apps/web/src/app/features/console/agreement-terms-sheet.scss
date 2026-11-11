@@ -1,0 +1,39 @@
+.error-text {
+  color: var(--danger);
+  margin: 0;
+}
+.field p {
+  margin: 0;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 0;
+  legend {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    padding: 0 6px;
+  }
+  p {
+    margin: 0;
+  }
+}
+.line {
+  --gap: 8px;
+  align-items: start;
+}
+.amount {
+  width: 120px;
+}
+.grow {
+  flex: 1;
+  min-width: 140px;
+}

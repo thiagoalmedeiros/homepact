@@ -1,0 +1,37 @@
+<div class="messages" #scroller>
+  @for (m of messages(); track m.id) {
+    @if (m.party === Party.System) {
+      <p class="system tiny muted">{{ m.body }} · {{ m.createdAt | ago }}</p>
+    } @else {
+      <div class="msg" [class.mine]="m.party === viewer()">
+        <span class="tiny muted who">{{ m.authorName }} · {{ m.createdAt | ago }}</span>
+        <p class="bubble">{{ m.body }}</p>
+      </div>
+    }
+  } @empty {
+    <p class="system small muted" i18n="@@messages.empty">No messages yet.</p>
+  }
+</div>
+@if (canSend()) {
+  <form class="composer" (ngSubmit)="submit()">
+    <input
+      class="input"
+      name="draft"
+      [(ngModel)]="draft"
+      placeholder="Message"
+      i18n-placeholder="@@messages.placeholder"
+      aria-label="Message"
+      i18n-aria-label="@@messages.placeholder"
+      autocomplete="off"
+    />
+    <button
+      class="icon-btn send"
+      type="submit"
+      [disabled]="sending() || !draft.trim()"
+      aria-label="Send"
+      i18n-aria-label="@@common.actions.send"
+    >
+      <hc-icon name="send" [size]="18" />
+    </button>
+  </form>
+}

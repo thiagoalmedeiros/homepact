@@ -1,0 +1,20 @@
+.list {
+  --gap: 8px;
+}
+.tax {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px auto;
+  gap: 8px;
+  align-items: center;
+}
+.rate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+}

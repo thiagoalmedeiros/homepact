@@ -1,0 +1,236 @@
+@if (agreement.error() && !a()) {
+  <section class="page-narrow center section">
+    <h1 class="title-2" i18n="@@agreementRoom.unavailableTitle">This agreement isn't available</h1>
+    <p class="lead" i18n="@@agreementRoom.unavailableLead">
+      It may belong to another account, or its signing link has been replaced.
+    </p>
+    <a class="btn" [routerLink]="paths.home" i18n="@@common.actions.back">Back</a>
+  </section>
+} @else if (a(); as a) {
+  <section class="page-narrow section stack room">
+    <a class="back small" [routerLink]="paths.proposal(a.proposalId)"
+      ><hc-icon name="back" [size]="14" />
+      <ng-container i18n="@@agreementRoom.backToProposal">Your proposal</ng-container></a
+    >
+    <header class="stack head">
+      <p class="eyebrow" i18n="@@agreementRoom.eyebrow">Purchase agreement {{ a.reference }}</p>
+      <h1 class="title-1">{{ a.home.model }}{{ a.home.address ? ', ' + a.home.address : '' }}</h1>
+      <p class="lead tabular">
+        {{ a.quote.totalCents | money: a.currency }}
+        @if (a.quote.tax; as tax) {
+          <span class="small muted" i18n="@@agreementRoom.taxIncluded"
+            >sales tax included ({{ tax.regionName }})</span
+          >
+        }
+      </p>
+    </header>
+
+    @switch (a.status) {
+      @case (AgreementStatus.UnderReview) {
+        @if (canSign()) {
+          <div class="callout" data-testid="to-sign">
+            <strong i18n="@@agreementRoom.toSignTitle"
+              >{{ a.seller.name }} sent you this agreement to sign</strong
+            >
+            <ng-container i18n="@@agreementRoom.toSignBody">
+              on {{ a.issuedAt | localDate: 'dateTime' }}. Read every clause and Schedule A, initial
+              the key clauses, then sign. {{ a.seller.name }} countersigns once every purchaser has
+              signed.
+            </ng-container>
+          </div>
+        } @else if (me()) {
+          <div class="callout success" data-testid="you-signed">
+            <strong i18n="@@agreementRoom.youSignedTitle">You signed this agreement</strong>
+            <ng-container i18n="@@agreementRoom.youSignedBody">
+              on {{ me()?.signature?.signedAt | localDate: 'dateTime' }}. It is waiting for the
+              other purchasers and for {{ a.seller.name }} to countersign.
+            </ng-container>
+          </div>
+        } @else {
+          <div
+            class="callout"
+            data-testid="out-for-signature"
+            i18n="@@agreementRoom.outForSignature"
+          >
+            Sent on {{ a.issuedAt | localDate: 'dateTime' }}. Each purchaser signs with their own
+            link and code.
+          </div>
+        }
+      }
+      @case (AgreementStatus.Signed) {
+        <div class="callout" data-testid="agreement-signed">
+          <strong i18n="@@agreementRoom.signedTitle">Every purchaser has signed</strong>
+          <ng-container i18n="@@agreementRoom.signedBody">
+            on {{ a.signedAt | localDate: 'dateTime' }}. {{ a.seller.name }} countersigns to execute
+            the agreement.
+          </ng-container>
+        </div>
+      }
+      @case (AgreementStatus.Executed) {
+        <div class="callout success" data-testid="agreement-executed">
+          <strong i18n="@@agreementRoom.executedTitle">This agreement is executed</strong>
+          <ng-container i18n="@@agreementRoom.executedBody">
+            since {{ a.executedAt | localDate: 'dateTime' }}. Download the PDF — it carries every
+            signature and the certificate page — and keep it for your records.
+          </ng-container>
+        </div>
+      }
+      @case (AgreementStatus.Cancelled) {
+        <div class="callout" data-testid="agreement-cancelled">
+          @if (a.cancelReason) {
+            <ng-container i18n="@@agreementRoom.cancelledWithReason">
+              {{ a.seller.name }} voided this agreement on
+              {{ a.cancelledAt | localDate: 'dateTime' }}: {{ a.cancelReason }} It can no longer be
+              signed.
+            </ng-container>
+          } @else {
+            <ng-container i18n="@@agreementRoom.cancelled">
+              {{ a.seller.name }} voided this agreement on
+              {{ a.cancelledAt | localDate: 'dateTime' }}. It can no longer be signed.
+            </ng-container>
+          }
+        </div>
+      }
+    }
+
+    @if (me()?.status === SignerStatus.Invalidated) {
+      <div class="callout warn" data-testid="sign-again">
+        <strong i18n="@@agreementRoom.signAgainTitle">A clause changed after you signed</strong>
+        <ng-container i18n="@@agreementRoom.signAgainBody">
+          Your earlier signature no longer counts. Read the agreement again and sign the new text.
+        </ng-container>
+      </div>
+    }
+
+    @if (others().length) {
+      <section class="card stack others" data-testid="other-purchasers">
+        <h2 class="title-3" i18n="@@agreementRoom.otherPurchasers">The other purchasers</h2>
+        @for (p of others(); track p.id) {
+          <div class="row spread">
+            <span>{{ p.name }}</span>
+            @switch (p.status) {
+              @case (SignerStatus.Signed) {
+                <span class="pill green" i18n="@@agreementRoom.otherSigned"
+                  >Signed {{ p.signature?.signedAt | localDate: 'dateTime' }}</span
+                >
+              }
+              @case (SignerStatus.Invalidated) {
+                <span class="pill orange" i18n="@@agreementRoom.otherMustSignAgain"
+                  >Must sign again</span
+                >
+              }
+              @default {
+                <span class="pill blue" i18n="@@agreementRoom.otherWaiting">Not signed yet</span>
+              }
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <div class="row">
+      @if (canSign()) {
+        <button
+          class="btn btn-lg"
+          type="button"
+          (click)="openSign()"
+          [disabled]="!allInitialled()"
+          data-testid="open-sign-agreement"
+        >
+          <hc-icon name="pen" [size]="18" />
+          <ng-container i18n="@@agreementRoom.sign">Sign agreement</ng-container>
+        </button>
+      }
+      <button
+        class="btn btn-lg btn-secondary"
+        type="button"
+        (click)="download(a)"
+        [disabled]="downloading()"
+        data-testid="download-agreement"
+      >
+        <hc-icon name="download" [size]="18" />
+        @if (downloading()) {
+          <ng-container i18n="@@agreementRoom.preparing">Preparing…</ng-container>
+        } @else {
+          <ng-container i18n="@@agreementRoom.download">Download PDF</ng-container>
+        }
+      </button>
+    </div>
+    @if (canSign() && !allInitialled()) {
+      <p class="small muted" data-testid="initials-hint" i18n="@@agreementRoom.initialsHint">
+        Initial the {{ keyClauses().length }} key clause(s) below before you sign.
+      </p>
+    }
+
+    <section class="card">
+      <hc-agreement-document
+        [agreement]="a"
+        [initialling]="canSign()"
+        [initials]="initials()"
+        (initialled)="toggleInitial($event)"
+      />
+    </section>
+  </section>
+
+  @if (signing()) {
+    <hc-sheet
+      title="Sign the purchase agreement"
+      i18n-title="@@agreementRoom.signSheet.title"
+      (closed)="signing.set(false)"
+    >
+      <form class="stack" (ngSubmit)="sign(a)">
+        <div class="inset stack summary-box">
+          <span class="strong">{{ a.title }}</span>
+          <span class="small muted" i18n="@@agreementRoom.signSheet.meta"
+            >Agreement {{ a.reference }} · {{ a.seller.name }}</span
+          >
+          <span class="title-3 tabular">{{ a.quote.totalCents | money: a.currency }}</span>
+          <span class="small muted" i18n="@@agreementRoom.signSheet.deposit"
+            >Deposit {{ a.terms.depositCents | money: a.currency }}, paid in
+            {{ a.terms.deposits.length }} instalment(s)</span
+          >
+        </div>
+        <div class="field">
+          <label for="ag-name" i18n="@@agreementRoom.signSheet.typeName">Type your full name</label>
+          <input
+            id="ag-name"
+            class="input"
+            name="fullName"
+            [(ngModel)]="fullName"
+            autocomplete="name"
+            required
+            data-testid="agreement-sign-name"
+          />
+        </div>
+        <label class="row agree small">
+          <input
+            type="checkbox"
+            class="checkbox"
+            name="agree"
+            [(ngModel)]="agree"
+            data-testid="agreement-sign-agree"
+          />
+          <span i18n="@@agreementRoom.signSheet.agree">
+            I have read agreement {{ a.reference }}, including Schedule A, initialled its key
+            clauses, and agree to buy this home from {{ a.seller.name }} on these terms. I
+            understand that typing my name is my electronic signature.
+          </span>
+        </label>
+        <button
+          class="btn btn-lg btn-block"
+          type="submit"
+          [disabled]="busy() || !agree || fullName.trim().length < 2 || !allInitialled()"
+          data-testid="agreement-sign-submit"
+        >
+          @if (busy()) {
+            <ng-container i18n="@@agreementRoom.signSheet.signing">Signing…</ng-container>
+          } @else {
+            <ng-container i18n="@@agreementRoom.signSheet.submit">Sign agreement</ng-container>
+          }
+        </button>
+      </form>
+    </hc-sheet>
+  }
+} @else {
+  <div class="page-narrow section"><div class="skeleton loading"></div></div>
+}

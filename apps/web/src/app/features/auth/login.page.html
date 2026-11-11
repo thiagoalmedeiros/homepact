@@ -1,0 +1,65 @@
+<section class="auth">
+  <form class="card stack form" #f="ngForm" (ngSubmit)="f.valid && submit()">
+    <div class="center stack intro">
+      @if (tenant.company()) {
+        <hc-logo class="logo" [height]="40" />
+      } @else {
+        <span class="mark"><hc-icon name="building" [size]="28" /></span>
+      }
+      @if (tenant.isPlatform()) {
+        <h1 class="title-2" i18n="@@auth.login.platformTitle">Platform console</h1>
+        <p class="muted small" i18n="@@auth.login.platformSubtitle">Super-administrators only.</p>
+      } @else {
+        <h1 class="title-2" i18n="@@auth.login.title">Sign in</h1>
+        <p class="muted small" i18n="@@auth.login.subtitle">
+          Buyers and team members sign in here.
+        </p>
+      }
+    </div>
+    @if (error()) {
+      <div class="callout error small" role="alert">{{ error() }}</div>
+    }
+    <div class="field">
+      <label for="email" i18n="@@auth.login.email">Email</label>
+      <input
+        id="email"
+        class="input"
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        autocomplete="username"
+        required
+      />
+    </div>
+    <div class="field">
+      <label for="password" i18n="@@auth.login.password">Password</label>
+      <input
+        id="password"
+        class="input"
+        type="password"
+        name="password"
+        [(ngModel)]="password"
+        autocomplete="current-password"
+        required
+      />
+    </div>
+    <button class="btn btn-lg btn-block" type="submit" [disabled]="f.invalid || busy()">
+      @if (busy()) {
+        <ng-container i18n="@@auth.login.submitting">Signing in…</ng-container>
+      } @else {
+        <ng-container i18n="@@common.actions.signIn">Sign in</ng-container>
+      }
+    </button>
+    @if (!tenant.isPlatform()) {
+      <p class="small center muted">
+        <ng-container i18n="@@auth.login.newHere">New here?</ng-container>
+        <a
+          [routerLink]="paths.register"
+          [queryParams]="{ next: next() }"
+          i18n="@@auth.login.createAccount"
+          >Create an account</a
+        >
+      </p>
+    }
+  </form>
+</section>

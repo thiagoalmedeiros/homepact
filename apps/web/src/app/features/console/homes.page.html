@@ -1,0 +1,71 @@
+<header class="console-head">
+  <div>
+    <h1 class="title-1" i18n="@@console.homes.title">Floor plans</h1>
+    <p class="muted" i18n="@@console.homes.subtitle">
+      House models with the packages and options they offer. Only published floor plans can be
+      proposed to buyers.
+    </p>
+  </div>
+  <a class="btn" [routerLink]="paths.console.newHome"
+    ><hc-icon name="plus" [size]="16" />
+    <ng-container i18n="@@console.homes.add">New floor plan</ng-container></a
+  >
+</header>
+<hc-load-state [resource]="houses" />
+<div [hidden]="!houses.hasValue()" class="card table-wrap table-card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th i18n="@@console.homes.columns.home">Home</th>
+        <th class="hide-sm" i18n="@@console.homes.columns.style">Style</th>
+        <th class="num" i18n="@@console.homes.columns.basePrice">Base price</th>
+        <th class="hide-sm" i18n="@@console.homes.columns.customPrices">Custom prices</th>
+        <th i18n="@@console.homes.columns.canBeProposed">Can be proposed</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (h of (houses.hasValue() ? houses.value() : undefined) ?? []; track h.id) {
+        <tr class="row-link" (click)="edit(h)">
+          <td>
+            <div class="row home-cell">
+              <span class="thumb-sm">
+                @if (h.images[0]) {
+                  <img [src]="h.images[0]" alt="" referrerpolicy="no-referrer" />
+                }
+              </span>
+              <span
+                ><a
+                  class="strong row-anchor"
+                  [routerLink]="paths.console.home(h.id)"
+                  (click)="$event.stopPropagation()"
+                  >{{ h.name }}</a
+                ><br /><span class="tiny muted" i18n="@@common.specs"
+                  >{{ h.specs.sqft.toLocaleString(locale) }} ft² · {{ h.specs.beds }} bd ·
+                  {{ h.specs.baths }} ba</span
+                ></span
+              >
+            </div>
+          </td>
+          <td class="hide-sm muted">{{ h.style }}</td>
+          <td class="num">{{ h.basePriceCents | money: currency() }}</td>
+          <td class="hide-sm muted">{{ h.priceOverrides.length || '—' }}</td>
+          <td (click)="$event.stopPropagation()">
+            <input
+              type="checkbox"
+              class="switch"
+              [checked]="h.status === HouseStatus.Published"
+              (change)="toggle(h)"
+              [attr.aria-label]="publishLabel(h.name)"
+            />
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="empty" i18n="@@console.homes.empty">
+            No homes yet. Add your first model.
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

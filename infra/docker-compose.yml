@@ -1,17 +1,17 @@
-# Local stack: MongoDB + API + web. Run from the repo root:
-#   docker compose --env-file .env -f infra/docker-compose.yml up --build
-#
-#   http://localhost:4200        web (proxies /api to the API)
-#   http://localhost:3000/api    API
-name: homepact
+name: ${COMPOSE_PROJECT_NAME:-homepact}
+
+x-api-env: &api-env
+  NODE_ENV: production
+  MONGO_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/${MONGO_DB_NAME:-homepact}?authSource=admin
+  PLATFORM_ADMIN_ORIGIN: ${PLATFORM_ADMIN_ORIGIN:-http://localhost:4300}
+  JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET (32+ characters) in .env}
 
 services:
   mongo:
     image: mongo:8.0
     restart: unless-stopped
+    env_file: ../.env
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:?Set it in .env}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:?Set it in .env}
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-homepact}
     ports:
       - '${MONGO_PORT:-27017}:27017'
@@ -29,16 +29,28 @@ services:
       context: ..
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      API_PORT: 3000
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      MONGO_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/${MONGO_DB_NAME:-homepact}?authSource=admin
-      MONGO_DB_NAME: ${MONGO_DB_NAME:-homepact}
+    env_file: ../.env
+    environment: *api-env
     ports:
-      - '${API_PORT:-3000}:3000'
+      - '${API_PORT:-3000}:${API_PORT:-3000}'
     depends_on:
       mongo:
+        condition: service_healthy
+
+  seed:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    restart: 'no'
+    env_file: ../.env
+    environment:
+      <<: *api-env
+      SEED_SHOWCASE: ${SEED_SHOWCASE:-true}
+      SHOWCASE_ORIGINS: ${SHOWCASE_ORIGINS:-http://localhost:4200}
+      SECOND_TENANT_ORIGINS: ${SECOND_TENANT_ORIGINS:-http://127.0.0.1:4200}
+    command: ['node', 'dist/scripts/seed-showcase.js']
+    depends_on:
+      api:
         condition: service_healthy
 
   web:
@@ -46,11 +58,14 @@ services:
       context: ..
       dockerfile: apps/web/Dockerfile
     restart: unless-stopped
+    environment:
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:3000}
     ports:
       - '${WEB_PORT:-4200}:80'
+      - '${ADMIN_PORT:-4300}:80'
     depends_on:
-      api:
-        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
 
 volumes:
   mongo-data:

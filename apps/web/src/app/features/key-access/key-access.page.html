@@ -1,0 +1,72 @@
+<section class="page-narrow center section">
+  <span class="key-icon"><hc-icon name="key" [size]="30" /></span>
+  @switch (state()) {
+    @case ('working') {
+      <h1 class="title-2" i18n="@@keyAccess.opening">Opening your proposal…</h1>
+    }
+    @case ('claim') {
+      <h1 class="title-2" i18n="@@keyAccess.claimTitle">Add this to your account?</h1>
+      <p class="lead" i18n="@@keyAccess.claimLead">
+        You're signed in as {{ auth.user()?.name }}. Save it to your account to find it later; the
+        link stops working after.
+      </p>
+      <div class="row actions">
+        <button
+          class="btn btn-lg"
+          (click)="claim()"
+          [disabled]="busy()"
+          i18n="@@keyAccess.addToAccount"
+        >
+          Add to my account
+        </button>
+        <button class="btn btn-lg btn-secondary" (click)="view()" i18n="@@keyAccess.justView">
+          Just view
+        </button>
+      </div>
+    }
+    @case ('code') {
+      <h1 class="title-2" i18n="@@keyAccess.codeTitle">Enter your code</h1>
+      <p class="lead" i18n="@@keyAccess.codeLead">
+        Your sales representative gave you a short code for this agreement. It goes with the link
+        you just opened.
+      </p>
+      <form class="stack code-form" (ngSubmit)="submitCode()">
+        <input
+          class="input code-input"
+          name="code"
+          [(ngModel)]="code"
+          maxlength="16"
+          autocomplete="one-time-code"
+          autocapitalize="characters"
+          spellcheck="false"
+          placeholder="ABCD-EFGH"
+          i18n-placeholder="@@keyAccess.codePlaceholder"
+          aria-label="Signing code"
+          i18n-aria-label="@@keyAccess.codeLabel"
+          required
+          data-testid="signing-code"
+        />
+        @if (codeError()) {
+          <p class="small error-text" data-testid="code-error">{{ codeError() }}</p>
+        }
+        <button
+          class="btn btn-lg"
+          type="submit"
+          [disabled]="busy() || code.trim().length < 4"
+          data-testid="signing-code-submit"
+        >
+          <ng-container i18n="@@keyAccess.codeSubmit">Open the agreement</ng-container>
+        </button>
+      </form>
+    }
+    @case ('error') {
+      <h1 class="title-2" i18n="@@keyAccess.errorTitle">This link doesn't work</h1>
+      <p class="lead">{{ error() }}</p>
+      <p class="muted small" i18n="@@keyAccess.errorHelp">
+        Invite links can be replaced by your sales representative. Ask them for a new one, or sign
+        in if you saved the proposal to an account.
+      </p>
+      <a class="btn" [routerLink]="paths.login" i18n="@@common.actions.signIn">Sign in</a>
+    }
+  }
+</section>

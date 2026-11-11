@@ -1,0 +1,14 @@
+@if (tenant.company(); as c) {
+  @if (!failed()) {
+    <img
+      [src]="c.logoUrl"
+      [alt]="c.name"
+      [style.height.px]="height()"
+      data-testid="tenant-logo"
+      referrerpolicy="no-referrer"
+      (error)="failed.set(true)"
+    />
+  } @else {
+    <span class="name">{{ c.name }}</span>
+  }
+}

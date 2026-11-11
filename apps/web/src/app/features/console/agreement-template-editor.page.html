@@ -1,0 +1,239 @@
+<a class="back small" [routerLink]="paths.console.templates"
+  ><hc-icon name="back" [size]="14" />
+  <ng-container i18n="@@console.templateEditor.back">Templates</ng-container></a
+>
+@if (id()) {
+  <hc-load-state [resource]="existing" [height]="120" />
+}
+@if (ready()) {
+  <header class="console-head">
+    <div>
+      <h1 class="title-1">
+        @if (!id()) {
+          <ng-container i18n="@@console.templateEditor.newTitle">New template</ng-container>
+        } @else if (draft.name) {
+          {{ draft.name }}
+        } @else {
+          <ng-container i18n="@@console.templateEditor.fallbackTitle">Template</ng-container>
+        }
+      </h1>
+      <p class="muted">
+        @if (existing.hasValue() && existing.value(); as t) {
+          <ng-container i18n="@@console.templateEditor.versionNote"
+            >Version {{ t.version }}. Saving creates version {{ t.version + 1 }}; agreements already
+            prepared keep their own copy.</ng-container
+          >
+        } @else {
+          <ng-container i18n="@@console.templateEditor.starterNote"
+            >Start from this plain-language example and adapt it with your legal
+            counsel.</ng-container
+          >
+        }
+      </p>
+    </div>
+    @if (isAdmin()) {
+      <div class="row">
+        @if (id()) {
+          <button class="btn btn-ghost btn-sm" type="button" (click)="remove()">
+            <ng-container i18n="@@common.actions.delete">Delete</ng-container>
+          </button>
+        }
+        <button
+          class="btn"
+          type="button"
+          (click)="save()"
+          [disabled]="busy() || invalid()"
+          data-testid="save-template"
+          i18n="@@console.templateEditor.save"
+        >
+          Save template
+        </button>
+      </div>
+    }
+  </header>
+  @if (!isAdmin()) {
+    <div class="callout small banner" i18n="@@console.templateEditor.adminsOnly">
+      Only administrators can change templates.
+    </div>
+  }
+
+  <div class="layout">
+    <form class="stack" (focusin)="track($event)" (ngSubmit)="save()">
+      <fieldset class="stack bare" [disabled]="!isAdmin()">
+        <section class="card stack">
+          <div class="form-grid">
+            <div class="field">
+              <label for="t-name"
+                ><ng-container i18n="@@console.templateEditor.name">Name</ng-container>
+                <span class="hint" i18n="@@console.templateEditor.nameHint"
+                  >for your team</span
+                ></label
+              >
+              <input
+                id="t-name"
+                class="input"
+                name="name"
+                [(ngModel)]="draft.name"
+                (ngModelChange)="touch()"
+                maxlength="80"
+                required
+                data-testid="template-name"
+              />
+            </div>
+            <div class="field">
+              <label for="t-title" i18n="@@console.templateEditor.documentTitle"
+                >Document title</label
+              >
+              <input
+                id="t-title"
+                class="input"
+                name="title"
+                data-merge
+                [(ngModel)]="draft.title"
+                (ngModelChange)="touch()"
+                maxlength="160"
+                required
+              />
+              @for (f of unknownIn(draft.title); track f) {
+                <p class="tiny error-text" i18n="@@console.templateEditor.unknownField">
+                  Unknown field {{ token(f) }}
+                </p>
+              }
+            </div>
+          </div>
+          <label class="row small default">
+            <input
+              type="checkbox"
+              class="checkbox"
+              name="isDefault"
+              [(ngModel)]="draft.isDefault"
+            />
+            <ng-container i18n="@@console.templateEditor.isDefault"
+              >Default template, preselected when preparing an agreement</ng-container
+            >
+          </label>
+        </section>
+
+        @for (s of draft.sections; track $index; let i = $index) {
+          <section class="card stack clause" [attr.data-testid]="'clause-' + i">
+            <div class="row clause-head">
+              <span class="num strong">{{ i + 1 }}.</span>
+              <input
+                class="input grow"
+                [name]="'heading-' + i"
+                data-merge
+                [(ngModel)]="s.heading"
+                (ngModelChange)="touch()"
+                maxlength="120"
+                aria-label="Clause heading"
+                i18n-aria-label="@@console.templateEditor.clauseHeading"
+                required
+              />
+              <button
+                class="icon-btn"
+                type="button"
+                (click)="move(i, -1)"
+                [disabled]="i === 0"
+                aria-label="Move up"
+                i18n-aria-label="@@console.templateEditor.moveUp"
+              >
+                <hc-icon name="chevron" [size]="16" class="up" />
+              </button>
+              <button
+                class="icon-btn"
+                type="button"
+                (click)="move(i, 1)"
+                [disabled]="i === draft.sections.length - 1"
+                aria-label="Move down"
+                i18n-aria-label="@@console.templateEditor.moveDown"
+              >
+                <hc-icon name="chevron" [size]="16" class="down" />
+              </button>
+              <button
+                class="icon-btn"
+                type="button"
+                (click)="removeSection(i)"
+                [disabled]="draft.sections.length === 1"
+                aria-label="Remove clause"
+                i18n-aria-label="@@console.templateEditor.removeClause"
+              >
+                <hc-icon name="trash" [size]="16" />
+              </button>
+            </div>
+            <textarea
+              class="textarea"
+              [name]="'body-' + i"
+              data-merge
+              [(ngModel)]="s.body"
+              (ngModelChange)="touch()"
+              maxlength="8000"
+              rows="4"
+              aria-label="Clause text"
+              i18n-aria-label="@@console.templateEditor.clauseText"
+              required
+              [attr.data-testid]="'clause-body-' + i"
+            ></textarea>
+            <label class="row tiny initials">
+              <input
+                type="checkbox"
+                class="checkbox"
+                [name]="'initials-' + i"
+                [(ngModel)]="s.requiresInitials"
+                (ngModelChange)="touch()"
+                [attr.data-testid]="'clause-initials-' + i"
+              />
+              <span i18n="@@console.templateEditor.keyClause"
+                >Key clause: every purchaser initials it before signing</span
+              >
+            </label>
+            @for (f of unknownIn(s.heading + ' ' + s.body); track f) {
+              <p
+                class="tiny error-text"
+                data-testid="field-error"
+                i18n="@@console.templateEditor.unknownField"
+              >
+                Unknown field {{ token(f) }}
+              </p>
+            }
+          </section>
+        }
+        @if (isAdmin()) {
+          <button class="btn btn-secondary add" type="button" (click)="addSection()">
+            <hc-icon name="plus" [size]="16" />
+            <ng-container i18n="@@console.templateEditor.addClause">Add a clause</ng-container>
+          </button>
+        }
+      </fieldset>
+    </form>
+
+    <aside class="card fields">
+      <h2 class="title-3" i18n="@@console.templateEditor.fieldsTitle">Fields</h2>
+      <p class="tiny muted">
+        <ng-container i18n="@@console.templateEditor.fieldsHelp"
+          >Filled in from the signed proposal, your company and the agreement terms.</ng-container
+        >
+        @if (isAdmin()) {
+          <ng-container i18n="@@console.templateEditor.fieldsInsert"
+            >Click one to insert it where your cursor is.</ng-container
+          >
+        }
+      </p>
+      <ul>
+        @for (f of fields; track f) {
+          <li>
+            <button
+              type="button"
+              class="field-btn"
+              (mousedown)="$event.preventDefault()"
+              (click)="insert(f)"
+              [disabled]="!isAdmin()"
+            >
+              <code>{{ token(f) }}</code>
+              <span class="tiny muted">{{ fieldLabels[f] }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    </aside>
+  </div>
+}

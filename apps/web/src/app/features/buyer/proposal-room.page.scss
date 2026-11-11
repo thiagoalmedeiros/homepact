@@ -1,0 +1,261 @@
+.hero {
+  padding: 40px 0 32px;
+  background: linear-gradient(180deg, var(--surface-2), var(--bg) 85%);
+}
+.hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 48px;
+  align-items: center;
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+.hero.compact {
+  padding: 24px 0 8px;
+  .hero-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hero-media,
+  .lead,
+  .rep,
+  .eyebrow {
+    display: none;
+  }
+  .display-sm {
+    font-size: 32px;
+  }
+}
+.hero-media {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--fill);
+  box-shadow: var(--shadow);
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .placeholder-house {
+    height: 100%;
+  }
+}
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  p {
+    margin: 0;
+  }
+}
+.display-sm {
+  margin: 0;
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.total-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+}
+.total {
+  font-size: clamp(32px, 4vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.actions {
+  --gap: 12px;
+  margin-top: 6px;
+}
+.rep {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 8px;
+  padding-bottom: 140px;
+}
+.signed {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  p {
+    margin: 4px 0 0;
+  }
+}
+.ok {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--success);
+  color: #fff;
+}
+.waiting,
+.answered {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  .title-3,
+  p {
+    margin: 0;
+  }
+}
+.waiting {
+  border: 1px solid var(--warning);
+}
+.preview-total {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.note {
+  font-style: italic;
+  color: var(--text-2);
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr);
+  gap: 24px;
+  align-items: start;
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.main,
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+.side .title-3 {
+  margin: 0 0 12px;
+}
+.rev-head {
+  margin-bottom: 12px;
+  .title-3 {
+    margin: 0;
+  }
+}
+.save {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  .title-3,
+  p {
+    margin: 0;
+  }
+}
+.decline {
+  margin: 0;
+  text-align: center;
+}
+.change-head {
+  align-items: flex-start;
+  margin-bottom: 28px;
+  p {
+    margin: 6px 0 0;
+  }
+  .title-2 {
+    margin: 0;
+  }
+}
+.bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  border-top: 1px solid var(--border);
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+  p {
+    margin: 0;
+  }
+}
+.bar-total {
+  font-size: 24px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+  &.dim {
+    opacity: 0.5;
+  }
+}
+.bar-error {
+  color: var(--danger);
+}
+.sig-input {
+  font-family: 'Snell Roundhand', 'Segoe Script', 'Brush Script MT', cursive;
+  font-size: 24px;
+  min-height: 56px;
+}
+.agree {
+  --gap: 10px;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  cursor: pointer;
+  .checkbox {
+    margin-top: 2px;
+  }
+}
+.summary {
+  h1 {
+    font-size: 20px;
+    margin: 0 0 12px;
+  }
+  .sig {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #000;
+  }
+}
+
+.agreement {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  .title-3,
+  p {
+    margin: 0 0 4px;
+  }
+}
+.agreement .grow {
+  flex: 1;
+  min-width: 200px;
+}
+.agreement-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex: none;
+}
+.pills {
+  --gap: 8px;
+}
+.summary-box {
+  --gap: 4px;
+}
+.loading-options {
+  height: 50vh;
+}
+.loading-page {
+  height: 60vh;
+}

@@ -1,0 +1,26 @@
+@if (confirm.pending(); as p) {
+  <hc-sheet [title]="p.title" (closed)="confirm.answer(false)">
+    <div class="stack">
+      <p class="muted message">{{ p.message }}</p>
+      <div class="row buttons">
+        <button
+          class="btn btn-secondary"
+          type="button"
+          (click)="confirm.answer(false)"
+          i18n="@@common.actions.cancel"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn"
+          [class.btn-danger]="p.destructive"
+          type="button"
+          (click)="confirm.answer(true)"
+          data-testid="confirm"
+        >
+          {{ p.confirmLabel }}
+        </button>
+      </div>
+    </div>
+  </hc-sheet>
+}

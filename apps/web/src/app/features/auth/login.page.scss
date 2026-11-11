@@ -1,0 +1,30 @@
+.auth {
+  min-height: calc(100vh - var(--nav-h) - 120px);
+  display: grid;
+  place-items: center;
+  padding: 48px 16px;
+}
+.form {
+  --gap: 18px;
+  width: min(420px, 100%);
+  padding: 40px 36px;
+}
+.intro {
+  --gap: 8px;
+}
+.logo {
+  margin: 0 auto 8px;
+}
+.mark {
+  margin: 0 auto 8px;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: var(--text);
+  color: var(--bg);
+}
+p {
+  margin: 0;
+}

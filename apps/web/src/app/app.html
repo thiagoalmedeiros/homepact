@@ -1,0 +1,24 @@
+@if (tenant.error(); as error) {
+  <main class="unknown page-narrow center">
+    <h1 class="title-1" i18n="@@app.unknownSite.title">This site isn't set up yet</h1>
+    <p class="lead">{{ error }}</p>
+    <p class="muted small" i18n="@@app.unknownSite.help">
+      The address you opened is not registered with any company. If you run this site, ask your
+      platform administrator to add this origin.
+    </p>
+  </main>
+} @else if (tenant.branding()) {
+  @if (siteChrome()) {
+    <hc-site-nav />
+  }
+  <main id="main">
+    <router-outlet />
+  </main>
+  @if (siteChrome()) {
+    <hc-site-footer />
+  }
+} @else {
+  <div class="boot" aria-busy="true"><span class="spinner"></span></div>
+}
+<hc-toasts />
+<hc-confirm-host />

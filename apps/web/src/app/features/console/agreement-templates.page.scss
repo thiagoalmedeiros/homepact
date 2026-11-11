@@ -1,0 +1,20 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.row-link {
+  color: inherit;
+  flex-wrap: nowrap;
+}
+.right {
+  text-align: right;
+  flex: none;
+}
+.list-card {
+  padding: 4px 20px;
+}
+.name {
+  --gap: 2px;
+}

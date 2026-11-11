@@ -1,0 +1,18 @@
+.list {
+  --gap: 8px;
+}
+.adj {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px auto;
+  gap: 8px;
+  align-items: center;
+}
+.add {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hint {
+  margin: 0;
+}

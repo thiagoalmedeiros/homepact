@@ -1,0 +1,14 @@
+.editor {
+  --gap: 14px;
+}
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.referral {
+  --gap: 12px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}

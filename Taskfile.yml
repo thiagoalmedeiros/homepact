@@ -1,10 +1,81 @@
 version: '3'
 
+dotenv: ['.env']
+
+vars:
+  COMPOSE: docker compose --env-file .env -f infra/docker-compose.yml
+
 tasks:
-  up:
-    desc: Start the local stack (MongoDB + API + web) with the root .env
-    preconditions:
-      - sh: test -f .env
-        msg: 'Missing .env. Create it with: cp .env.example .env'
+  default:
     cmds:
-      - docker compose --env-file .env -f infra/docker-compose.yml up --build
+      - task --list
+    silent: true
+
+  up:
+    desc: Build and start the stack (MongoDB, API, web) with demo data, then print the demo logins
+    deps: [env, install]
+    cmds:
+      - '{{.COMPOSE}} up --build -d {{.CLI_ARGS}}'
+      - '{{.COMPOSE}} logs --no-log-prefix seed'
+
+  down:
+    desc: Stop the stack and keep its data (task down -- -v also deletes the data)
+    cmds:
+      - '{{.COMPOSE}} down {{.CLI_ARGS}}'
+
+  test:
+    desc: Run all unit tests (shared, web, API)
+    deps: [install]
+    cmds:
+      - npm test
+
+  test:shared:
+    desc: Run only the shared package unit tests
+    deps: [build:shared]
+    cmds:
+      - npm test -w packages/shared -- {{.CLI_ARGS}}
+
+  test:web:
+    desc: Run only the web (Angular) unit tests
+    deps: [build:shared]
+    cmds:
+      - npm test -w apps/web -- {{.CLI_ARGS}}
+
+  test:api:
+    desc: Run only the API unit tests (each layer with the layer below mocked; no database)
+    deps: [build:shared]
+    cmds:
+      - npm test -w apps/api -- {{.CLI_ARGS}}
+
+  clean:
+    desc: Delete all node_modules, package-lock.json files, build output and caches (keeps .env)
+    cmds:
+      - |
+        find . -name .git -prune -o -type d \( -name node_modules -o -name dist -o -name .angular -o -name .vite -o -name .cache -o -name coverage -o -name .nyc_output -o -name out-tsc -o -name .turbo -o -name .nx -o -name .parcel-cache -o -name .sass-cache \) -prune -exec rm -rf {} +
+      - |
+        find . -name .git -prune -o -type f \( -name package-lock.json -o -name '*.tsbuildinfo' -o -name .eslintcache -o -name .stylelintcache -o -name .prettiercache -o -name '*.log' \) -exec rm -f {} +
+      - rm -rf .task
+      - echo "Removed node_modules, package-lock.json files, build output and caches"
+
+  env:
+    internal: true
+    status:
+      - test -f .env
+    cmds:
+      - cp .env.example .env
+      - echo "Created .env from .env.example"
+
+  install:
+    internal: true
+    sources: [package.json, package-lock.json, apps/*/package.json, packages/*/package.json]
+    generates: [node_modules/.package-lock.json]
+    cmds:
+      - npm install
+
+  build:shared:
+    internal: true
+    deps: [install]
+    sources: [packages/shared/src/**/*.ts, packages/shared/tsconfig.json]
+    generates: [packages/shared/dist/index.js]
+    cmds:
+      - npm run build -w packages/shared

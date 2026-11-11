@@ -1,0 +1,403 @@
+<header class="console-head">
+  <div>
+    <h1 class="title-1" i18n="@@console.taxes.title">Sales tax & referrals</h1>
+    <p class="muted" i18n="@@console.taxes.subtitle">
+      The provinces you sell in and the sales tax each one charges, and the referral programs that
+      credit buyers. Every quote shows the price before tax, the tax of its province and the total.
+      Proposals and agreements keep the rates they were priced with.
+    </p>
+  </div>
+</header>
+
+<section class="card section-card" data-testid="tax-rates">
+  <div class="spread section-head">
+    <div>
+      <h2 class="title-3" i18n="@@console.taxes.rates.title">Sales tax by province</h2>
+      <p class="small muted" i18n="@@console.taxes.rates.hint">
+        New proposals start in the default province; your team can pick another one per proposal.
+      </p>
+    </div>
+    @if (isAdmin()) {
+      <div class="row actions">
+        <button
+          class="btn btn-secondary btn-sm"
+          type="button"
+          (click)="openSuggestions()"
+          data-testid="open-suggestions"
+        >
+          <hc-icon name="sparkle" [size]="14" />
+          <ng-container i18n="@@console.taxes.rates.fromSuggestions"
+            >Add from suggestions</ng-container
+          >
+        </button>
+        <button class="btn btn-sm" type="button" (click)="newRate()" data-testid="new-rate">
+          <hc-icon name="plus" [size]="14" />
+          <ng-container i18n="@@console.taxes.rates.custom">Add your own</ng-container>
+        </button>
+      </div>
+    }
+  </div>
+  <hc-load-state [resource]="rates" />
+  @if (rates.hasValue()) {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th i18n="@@console.taxes.rates.columns.province">Province</th>
+            <th i18n="@@console.taxes.rates.columns.taxes">Sales tax</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rates.value(); track r.id) {
+            <tr [attr.data-testid]="'rate-' + r.code">
+              <td>
+                <span class="strong">{{ r.name }}</span>
+                <span class="tiny muted"> · {{ r.code }}</span>
+                @if (r.isDefault) {
+                  <span class="pill blue default-pill" i18n="@@console.taxes.rates.default"
+                    >Default</span
+                  >
+                }
+                @if (r.presetId) {
+                  <br /><span class="tiny muted" i18n="@@console.taxes.rates.fromSuggestion"
+                    >From the platform's suggestions</span
+                  >
+                }
+              </td>
+              <td class="tabular">{{ summary(r.components) }}</td>
+              <td class="num">
+                @if (isAdmin()) {
+                  <span class="row actions">
+                    @if (!r.isDefault) {
+                      <button
+                        class="btn btn-sm btn-ghost"
+                        type="button"
+                        (click)="makeDefault(r)"
+                        [disabled]="busy()"
+                        i18n="@@console.taxes.rates.makeDefault"
+                      >
+                        Make default
+                      </button>
+                    }
+                    <button
+                      class="btn btn-sm btn-secondary"
+                      type="button"
+                      (click)="editRate(r)"
+                      i18n="@@common.actions.edit"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="icon-btn"
+                      type="button"
+                      (click)="removeRate(r)"
+                      [disabled]="busy()"
+                      aria-label="Remove"
+                      i18n-aria-label="@@console.taxes.rates.remove"
+                    >
+                      <hc-icon name="trash" [size]="16" />
+                    </button>
+                  </span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3" class="empty">
+                @if (isAdmin()) {
+                  <ng-container i18n="@@console.taxes.rates.emptyAdmin"
+                    >No sales tax yet, so quotes show none. Add the provinces you sell in, from the
+                    platform's suggestions or with your own rates.</ng-container
+                  >
+                } @else {
+                  <ng-container i18n="@@console.taxes.rates.emptyStaff"
+                    >No sales tax yet, so quotes show none. Ask an administrator to set it
+                    up.</ng-container
+                  >
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+<section class="card section-card" data-testid="referral-programs">
+  <div class="spread section-head">
+    <div>
+      <h2 class="title-3" i18n="@@console.taxes.programs.title">Referral programs</h2>
+      <p class="small muted" i18n="@@console.taxes.programs.hint">
+        When someone referred the buyer, your team records who on the proposal. The program's credit
+        comes off the price before tax.
+      </p>
+    </div>
+    @if (isAdmin()) {
+      <button class="btn btn-sm" type="button" (click)="newProgram()" data-testid="new-program">
+        <hc-icon name="plus" [size]="14" />
+        <ng-container i18n="@@console.taxes.programs.new">New program</ng-container>
+      </button>
+    }
+  </div>
+  <hc-load-state [resource]="programs" />
+  @if (programs.hasValue()) {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th i18n="@@console.taxes.programs.columns.program">Program</th>
+            <th class="num" i18n="@@console.taxes.programs.columns.credit">Credit to the buyer</th>
+            <th i18n="@@console.taxes.programs.columns.active">Active</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of programs.value(); track p.id) {
+            <tr [attr.data-testid]="'program-' + p.id">
+              <td>
+                <span class="strong">{{ p.name }}</span>
+                @if (p.description) {
+                  <br /><span class="small muted">{{ p.description }}</span>
+                }
+              </td>
+              <td class="num tabular">
+                @if (p.creditCents) {
+                  {{ -p.creditCents | money }}
+                } @else {
+                  <span class="muted" i18n="@@console.taxes.programs.noCredit">No credit</span>
+                }
+              </td>
+              <td>
+                <input
+                  type="checkbox"
+                  class="switch"
+                  [checked]="p.active"
+                  [disabled]="!isAdmin() || busy()"
+                  (change)="toggleProgram(p)"
+                  [attr.aria-label]="activeLabel(p.name)"
+                />
+              </td>
+              <td class="num">
+                @if (isAdmin()) {
+                  <span class="row actions">
+                    <button
+                      class="btn btn-sm btn-secondary"
+                      type="button"
+                      (click)="editProgram(p)"
+                      i18n="@@common.actions.edit"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="icon-btn"
+                      type="button"
+                      (click)="removeProgram(p)"
+                      [disabled]="busy()"
+                      aria-label="Delete"
+                      i18n-aria-label="@@console.taxes.programs.remove"
+                    >
+                      <hc-icon name="trash" [size]="16" />
+                    </button>
+                  </span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty" i18n="@@console.taxes.programs.empty">
+                No referral programs yet.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (sheet() === 'suggestions') {
+  <hc-sheet [title]="text.suggestions" (closed)="sheet.set(null)">
+    <p class="small muted" i18n="@@console.taxes.suggestions.intro">
+      Rates suggested by the platform for the sale of a new home. Adding one copies it to your
+      company; you can edit your copy afterwards. Check them with your accountant.
+    </p>
+    <hc-load-state [resource]="presets" />
+    @if (presets.hasValue()) {
+      <ul class="list suggestions">
+        @for (p of presets.value(); track p.id) {
+          <li class="spread" [attr.data-testid]="'suggestion-' + p.code">
+            <span class="stack name">
+              <span
+                ><span class="strong">{{ p.name }}</span
+                ><span class="tiny muted"> · {{ p.code }}</span></span
+              >
+              <span class="small tabular">{{ summary(p.components) }}</span>
+              @if (p.note) {
+                <span class="tiny muted">{{ p.note }}</span>
+              }
+            </span>
+            @if (adoptedCodes().has(p.code)) {
+              <span class="pill" i18n="@@console.taxes.suggestions.added">Added</span>
+            } @else {
+              <button
+                class="btn btn-sm btn-secondary"
+                type="button"
+                (click)="adopt(p)"
+                [disabled]="busy()"
+                i18n="@@console.taxes.suggestions.use"
+              >
+                Use
+              </button>
+            }
+          </li>
+        } @empty {
+          <li class="muted" i18n="@@console.taxes.suggestions.empty">
+            The platform has no suggestions yet. Add your own rates instead.
+          </li>
+        }
+      </ul>
+    }
+  </hc-sheet>
+}
+
+@if (sheet() === 'rate') {
+  <hc-sheet [title]="rateDraft.id ? text.editRate : text.newRate" (closed)="sheet.set(null)">
+    <form class="stack" (ngSubmit)="saveRate()">
+      <div class="form-grid">
+        <div class="field">
+          <label for="r-name" i18n="@@console.taxes.rateSheet.name">Province</label>
+          <input
+            id="r-name"
+            class="input"
+            name="name"
+            [(ngModel)]="rateDraft.name"
+            (ngModelChange)="touch()"
+            maxlength="80"
+            placeholder="e.g. Ontario"
+            i18n-placeholder="@@console.taxes.rateSheet.namePlaceholder"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="r-code" i18n="@@console.taxes.rateSheet.code">Code</label>
+          <input
+            id="r-code"
+            class="input"
+            name="code"
+            [(ngModel)]="rateDraft.code"
+            (ngModelChange)="touch()"
+            maxlength="6"
+            placeholder="e.g. ON"
+            i18n-placeholder="@@console.taxes.rateSheet.codePlaceholder"
+            required
+          />
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" i18n="@@console.taxes.rateSheet.taxes">Taxes charged</span>
+        <hc-tax-components-editor
+          [components]="rateComponents()"
+          (componentsChange)="rateComponents.set($event); touch()"
+        />
+      </div>
+      <label class="row small">
+        <input
+          type="checkbox"
+          class="checkbox"
+          name="isDefault"
+          [(ngModel)]="rateDraft.isDefault"
+          (ngModelChange)="touch()"
+        />
+        <span i18n="@@console.taxes.rateSheet.default">Default province for new proposals</span>
+      </label>
+      <button
+        class="btn btn-lg btn-block"
+        type="submit"
+        [disabled]="!rateValid() || busy()"
+        data-testid="save-rate"
+      >
+        <ng-container i18n="@@common.actions.save">Save</ng-container>
+      </button>
+    </form>
+  </hc-sheet>
+}
+
+@if (sheet() === 'program') {
+  <hc-sheet
+    [title]="programDraft.id ? text.editProgram : text.newProgram"
+    (closed)="sheet.set(null)"
+  >
+    <form class="stack" (ngSubmit)="saveProgram()">
+      <div class="field">
+        <label for="p-name" i18n="@@console.taxes.programSheet.name">Name</label>
+        <input
+          id="p-name"
+          class="input"
+          name="name"
+          [(ngModel)]="programDraft.name"
+          (ngModelChange)="touch()"
+          maxlength="80"
+          placeholder="e.g. Homeowner referral"
+          i18n-placeholder="@@console.taxes.programSheet.namePlaceholder"
+          required
+        />
+      </div>
+      <div class="field">
+        <label for="p-credit" i18n="@@console.taxes.programSheet.credit"
+          >Credit to the buyer, before tax ($)</label
+        >
+        <input
+          id="p-credit"
+          class="input tabular"
+          type="number"
+          min="0"
+          step="100"
+          name="credit"
+          [(ngModel)]="programDraft.credit"
+          (ngModelChange)="touch()"
+          required
+        />
+        <span class="hint" i18n="@@console.taxes.programSheet.creditHint"
+          >Use 0 to record who referred the buyer without a credit.</span
+        >
+      </div>
+      <div class="field">
+        <label for="p-desc"
+          ><ng-container i18n="@@console.taxes.programSheet.description">Description</ng-container>
+          <span class="hint" i18n="@@common.optional">optional</span></label
+        >
+        <textarea
+          id="p-desc"
+          class="textarea"
+          name="description"
+          [(ngModel)]="programDraft.description"
+          maxlength="500"
+          placeholder="e.g. The referrer receives a $1,000 thank-you on closing."
+          i18n-placeholder="@@console.taxes.programSheet.descriptionPlaceholder"
+        ></textarea>
+      </div>
+      <label class="row small">
+        <input
+          type="checkbox"
+          class="checkbox"
+          name="active"
+          [(ngModel)]="programDraft.active"
+          (ngModelChange)="touch()"
+        />
+        <span i18n="@@console.taxes.programSheet.active"
+          >Active: can be applied to new proposals</span
+        >
+      </label>
+      <button
+        class="btn btn-lg btn-block"
+        type="submit"
+        [disabled]="!programValid() || busy()"
+        data-testid="save-program"
+      >
+        <ng-container i18n="@@common.actions.save">Save</ng-container>
+      </button>
+    </form>
+  </hc-sheet>
+}

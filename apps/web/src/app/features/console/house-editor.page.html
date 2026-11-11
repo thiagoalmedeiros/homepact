@@ -1,0 +1,311 @@
+<a class="small back" [routerLink]="paths.console.homes"
+  ><hc-icon name="back" [size]="14" />
+  <ng-container i18n="@@console.houseEditor.back">Floor plans</ng-container></a
+>
+<header class="console-head">
+  <div>
+    <h1 class="title-1">
+      @if (house()?.name; as name) {
+        {{ name }}
+      } @else {
+        <ng-container i18n="@@console.houseEditor.newTitle">New floor plan</ng-container>
+      }
+    </h1>
+    @if (house(); as h) {
+      <p class="row status-row">
+        <span class="pill" [class.green]="h.status === HouseStatus.Published">
+          @if (h.status === HouseStatus.Published) {
+            <ng-container i18n="@@console.houseEditor.published">Published</ng-container>
+          } @else {
+            <ng-container i18n="@@console.houseEditor.draft">Draft</ng-container>
+          }
+        </span>
+      </p>
+    }
+  </div>
+  <div class="row">
+    @if (house(); as h) {
+      @if (h.status === HouseStatus.Draft) {
+        <button class="btn btn-danger" (click)="remove()" i18n="@@console.houseEditor.deleteDraft">
+          Delete draft
+        </button>
+        <button
+          class="btn btn-secondary"
+          (click)="setPublished(true)"
+          i18n="@@console.houseEditor.publish"
+        >
+          Publish
+        </button>
+      } @else {
+        <button
+          class="btn btn-secondary"
+          (click)="setPublished(false)"
+          i18n="@@console.houseEditor.unpublish"
+        >
+          Unpublish
+        </button>
+      }
+    }
+    <button class="btn" (click)="save()" [disabled]="saving() || !ready()">
+      @if (saving()) {
+        <ng-container i18n="@@common.actions.saving">Saving…</ng-container>
+      } @else {
+        <ng-container i18n="@@common.actions.save">Save</ng-container>
+      }
+    </button>
+  </div>
+</header>
+
+@if (ready()) {
+  <div class="layout">
+    <div class="stack sections">
+      <section class="card stack">
+        <h2 class="title-3" i18n="@@console.houseEditor.details">Details</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label for="h-name"
+              ><ng-container i18n="@@console.houseEditor.name">Name</ng-container></label
+            ><input
+              id="h-name"
+              class="input"
+              [(ngModel)]="form.name"
+              (ngModelChange)="autoSlug()"
+            />
+          </div>
+          <div class="field">
+            <label for="h-slug"
+              ><ng-container i18n="@@console.houseEditor.slug">URL slug</ng-container></label
+            ><input id="h-slug" class="input" [(ngModel)]="form.slug" />
+            @if (err('slug'); as e) {
+              <span class="error">{{ e }}</span>
+            }
+          </div>
+          <div class="field">
+            <label for="h-style"
+              ><ng-container i18n="@@console.houseEditor.style">Style</ng-container></label
+            ><input
+              id="h-style"
+              class="input"
+              [(ngModel)]="form.style"
+              placeholder="Front Attached Garage"
+              i18n-placeholder="@@console.houseEditor.stylePlaceholder"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label for="h-head"
+            ><ng-container i18n="@@console.houseEditor.headline">Headline</ng-container></label
+          ><input id="h-head" class="input" [(ngModel)]="form.headline" />
+        </div>
+        <div class="field">
+          <label for="h-desc"
+            ><ng-container i18n="@@console.houseEditor.description"
+              >Description</ng-container
+            ></label
+          ><textarea
+            id="h-desc"
+            class="textarea"
+            rows="5"
+            [(ngModel)]="form.description"
+          ></textarea>
+        </div>
+        <div class="field">
+          <label for="h-comm"
+            ><ng-container i18n="@@console.houseEditor.communities"
+              >Communities</ng-container
+            ></label
+          ><input
+            id="h-comm"
+            class="input"
+            [(ngModel)]="form.communities"
+            placeholder="Comma separated"
+            i18n-placeholder="@@console.houseEditor.commaSeparated"
+          />
+        </div>
+      </section>
+
+      <section class="card stack">
+        <h2 class="title-3" i18n="@@console.houseEditor.specs">Specs &amp; price</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label for="h-sqft"
+              ><ng-container i18n="@@console.houseEditor.sqft">Square feet</ng-container></label
+            ><input id="h-sqft" class="input" type="number" [(ngModel)]="form.sqft" />
+          </div>
+          <div class="field">
+            <label for="h-beds"
+              ><ng-container i18n="@@console.houseEditor.beds">Bedrooms</ng-container></label
+            ><input id="h-beds" class="input" type="number" [(ngModel)]="form.beds" />
+          </div>
+          <div class="field">
+            <label for="h-baths"
+              ><ng-container i18n="@@console.houseEditor.baths">Bathrooms</ng-container></label
+            ><input id="h-baths" class="input" type="number" step="0.5" [(ngModel)]="form.baths" />
+          </div>
+          <div class="field">
+            <label for="h-gar"
+              ><ng-container i18n="@@console.houseEditor.garage">Garage stalls</ng-container></label
+            ><input id="h-gar" class="input" type="number" [(ngModel)]="form.garage" />
+          </div>
+          <div class="field">
+            <label for="h-sto"
+              ><ng-container i18n="@@console.houseEditor.storeys">Storeys</ng-container></label
+            ><input id="h-sto" class="input" type="number" [(ngModel)]="form.storeys" />
+          </div>
+          <div class="field">
+            <label for="h-price" i18n="@@console.houseEditor.basePrice"
+              >Base price ({{ currencyCode }})</label
+            ><input
+              id="h-price"
+              class="input"
+              type="number"
+              step="100"
+              [(ngModel)]="form.basePrice"
+            />
+            @if (err('basePriceCents'); as e) {
+              <span class="error">{{ e }}</span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section class="card stack">
+        <h2 class="title-3" i18n="@@console.houseEditor.media">Media</h2>
+        <div class="field">
+          <label for="h-img"
+            ><ng-container i18n="@@console.houseEditor.photos">Photo URLs</ng-container></label
+          ><textarea
+            id="h-img"
+            class="textarea"
+            [(ngModel)]="form.images"
+            placeholder="One per line; the first is the cover"
+            i18n-placeholder="@@console.houseEditor.photosPlaceholder"
+          ></textarea>
+        </div>
+        <div class="field">
+          <label for="h-fp"
+            ><ng-container i18n="@@console.houseEditor.floorPlans"
+              >Floor plan URLs</ng-container
+            ></label
+          ><textarea
+            id="h-fp"
+            class="textarea"
+            [(ngModel)]="form.floorPlans"
+            placeholder="One per line"
+            i18n-placeholder="@@console.houseEditor.floorPlansPlaceholder"
+          ></textarea>
+        </div>
+      </section>
+
+      <section class="card stack">
+        <div>
+          <h2 class="title-3" i18n="@@console.houseEditor.pricesTitle">
+            Option prices on this plan
+          </h2>
+          <p class="muted small">
+            <ng-container i18n="@@console.houseEditor.pricesHelp"
+              >Every package and option in the catalog can be chosen on this plan. Set a price here
+              only when this plan costs more or less to finish; leave it empty to use the catalog
+              price.</ng-container
+            >
+            @if (overrideCount()) {
+              <strong i18n="@@console.houseEditor.customPrices"
+                >{overrideCount(), plural,
+                  =1 {1 custom price}
+                  other {{{ overrideCount() }} custom prices}
+
+                }.</strong
+              >
+            }
+          </p>
+        </div>
+        @for (area of catalog().areas; track area.slug) {
+          <div class="area">
+            <p class="strong area-label">{{ area.label }}</p>
+            @for (p of packagesOf(area.slug); track p.id) {
+              <div class="opt">
+                <span
+                  >{{ p.name }}
+                  <span class="pill" i18n="@@console.houseEditor.package">Package</span></span
+                >
+                <span class="small muted tabular">{{ p.priceCents | money }}</span>
+                <input
+                  class="input tabular"
+                  type="number"
+                  min="0"
+                  [placeholder]="catalogPriceLabel(p.priceCents | money)"
+                  [(ngModel)]="prices[p.id]"
+                  [attr.aria-label]="priceOnPlanLabel(p.name)"
+                />
+              </div>
+            }
+            @for (i of itemsOf(area.slug); track i.id) {
+              <div class="opt">
+                <span
+                  >{{ i.name }}
+                  @if (i.soldSeparately === false) {
+                    <span class="pill" i18n="@@console.houseEditor.packagesOnly"
+                      >In packages only</span
+                    >
+                  }
+                </span>
+                <span class="small muted tabular">{{ i.priceCents | money }}</span>
+                @if (i.soldSeparately !== false) {
+                  <input
+                    class="input tabular"
+                    type="number"
+                    min="0"
+                    [placeholder]="catalogPriceLabel(i.priceCents | money)"
+                    [(ngModel)]="prices[i.id]"
+                    [attr.aria-label]="priceOnPlanLabel(i.name)"
+                  />
+                } @else {
+                  <span></span>
+                }
+              </div>
+            }
+          </div>
+        } @empty {
+          <p class="muted">
+            <ng-container i18n="@@console.houseEditor.catalogEmpty"
+              >Your catalog is empty.</ng-container
+            >
+            <a [routerLink]="paths.console.catalog" i18n="@@console.houseEditor.addOptions"
+              >Add areas and options</a
+            >
+            <ng-container i18n="@@console.houseEditor.first">first.</ng-container>
+          </p>
+        }
+      </section>
+    </div>
+
+    <aside class="side">
+      <div class="card stack preview-card">
+        <div class="preview">
+          @if (firstImage()) {
+            <img [src]="firstImage()" alt="" referrerpolicy="no-referrer" />
+          }
+        </div>
+        <p class="strong">
+          @if (form.name) {
+            {{ form.name }}
+          } @else {
+            <ng-container i18n="@@common.untitled">Untitled</ng-container>
+          }
+        </p>
+        <p class="small muted">
+          <ng-container i18n="@@common.specs"
+            >{{ form.sqft || 0 }} ft² · {{ form.beds }} bd · {{ form.baths }} ba</ng-container
+          >
+        </p>
+        <p class="title-3 tabular" i18n="@@console.houseEditor.from">
+          From {{ form.basePrice * 100 | money }}
+        </p>
+      </div>
+    </aside>
+  </div>
+} @else if (loadError(); as e) {
+  <div class="callout error" role="alert">{{ e }}</div>
+} @else {
+  <div class="skeleton loading"></div>
+}

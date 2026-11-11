@@ -1,0 +1,16 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+img {
+  width: auto;
+  max-width: var(--logo-max, 190px);
+  object-fit: contain;
+  display: block;
+}
+.name {
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--text);
+  white-space: nowrap;
+}

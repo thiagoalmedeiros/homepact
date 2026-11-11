@@ -1,0 +1,202 @@
+<header class="console-head">
+  <div>
+    <h1 class="title-1" i18n="@@console.inventory.title">Pre-existing homes</h1>
+    <p class="muted" i18n="@@console.inventory.subtitle">
+      Homes that are built or under way, ready to propose at their asking price.
+    </p>
+  </div>
+  <button class="btn" type="button" (click)="edit()">
+    <hc-icon name="plus" [size]="16" />
+    <ng-container i18n="@@console.inventory.add">Add home</ng-container>
+  </button>
+</header>
+<hc-load-state [resource]="homes" />
+<div [hidden]="!homes.hasValue()" class="card table-wrap table-card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th i18n="@@console.inventory.columns.address">Address</th>
+        <th class="hide-sm" i18n="@@console.inventory.columns.model">Model</th>
+        <th class="hide-sm" i18n="@@console.inventory.columns.possession">Possession</th>
+        <th i18n="@@console.inventory.columns.status">Status</th>
+        <th class="num" i18n="@@console.inventory.columns.price">Price</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (h of list(); track h.id) {
+        <tr>
+          <td>
+            <div class="strong">{{ h.address }}</div>
+            <div class="tiny muted">
+              {{ h.community }}
+              @if (h.lockedByDefault) {
+                · <ng-container i18n="@@console.inventory.soldAsBuilt">sold as built</ng-container>
+              }
+            </div>
+          </td>
+          <td class="hide-sm">{{ h.houseName }}</td>
+          <td class="hide-sm muted">{{ h.possession || '—' }}</td>
+          <td>
+            <span class="pill" [class]="labels[h.status].tone">{{ labels[h.status].text }}</span>
+          </td>
+          <td class="num tabular">{{ h.quote.totalCents | money: h.quote.currency }}</td>
+          <td class="num">
+            <div class="row actions">
+              @if (h.status === InventoryStatus.Available) {
+                <a
+                  class="btn btn-sm btn-secondary"
+                  [routerLink]="paths.console.newProposal"
+                  [queryParams]="{ from: 'home' }"
+                  ><ng-container i18n="@@console.inventory.propose">Propose</ng-container></a
+                >
+              }
+              <button
+                class="icon-btn"
+                type="button"
+                (click)="edit(h)"
+                [attr.aria-label]="editLabel(h.address)"
+              >
+                <hc-icon name="edit" [size]="16" />
+              </button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty" i18n="@@console.inventory.empty">
+            No pre-existing homes yet.
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if (draft(); as f) {
+  <hc-sheet [title]="f.id ? editTitle : newTitle" (closed)="draft.set(null)">
+    <form class="stack" (ngSubmit)="save(f)">
+      <div class="field">
+        <label for="i-model" i18n="@@console.inventory.model">Model</label>
+        <select
+          id="i-model"
+          class="select"
+          name="houseId"
+          [(ngModel)]="f.houseId"
+          (ngModelChange)="pickModel($event)"
+          required
+          [disabled]="!!f.id"
+        >
+          <option value="" disabled i18n="@@console.inventory.chooseModel">Choose a model</option>
+          @for (h of models(); track h.id) {
+            <option [value]="h.id">{{ h.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="i-address" i18n="@@console.inventory.address">Address</label>
+        <input id="i-address" class="input" name="address" [(ngModel)]="f.address" required />
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="i-community" i18n="@@console.inventory.community">Community</label>
+          <input id="i-community" class="input" name="community" [(ngModel)]="f.community" />
+        </div>
+        <div class="field">
+          <label for="i-possession" i18n="@@console.inventory.possession">Possession</label>
+          <input
+            id="i-possession"
+            class="input"
+            name="possession"
+            [(ngModel)]="f.possession"
+            placeholder="Immediate, Spring 2027…"
+            i18n-placeholder="@@console.inventory.possessionPlaceholder"
+          />
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="i-price"
+            ><ng-container i18n="@@console.inventory.askingPrice">Asking price</ng-container>
+            <span class="hint" i18n="@@common.optional">optional</span></label
+          >
+          <input
+            id="i-price"
+            class="input tabular"
+            type="number"
+            min="0"
+            step="1000"
+            name="price"
+            [(ngModel)]="f.price"
+            placeholder="Priced from options"
+            i18n-placeholder="@@console.inventory.pricePlaceholder"
+          />
+        </div>
+        <div class="field">
+          <label for="i-status" i18n="@@console.inventory.status">Status</label>
+          <select id="i-status" class="select" name="status" [(ngModel)]="f.status">
+            @for (s of statuses; track s) {
+              <option [value]="s">{{ labels[s].text }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="i-features"
+          ><ng-container i18n="@@console.inventory.highlights">Highlights</ng-container>
+          <span class="hint" i18n="@@console.inventory.commaSeparated">comma separated</span></label
+        >
+        <input
+          id="i-features"
+          class="input"
+          name="features"
+          [(ngModel)]="f.features"
+          placeholder="Walkout basement, Backs onto park"
+          i18n-placeholder="@@console.inventory.highlightsPlaceholder"
+        />
+      </div>
+      <label class="row lock">
+        <input class="switch" type="checkbox" name="locked" [(ngModel)]="f.lockedByDefault" />
+        <span
+          ><span class="strong small"
+            ><ng-container i18n="@@console.inventory.lockTitle">Sold as built</ng-container></span
+          ><br /><span class="tiny muted" i18n="@@console.inventory.lockHint"
+            >New proposals start locked: the buyer can sign but not request changes.</span
+          ></span
+        >
+      </label>
+      @if (detail.hasValue() ? detail.value() : undefined; as d) {
+        <details>
+          <summary class="strong small" i18n="@@console.inventory.howBuilt">
+            How it's built ({configuredCount(), plural,
+              =1 {1 area}
+              other {{{ configuredCount() }} areas}
+            }
+            chosen)
+          </summary>
+          <div class="config">
+            <hc-selection-editor
+              [areas]="d.areas"
+              [currency]="d.currency"
+              [(selections)]="selections"
+            />
+          </div>
+        </details>
+      }
+      <div class="row">
+        <button class="btn" type="submit" [disabled]="busy() || !f.houseId || !f.address.trim()">
+          @if (f.id) {
+            <ng-container i18n="@@common.actions.save">Save</ng-container>
+          } @else {
+            <ng-container i18n="@@console.inventory.add">Add home</ng-container>
+          }
+        </button>
+        @if (f.id) {
+          <button class="btn btn-ghost" type="button" (click)="remove(f)">
+            <ng-container i18n="@@common.actions.delete">Delete</ng-container>
+          </button>
+        }
+      </div>
+    </form>
+  </hc-sheet>
+}
