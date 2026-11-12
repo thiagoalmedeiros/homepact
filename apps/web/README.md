@@ -1,6 +1,6 @@
 # @homepact/web
 
-Angular web UI, deployed unchanged for every company. Run from the repo root with `npm run dev -w apps/web`.
+Angular web UI, deployed unchanged for every company. Run with `npm install && npm run dev` here, or `npm run dev -w apps/web` from the repo root.
 
 - `public/config.json`: runtime API URL (`{ "apiBaseUrl": "http://localhost:3000" }`); nginx
   generates it from `API_PUBLIC_URL` in containers.

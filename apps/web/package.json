@@ -3,12 +3,18 @@
   "version": "0.1.0",
   "scripts": {
     "ng": "ng",
+    "build:shared": "npm run build -w @homepact/shared",
+    "predev": "npm run build:shared",
     "dev": "ng serve --port ${WEB_PORT:-4200}",
+    "prebuild": "npm run build:shared",
     "build": "ng build",
+    "prewatch": "npm run build:shared",
     "watch": "ng build --watch --configuration development",
+    "pretypecheck": "npm run build:shared",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "check:templates": "node scripts/check-templates.mjs",
     "i18n:extract": "ng extract-i18n",
+    "pretest": "npm run build:shared",
     "test": "node scripts/check-templates.mjs && ng test --watch=false"
   },
   "private": true,
