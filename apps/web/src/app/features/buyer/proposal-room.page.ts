@@ -79,8 +79,9 @@ export class ProposalRoomPage {
   readonly id = input.required<string>();
   protected readonly turnOf = turnOf;
 
+  private readonly outsider = this.auth.isTeam() && !this.auth.isStaff();
   protected readonly detail = resource({
-    params: () => this.id(),
+    params: () => (this.outsider ? undefined : this.id()),
     loader: ({ params }) => this.api.get<ProposalDetail>(API.proposals.one(params)),
   });
   protected readonly d = computed(() => (this.detail.hasValue() ? this.detail.value() : undefined));
@@ -150,6 +151,7 @@ export class ProposalRoomPage {
   protected agree = false;
 
   constructor() {
+    if (this.outsider) void this.router.navigateByUrl(this.auth.home(), { replaceUrl: true });
     effect(() => this.sendSellersToTheConsole());
   }
 

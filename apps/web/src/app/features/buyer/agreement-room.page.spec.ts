@@ -1,8 +1,16 @@
-import { AgreementStatus, SignerStatus } from '@homepact/shared/enums';
+import { AgreementStatus, PaymentKind, Role, SignerStatus } from '@homepact/shared/enums';
+import type { AgreementPayment } from '@homepact/shared';
 import { TestBed } from '@angular/core/testing';
 import { ToastService } from '../../core/toast.service';
-import { settle, setup } from '../../testing';
-import { agreement, HASH, purchaser, signedPurchaser } from '../../testing-fixtures';
+import { settle, setup, signInAs } from '../../testing';
+import {
+  agreement,
+  buyerLedgerOf,
+  HASH,
+  payment,
+  purchaser,
+  signedPurchaser,
+} from '../../testing-fixtures';
 import { AgreementRoomPage } from './agreement-room.page';
 
 /** Sent to two purchasers; this session is Robin's signing link. */
@@ -179,5 +187,107 @@ describe('AgreementRoomPage (purchaser)', () => {
   it('an agreement that is not theirs is simply unavailable', async () => {
     const { el } = await mount({ error: 'Not found' }, 404);
     expect(el.textContent).toContain("This agreement isn't available");
+  });
+
+  it('the buyer follows their deposit: what was received, and what is left to pay', async () => {
+    const executed = agreement({
+      status: AgreementStatus.Executed,
+      issuedAt: '2026-11-02T10:00:00.000Z',
+      executedAt: '2026-11-04T09:00:00.000Z',
+      purchasers: [signedPurchaser()],
+    });
+    const http = setup();
+    await signInAs(http, Role.Buyer, 'Robin Buyer');
+    const fixture = TestBed.createComponent(AgreementRoomPage);
+    fixture.componentRef.setInput('id', 'a1');
+    await settle(fixture);
+    http.expectOne('/api/agreements/a1').flush(executed);
+    await settle(fixture);
+    http.expectOne('/api/agreements/a1/payments').flush(buyerLedgerOf(executed, [payment()]));
+    await settle(fixture);
+    const section = byTestId(fixture.nativeElement as HTMLElement, 'buyer-payments')!;
+    expect(section.textContent).toContain('$10,000 received');
+    expect(section.textContent).toContain('on signing');
+    expect(section.textContent).toContain('Partly paid');
+    expect(section.textContent).toContain('Balance due on closing');
+    expect(byTestId(section, 'buyer-payment-pay-1')?.textContent).toContain('Cheque');
+  });
+
+  it('a signing link shows the agreement to sign, not its payments', async () => {
+    const { http } = await mount(
+      sent({ status: AgreementStatus.Signed, purchasers: [signedPurchaser()] }),
+    );
+    http.expectNone('/api/agreements/a1/payments');
+  });
+
+  const asBuyer = async (entries: AgreementPayment[]) => {
+    const executed = agreement({
+      status: AgreementStatus.Executed,
+      issuedAt: '2026-11-02T10:00:00.000Z',
+      executedAt: '2026-11-04T09:00:00.000Z',
+      purchasers: [signedPurchaser()],
+    });
+    const http = setup();
+    await signInAs(http, Role.Buyer, 'Robin Buyer');
+    const fixture = TestBed.createComponent(AgreementRoomPage);
+    fixture.componentRef.setInput('id', 'a1');
+    await settle(fixture);
+    http.expectOne('/api/agreements/a1').flush(executed);
+    await settle(fixture);
+    http.expectOne('/api/agreements/a1/payments').flush(buyerLedgerOf(executed, entries));
+    await settle(fixture);
+    return { http, fixture, el: fixture.nativeElement as HTMLElement };
+  };
+
+  it('the buyer opens the receipt of a deposit, and keeps it as a PDF', async () => {
+    Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:receipt'), revokeObjectURL: vi.fn() });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const { http, fixture, el } = await asBuyer([payment()]);
+
+    byTestId(el, 'receipt-pay-1')!.click();
+    await settle(fixture);
+    const receipt = byTestId(document, 'buyer-receipt')!;
+    for (const text of [
+      'Payment receipt',
+      'PAY-AAAA-0001',
+      'Example Homes',
+      'Received from',
+      'Robin Buyer',
+      '$10,000',
+      'November 3, 2026',
+      'Cheque',
+      'A-2001',
+    ]) {
+      expect(receipt.textContent, text).toContain(text);
+    }
+
+    byTestId(document, 'receipt-download')!.click();
+    await settle(fixture);
+    const req = http.expectOne('/api/agreements/a1/payments/pay-1/receipt');
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['%PDF-1.3'], { type: 'application/pdf' }));
+    await settle(fixture);
+    expect((click.mock.contexts[0] as HTMLAnchorElement).download).toBe(
+      'PAY-AAAA-0001-receipt.pdf',
+    );
+    click.mockRestore();
+  });
+
+  it('money sent back comes with a refund confirmation', async () => {
+    const { fixture, el } = await asBuyer([
+      payment(),
+      payment({
+        id: 'pay-2',
+        reference: 'PAY-BBBB-0002',
+        kind: PaymentKind.Refund,
+        amountCents: 400_000,
+      }),
+    ]);
+    byTestId(el, 'receipt-pay-2')!.click();
+    await settle(fixture);
+    const receipt = byTestId(document, 'buyer-receipt')!;
+    expect(receipt.textContent).toContain('Refund confirmation');
+    expect(receipt.textContent).toContain('Refunded to');
+    expect(receipt.textContent).toContain('$4,000');
   });
 });

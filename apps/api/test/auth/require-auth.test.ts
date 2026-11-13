@@ -1,13 +1,14 @@
 import { Role } from '@homepact/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { describe, expect, it, vi } from 'vitest';
-import { createAuthGuards, isStaff } from '../../src/auth/require-auth.js';
+import { createAuthGuards, isCompanyMember, isStaff } from '../../src/auth/require-auth.js';
 import type { Principal } from '../../src/auth/tokens.js';
 import type { Tenant } from '../../src/tenant/resolve-tenant.js';
 import {
   ADMIN,
   BUYER,
   COMPANY_TENANT,
+  FINANCE,
   PLATFORM_TENANT,
   STAFF,
   SUPER_ADMIN,
@@ -144,8 +145,18 @@ describe('isStaff', () => {
   it('is true for company admins and staff only', () => {
     expect(isStaff(ADMIN)).toBe(true);
     expect(isStaff(STAFF)).toBe(true);
+    expect(isStaff(FINANCE)).toBe(false);
     expect(isStaff(BUYER)).toBe(false);
     expect(isStaff(SUPER_ADMIN)).toBe(false);
     expect(isStaff(undefined)).toBe(false);
+  });
+});
+
+describe('isCompanyMember', () => {
+  it('is true for everyone on the company team, finance included', () => {
+    for (const p of [ADMIN, STAFF, FINANCE]) expect(isCompanyMember(p), p.role).toBe(true);
+    for (const p of [BUYER, SUPER_ADMIN, keyHolder('proposal-1'), undefined]) {
+      expect(isCompanyMember(p)).toBe(false);
+    }
   });
 });

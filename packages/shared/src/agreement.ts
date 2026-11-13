@@ -5,6 +5,8 @@ import { AgreementStatus, SignerStatus } from './enums.js';
 import type { HouseSpecs } from './house.js';
 import { centsSchema, type Currency } from './money.js';
 import { VALIDATION } from './messages.js';
+import { calendarDateSchema } from './schema-utils.js';
+import type { AgreementPaymentSummary } from './payment-schedule.js';
 import type { ProposalKind, Signature } from './proposal.js';
 import type { QuoteSnapshot } from './quote.js';
 
@@ -49,16 +51,6 @@ export interface AgreementTemplate {
   createdAt: string;
   updatedAt: string;
 }
-
-const isCalendarDate = (s: string) => {
-  const d = new Date(`${s}T00:00:00Z`);
-  return !Number.isNaN(d.getTime()) && d.toISOString().startsWith(s);
-};
-
-const calendarDateSchema = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, VALIDATION.isoDate)
-  .refine(isCalendarDate, VALIDATION.calendarDate);
 
 export const purchaserInputSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -239,4 +231,5 @@ export interface AgreementSummary {
   executedAt?: string;
   signedCount: number;
   purchaserCount: number;
+  payments?: AgreementPaymentSummary;
 }

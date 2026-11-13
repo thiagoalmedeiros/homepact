@@ -26,3 +26,7 @@ export class LocalDatePipe implements PipeTransform {
     return value ? formatDate(value, format, this.locale) : '';
   }
 }
+
+/** Today on the user's calendar, "YYYY-MM-DD". */
+export const localDay = (at = new Date()): string =>
+  `${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, '0')}-${String(at.getDate()).padStart(2, '0')}`;

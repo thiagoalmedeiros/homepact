@@ -4,7 +4,7 @@ import { ensureIndexes } from '../data/indexes.js';
 import { runMigrations } from '../data/migrations.js';
 import { connectDatabase } from '../db.js';
 import { createLogger } from '../logger.js';
-import { seedShowcase, seedSuperAdmin } from './seed.js';
+import { seedShowcase, seedSuperAdmin, showcaseSummary } from './seed.js';
 
 const list = (value: string | undefined, fallback: string) =>
   (value ?? fallback)
@@ -39,19 +39,12 @@ const result = await seedShowcase(database.db, {
 });
 await database.close();
 
-const lines = result.created
-  ? [
-      '',
-      '  Example Homes — negotiation demo is ready',
-      '  ─────────────────────────────────────────',
-      `  Seller console    ${showcaseOrigins[0]}/console   jordan@example-homes.demo / ${password}`,
-      `  Buyer account     ${showcaseOrigins[0]}            taylor@example.com / ${password}`,
-      `  Platform console  ${config.platformAdminOrigin}   ${process.env['SEED_ADMIN_EMAIL'] ?? 'admin@platform.demo'}`,
-      `  Second tenant     ${northwindOrigins[0]}   (Northwind Homes, fictional)`,
-      `  Purchase agreement  ${showcaseOrigins[0]}/console/agreements   (Jamie Okafor's signed proposal is ready for one)`,
-      '  Buyer invite links (open in a private window):',
-      ...(result.invites ?? []).map((i) => `    ${i.label}: ${showcaseOrigins[0]}/k?key=${i.key}`),
-      '',
-    ]
-  : ['', `  Already seeded; origins refreshed (${showcaseOrigins.join(', ')}).`, ''];
-process.stdout.write(lines.join('\n') + '\n');
+process.stdout.write(
+  showcaseSummary(result, {
+    showcaseOrigins,
+    secondOrigin: northwindOrigins[0]!,
+    platformOrigin: config.platformAdminOrigin,
+    platformEmail: process.env['SEED_ADMIN_EMAIL'] ?? 'admin@platform.demo',
+    password,
+  }) + '\n',
+);

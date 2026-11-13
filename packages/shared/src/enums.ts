@@ -2,6 +2,7 @@ export enum Role {
   SuperAdmin = 'super_admin',
   CompanyAdmin = 'company_admin',
   CompanyStaff = 'company_staff',
+  CompanyFinance = 'company_finance',
   Buyer = 'buyer',
 }
 
@@ -16,6 +17,17 @@ export type StaffRole = (typeof STAFF_ROLES)[number];
 
 export const isStaffRole = (role: PrincipalRole | null | undefined): role is StaffRole =>
   role === Role.CompanyAdmin || role === Role.CompanyStaff;
+
+export const COMPANY_ROLES = [Role.CompanyAdmin, Role.CompanyStaff, Role.CompanyFinance] as const;
+export type CompanyRole = (typeof COMPANY_ROLES)[number];
+
+export const isCompanyRole = (role: PrincipalRole | null | undefined): role is CompanyRole =>
+  (COMPANY_ROLES as readonly (PrincipalRole | null | undefined)[]).includes(role);
+
+export const PAYMENT_MANAGER_ROLES = [Role.CompanyFinance, Role.CompanyAdmin] as const;
+
+export const isPaymentManager = (role: PrincipalRole | null | undefined): boolean =>
+  (PAYMENT_MANAGER_ROLES as readonly (PrincipalRole | null | undefined)[]).includes(role);
 
 export enum Party {
   Buyer = 'buyer',
@@ -80,6 +92,22 @@ export const OPEN_AGREEMENT_STATUSES = [
 export const isOpenAgreement = (status: AgreementStatus): boolean =>
   (OPEN_AGREEMENT_STATUSES as readonly AgreementStatus[]).includes(status);
 
+export const PAYABLE_AGREEMENT_STATUSES = [
+  AgreementStatus.Signed,
+  AgreementStatus.Executed,
+] as const;
+
+export const isPayableAgreement = (status: AgreementStatus): boolean =>
+  (PAYABLE_AGREEMENT_STATUSES as readonly AgreementStatus[]).includes(status);
+
+export const REFUNDABLE_AGREEMENT_STATUSES = [
+  ...PAYABLE_AGREEMENT_STATUSES,
+  AgreementStatus.Cancelled,
+] as const;
+
+export const isRefundableAgreement = (status: AgreementStatus): boolean =>
+  (REFUNDABLE_AGREEMENT_STATUSES as readonly AgreementStatus[]).includes(status);
+
 export enum SignerStatus {
   Pending = 'pending',
   Signed = 'signed',
@@ -105,4 +133,44 @@ export enum HealthStatus {
 export enum ServiceState {
   Up = 'up',
   Down = 'down',
+}
+
+export enum PaymentKind {
+  Payment = 'payment',
+  Refund = 'refund',
+}
+
+export enum PaymentStatus {
+  Pending = 'pending',
+  Posted = 'posted',
+  Rejected = 'rejected',
+  Withdrawn = 'withdrawn',
+  Voided = 'voided',
+}
+
+export enum PaymentMethod {
+  Cheque = 'cheque',
+  BankDraft = 'bank_draft',
+  Wire = 'wire',
+  Eft = 'eft',
+  Card = 'card',
+  Cash = 'cash',
+  Other = 'other',
+}
+
+export enum PaymentAction {
+  Recorded = 'recorded',
+  Edited = 'edited',
+  Approved = 'approved',
+  Rejected = 'rejected',
+  Withdrawn = 'withdrawn',
+  Voided = 'voided',
+}
+
+export enum InstalmentStatus {
+  Paid = 'paid',
+  Partial = 'partial',
+  Overdue = 'overdue',
+  Due = 'due',
+  Upcoming = 'upcoming',
 }

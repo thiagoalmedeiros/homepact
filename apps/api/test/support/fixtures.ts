@@ -7,6 +7,10 @@ import {
   HouseStatus,
   InventoryStatus,
   Party,
+  PaymentAction,
+  PaymentKind,
+  PaymentMethod,
+  PaymentStatus,
   ProposalStatus,
   Role,
   type AgreementPurchaser,
@@ -22,6 +26,7 @@ import type { UserDoc } from '../../src/modules/auth/users.js';
 import type { AreaDoc, CatalogItemDoc, PackageDoc } from '../../src/modules/catalog/store.js';
 import type { HouseDoc } from '../../src/modules/houses/store.js';
 import type { InventoryHomeDoc } from '../../src/modules/inventory/store.js';
+import type { PaymentDoc } from '../../src/modules/payments/store.js';
 import type { TaxPresetDoc } from '../../src/data/platform-repo.js';
 import type { ReferralProgramDoc } from '../../src/modules/referrals/store.js';
 import type { TaxRateDoc } from '../../src/modules/sales-tax/store.js';
@@ -380,6 +385,33 @@ export const referralProgramDoc = (over: Partial<ReferralProgramDoc> = {}): Refe
   creditCents: 200_000,
   active: true,
   createdAt: NOW_ISO,
+  updatedAt: NOW_ISO,
+  ...over,
+});
+
+/** A $10,000 cheque toward the deposit of `agreementDoc()`, posted by finance. */
+export const paymentDoc = (over: Partial<PaymentDoc> = {}): PaymentDoc => ({
+  _id: 'pay-1',
+  companyId: COMPANY_ID,
+  reference: 'PAY-AAAA-0001',
+  agreementId: 'agr-1',
+  agreementReference: 'A-TEST-0001',
+  kind: PaymentKind.Payment,
+  status: PaymentStatus.Posted,
+  amountCents: 1_000_000,
+  currency: 'CAD',
+  receivedOn: '2026-10-30',
+  method: PaymentMethod.Cheque,
+  externalRef: '#101',
+  recordedBy: { id: 'finance-1', name: 'Fran Finance', role: Role.CompanyFinance },
+  recordedAt: NOW_ISO,
+  history: [
+    {
+      at: NOW_ISO,
+      by: { id: 'finance-1', name: 'Fran Finance', role: Role.CompanyFinance },
+      action: PaymentAction.Recorded,
+    },
+  ],
   updatedAt: NOW_ISO,
   ...over,
 });

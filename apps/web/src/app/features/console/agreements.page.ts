@@ -12,6 +12,7 @@ import type { AgreementSummary, Proposal } from '@homepact/shared';
 import { API } from '../../core/api-endpoints';
 import { ApiService } from '../../core/api.service';
 import { PATHS } from '../../core/app-paths';
+import { AuthService } from '../../core/auth.service';
 import { Icon } from '../../shared/icon';
 import { LoadState } from '../../shared/load-state';
 import { MoneyPipe } from '../../shared/money.pipe';
@@ -33,6 +34,7 @@ export class AgreementsPage {
 
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
+  protected readonly auth = inject(AuthService);
   protected readonly LABEL = AGREEMENT_LABEL;
   protected readonly paths = PATHS;
   protected readonly filter = signal<Filter>('all');
@@ -60,7 +62,8 @@ export class AgreementsPage {
     loader: () => this.api.get<AgreementSummary[]>(API.agreements.list),
   });
   private readonly signed = resource({
-    loader: () => this.api.get<Proposal[]>(API.proposals.list, { status: ProposalStatus.Signed }),
+    params: () => (this.auth.isStaff() ? ProposalStatus.Signed : undefined),
+    loader: ({ params }) => this.api.get<Proposal[]>(API.proposals.list, { status: params }),
   });
   private readonly all = computed(() => (this.list.hasValue() ? this.list.value() : []));
   protected readonly visible = computed(() =>

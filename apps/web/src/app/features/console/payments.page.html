@@ -1,0 +1,112 @@
+<header class="console-head">
+  <div>
+    <h1 class="title-1" i18n="@@console.payments.title">Payments</h1>
+    <p class="muted">
+      @if (auth.managesPayments()) {
+        <ng-container i18n="@@console.payments.subtitleFinance"
+          >Payments recorded by sales count once you approve them.</ng-container
+        >
+      } @else {
+        <ng-container i18n="@@console.payments.subtitleSales"
+          >The payments you recorded, and what finance decided.</ng-container
+        >
+      }
+    </p>
+  </div>
+</header>
+
+<div
+  class="segmented filters"
+  role="group"
+  aria-label="Filter"
+  i18n-aria-label="@@console.payments.filter"
+>
+  @for (f of filters; track f.id) {
+    <button [attr.aria-pressed]="filter() === f.id" (click)="filter.set(f.id)">
+      {{ f.label }}
+    </button>
+  }
+</div>
+<hc-load-state [resource]="entries" />
+<ul [hidden]="!entries.hasValue()" class="card list queue">
+  @for (p of list(); track p.id) {
+    @let status = STATUS[p.status];
+    <li class="entry" [attr.data-testid]="'queue-' + p.id">
+      <div class="body">
+        <div class="meta">
+          <span class="strong tabular amount">{{ p.amountCents | money: p.currency }}</span>
+          <span class="small muted">· {{ p.receivedOn | localDate: 'calendar' }}</span>
+          <span class="small muted">· {{ METHOD[p.method] }}</span>
+          @if (p.externalRef) {
+            <span class="small muted truncate" [title]="p.externalRef">{{ p.externalRef }}</span>
+          }
+        </div>
+        <div class="meta small">
+          <a [routerLink]="paths.console.agreement(p.agreementId)">{{ p.agreementReference }}</a>
+          <span
+            class="muted truncate"
+            [title]="p.recordedBy.name"
+            i18n="@@console.payments.recordedBy"
+            >· recorded by {{ p.recordedBy.name }} {{ p.recordedAt | ago }}</span
+          >
+        </div>
+        @if (p.rejectReason) {
+          <span class="small clamp-2" [title]="p.rejectReason" i18n="@@payments.rejectedBecause"
+            >Rejected by {{ p.reviewedBy?.name }}: {{ p.rejectReason }}</span
+          >
+        }
+        @if (p.voidReason) {
+          <span class="small clamp-2" [title]="p.voidReason" i18n="@@payments.voidedBecause"
+            >Voided by {{ p.voidedBy?.name }}: {{ p.voidReason }}</span
+          >
+        }
+      </div>
+      <div class="side">
+        @if (actions.canReview(p)) {
+          <button
+            class="btn btn-sm"
+            type="button"
+            [disabled]="actions.busy()"
+            (click)="approve(p)"
+            [attr.data-testid]="'approve-' + p.id"
+            i18n="@@payments.approve"
+          >
+            Approve
+          </button>
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            (click)="rejecting.set(p)"
+            [attr.data-testid]="'reject-' + p.id"
+            i18n="@@payments.rejectAction"
+          >
+            Reject
+          </button>
+        } @else {
+          <span class="pill" [class]="status.tone">{{ status.text }}</span>
+        }
+      </div>
+    </li>
+  } @empty {
+    <li class="muted" data-testid="queue-empty">
+      @if (filter() === PaymentStatus.Pending) {
+        <ng-container i18n="@@console.payments.emptyPending"
+          >Nothing is waiting for approval.</ng-container
+        >
+      } @else {
+        <ng-container i18n="@@console.payments.empty">No payment here.</ng-container>
+      }
+    </li>
+  }
+</ul>
+
+@if (rejecting(); as p) {
+  <hc-reason-sheet
+    [title]="rejectText.title"
+    [message]="rejectText.message"
+    [confirmLabel]="rejectText.confirm"
+    [busy]="actions.busy()"
+    (confirmed)="reject(p, $event)"
+    (closed)="rejecting.set(null)"
+  />
+}

@@ -98,6 +98,9 @@ const FILE_SUFFIX: Record<AgreementStatus, string> = {
 export const agreementFileName = (reference: string, status: AgreementStatus): string =>
   `${reference}-${FILE_SUFFIX[status]}.pdf`;
 
+export const receiptFileName = (paymentReference: string): string =>
+  `${paymentReference}-receipt.pdf`;
+
 export const STARTER_AGREEMENT_TEMPLATE: {
   name: string;
   title: string;

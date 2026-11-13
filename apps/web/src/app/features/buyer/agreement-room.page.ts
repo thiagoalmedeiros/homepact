@@ -1,4 +1,9 @@
-import { AgreementStatus, SignerStatus } from '@homepact/shared/enums';
+import {
+  AgreementStatus,
+  isRefundableAgreement,
+  PaymentKind,
+  SignerStatus,
+} from '@homepact/shared/enums';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -11,7 +16,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import type { Agreement, AgreementPurchaser } from '@homepact/shared';
+import type { Agreement, AgreementPurchaser, BuyerLedger, BuyerPayment } from '@homepact/shared';
 import { keyClauses } from '@homepact/shared/agreement-fields';
 import { API } from '../../core/api-endpoints';
 import { ApiService } from '../../core/api.service';
@@ -20,10 +25,11 @@ import { AuthService } from '../../core/auth.service';
 import { ToastService } from '../../core/toast.service';
 import { AgreementDocument } from '../../shared/agreement-document';
 import { LocalDatePipe } from '../../shared/dates';
-import { downloadAgreement } from '../../shared/download';
+import { downloadAgreement, downloadReceipt } from '../../shared/download';
 import { Icon } from '../../shared/icon';
 import { MoneyPipe } from '../../shared/money.pipe';
 import { Sheet } from '../../shared/sheet';
+import { INSTALMENT_LABEL, PAYMENT_METHOD_LABEL } from '../../shared/status';
 
 /** A purchaser reads, initials and signs their agreement and keeps the PDF; only the purchaser
  * of the link can sign. */
@@ -37,6 +43,7 @@ import { Sheet } from '../../shared/sheet';
 export class AgreementRoomPage {
   protected readonly AgreementStatus = AgreementStatus;
   protected readonly SignerStatus = SignerStatus;
+  protected readonly PaymentKind = PaymentKind;
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
@@ -51,6 +58,23 @@ export class AgreementRoomPage {
   protected readonly a = computed(() =>
     this.agreement.hasValue() ? this.agreement.value() : undefined,
   );
+  protected readonly payments = resource({
+    params: () => {
+      const a = this.a();
+      return a && isRefundableAgreement(a.status) && !a.viewerPurchaserId ? a.id : undefined;
+    },
+    loader: ({ params }) => this.api.get<BuyerLedger>(API.payments.ledger(params)),
+  });
+  protected readonly paid = computed(() =>
+    this.payments.hasValue() ? this.payments.value() : undefined,
+  );
+  protected readonly receipt = signal<BuyerPayment | null>(null);
+  protected readonly receiptTitle = {
+    payment: $localize`:@@agreementRoom.receipt.title:Payment receipt`,
+    refund: $localize`:@@agreementRoom.receipt.refundTitle:Refund confirmation`,
+  };
+  protected readonly LINE = INSTALMENT_LABEL;
+  protected readonly METHOD = PAYMENT_METHOD_LABEL;
   protected readonly me = computed((): AgreementPurchaser | undefined => {
     const a = this.a();
     return a?.purchasers.find((p) => p.id === a.viewerPurchaserId);
@@ -81,7 +105,7 @@ export class AgreementRoomPage {
   }
 
   private sendStaffToTheConsole(): void {
-    if (this.a() && this.auth.isStaff()) {
+    if (this.a() && this.auth.isTeam()) {
       void this.router.navigate(PATHS.console.agreement(this.id()), { replaceUrl: true });
     }
   }
@@ -117,6 +141,17 @@ export class AgreementRoomPage {
       this.agreement.reload();
     } finally {
       this.busy.set(false);
+    }
+  }
+
+  protected async downloadReceipt(a: Agreement, p: BuyerPayment): Promise<void> {
+    this.downloading.set(true);
+    try {
+      await downloadReceipt(this.api, a.id, p);
+    } catch (err) {
+      this.toast.error(err);
+    } finally {
+      this.downloading.set(false);
     }
   }
 

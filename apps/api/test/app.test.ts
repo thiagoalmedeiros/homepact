@@ -42,6 +42,10 @@ vi.mock('../src/modules/companies/routes.js', () => ({ companyRoutes: stub('comp
 vi.mock('../src/modules/houses/routes.js', () => ({ adminHouseRoutes: stub('houses') }));
 vi.mock('../src/modules/inventory/routes.js', () => ({ inventoryRoutes: stub('inventory') }));
 vi.mock('../src/modules/proposals/routes.js', () => ({ proposalRoutes: stub('proposals') }));
+vi.mock('../src/modules/payments/routes.js', () => ({
+  agreementPaymentRoutes: stub('agreement-payments'),
+  paymentQueueRoutes: stub('payment-queue'),
+}));
 vi.mock('../src/modules/market-rates/routes.js', () => ({
   marketRateRoutes: stub('market-rates'),
 }));
@@ -108,6 +112,8 @@ describe('createApp', () => {
       ['/api/proposals', 'proposals'],
       ['/api/agreement-templates', 'agreement-templates'],
       ['/api/agreements', 'agreements'],
+      ['/api/agreements/agr-1/payments', 'agreement-payments'],
+      ['/api/agreement-payments', 'payment-queue'],
       ['/api/platform/tax-presets', 'platform-tax-presets'],
       ['/api/tax-presets', 'tax-presets'],
       ['/api/tax-rates', 'tax-rates'],

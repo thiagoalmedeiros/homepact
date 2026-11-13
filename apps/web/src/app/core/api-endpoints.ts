@@ -1,5 +1,6 @@
 const proposal = (id: string) => `/proposals/${id}`;
 const agreement = (id: string) => `/agreements/${id}`;
+const payment = (agreementId: string, id: string) => `${agreement(agreementId)}/payments/${id}`;
 const house = (id: string) => `/admin/houses/${id}`;
 const company = (id: string) => `/platform/companies/${id}`;
 
@@ -76,6 +77,16 @@ export const API = {
     sign: (id: string) => `${agreement(id)}/sign`,
     countersign: (id: string) => `${agreement(id)}/countersign`,
     cancel: (id: string) => `${agreement(id)}/cancel`,
+  },
+  payments: {
+    ledger: (agreementId: string) => `${agreement(agreementId)}/payments`,
+    one: payment,
+    approve: (agreementId: string, id: string) => `${payment(agreementId, id)}/approve`,
+    reject: (agreementId: string, id: string) => `${payment(agreementId, id)}/reject`,
+    withdraw: (agreementId: string, id: string) => `${payment(agreementId, id)}/withdraw`,
+    void: (agreementId: string, id: string) => `${payment(agreementId, id)}/void`,
+    receipt: (agreementId: string, id: string) => `${payment(agreementId, id)}/receipt`,
+    queue: '/agreement-payments',
   },
   taxPresets: '/tax-presets',
   taxRates: {

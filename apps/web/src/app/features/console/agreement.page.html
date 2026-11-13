@@ -41,7 +41,7 @@
           }
         </button>
       }
-      @if (a.status === AgreementStatus.Draft) {
+      @if (a.status === AgreementStatus.Draft && auth.isStaff()) {
         <button class="btn btn-sm" type="button" (click)="issue(a)" data-testid="issue">
           <hc-icon name="send" [size]="14" />
           <ng-container i18n="@@console.agreement.send">Send for signature</ng-container>
@@ -95,8 +95,8 @@
       <div class="callout warn banner" data-testid="signed-banner">
         <strong i18n="@@console.agreement.signedTitle">Every purchaser has signed</strong>
         <ng-container i18n="@@console.agreement.signedBody"
-          >on {{ a.signedAt | localDate: 'dateTime' }}. An administrator countersigns to execute
-          it.</ng-container
+          >on {{ a.signedAt | localDate: 'dateTime' }}; it now waits for an administrator to
+          countersign it.</ng-container
         >
       </div>
     }
@@ -126,6 +126,8 @@
     }
   }
 
+  <hc-agreement-payments [agreement]="a" />
+
   <div class="layout">
     <section class="card">
       <hc-agreement-document [agreement]="a" />
@@ -137,7 +139,7 @@
           <div class="stack signer" [attr.data-testid]="'signer-' + p.id">
             <span class="strong">{{ p.name }}</span>
             @if (p.email) {
-              <span class="tiny muted">{{ p.email }}</span>
+              <span class="tiny muted truncate" [title]="p.email">{{ p.email }}</span>
             }
             @switch (p.status) {
               @case (SignerStatus.Signed) {
@@ -160,7 +162,7 @@
                 }
               }
             }
-            @if (p.invitedAt && a.status !== AgreementStatus.Cancelled) {
+            @if (p.invitedAt && a.status !== AgreementStatus.Cancelled && auth.isStaff()) {
               <button
                 class="btn btn-secondary btn-sm"
                 type="button"
@@ -176,9 +178,13 @@
       </section>
       <section class="card stack info">
         <h2 class="title-3" i18n="@@console.agreement.fromProposal">From proposal</h2>
-        <a [routerLink]="paths.console.proposal(a.proposalId)" class="strong">{{
-          a.proposalReference
-        }}</a>
+        @if (auth.isStaff()) {
+          <a [routerLink]="paths.console.proposal(a.proposalId)" class="strong">{{
+            a.proposalReference
+          }}</a>
+        } @else {
+          <span class="strong">{{ a.proposalReference }}</span>
+        }
         <span class="small muted" i18n="@@console.agreement.revisionSigned"
           >Revision {{ a.proposalSignature.revision }} signed by
           {{ a.proposalSignature.fullName }} on

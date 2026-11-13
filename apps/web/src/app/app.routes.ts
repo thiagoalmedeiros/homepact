@@ -3,8 +3,8 @@ import {
   buyerGuard,
   isCompanyOrigin,
   isPlatformOrigin,
-  staffGuard,
   superAdminGuard,
+  teamGuard,
 } from './core/guards';
 
 export const routes: Routes = [
@@ -64,7 +64,7 @@ export const routes: Routes = [
       },
       {
         path: 'console',
-        canActivate: [staffGuard],
+        canActivate: [teamGuard],
         loadChildren: () =>
           import('./features/console/console.routes').then((m) => m.CONSOLE_ROUTES),
       },

@@ -5,3 +5,22 @@
   --gap: 10px;
   flex-wrap: nowrap;
 }
+.fill {
+  max-width: 0;
+}
+.name {
+  width: 55%;
+  min-width: 9rem;
+}
+.email {
+  width: 45%;
+}
+.fit {
+  width: 1%;
+  white-space: nowrap;
+}
+.who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}

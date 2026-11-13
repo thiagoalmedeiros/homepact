@@ -9,9 +9,12 @@ import {
   AgreementStatus,
   agreementUpdateSchema,
   AccessResourceType,
+  COMPANY_ROLES,
+  formatMoney,
   GuestRole,
   InventoryStatus,
   isOpenAgreement,
+  isoDay,
   keyClauses,
   Party,
   ProposalStatus,
@@ -24,7 +27,7 @@ import {
   type SignerInvitation,
 } from '@homepact/shared';
 import { Router, type Request } from 'express';
-import { isStaff } from '../../auth/require-auth.js';
+import { isCompanyMember } from '../../auth/require-auth.js';
 import type { ModuleContext } from '../../context.js';
 import { newId, reference, sha256 } from '../../data/ids.js';
 import { findCompany } from '../../data/platform-repo.js';
@@ -33,6 +36,7 @@ import { assertKeyActive } from '../access-keys/keys.js';
 import type { AgreementTemplateDoc } from '../agreement-templates/store.js';
 import type { HouseDoc } from '../houses/store.js';
 import type { InventoryHomeDoc } from '../inventory/store.js';
+import { heldFor, paymentSummaries } from '../payments/store.js';
 import {
   addMessage,
   loadProposalFor,
@@ -65,11 +69,12 @@ const signerRef = (p: AgreementPurchaser): SignerRef => ({
 
 /** Agreements from signed proposals: prepared from a template, signed by each purchaser with their
  * link and code, then countersigned by an administrator. One live agreement per proposal; content
- * changes invalidate signatures. */
+ * changes invalidate signatures. Finance only reads them. */
 export const agreementRoutes = (ctx: ModuleContext): Router => {
   const { guards, now, signatures } = ctx;
   const router = Router();
   const staffOnly = guards.requireRole(...STAFF_ROLES);
+  const companyOnly = guards.requireRole(...COMPANY_ROLES);
   const signerOnly = guards.requireRole(Role.Buyer, GuestRole.KeyHolder);
   const countersignerOnly = guards.requireRole(Role.CompanyAdmin);
   router.use(guards.requireAuth);
@@ -102,7 +107,7 @@ export const agreementRoutes = (ctx: ModuleContext): Router => {
   const loadFor = async (req: Request, agreementId: string): Promise<AgreementDoc> => {
     const doc = await agreements(req).findOne({ _id: agreementId });
     if (!doc || !req.principal) throw notFound();
-    if (isStaff(req.principal)) return doc;
+    if (isCompanyMember(req.principal)) return doc;
     if (!doc.issuedAt) throw notFound();
     if (signerIdOf(req, doc)) {
       await assertKeyActive(req);
@@ -187,13 +192,19 @@ export const agreementRoutes = (ctx: ModuleContext): Router => {
     if (home?.status === InventoryStatus.Sold) throw conflict(ERRORS.agreements.homeSold);
   };
 
-  router.get('/', staffOnly, async (req, res) => {
+  router.get('/', companyOnly, async (req, res) => {
     const q = parse(agreementListQuerySchema, req.query);
     const docs = await agreements(req).find(
       { ...(q.status && { status: q.status }), ...(q.proposalId && { proposalId: q.proposalId }) },
       { sort: { updatedAt: -1 }, limit: 300 },
     );
-    res.json(docs.map(toAgreementSummary));
+    const payments = await paymentSummaries(req.repo, docs, isoDay(now()));
+    res.json(
+      docs.map((d) => {
+        const summary = payments.get(d._id);
+        return { ...toAgreementSummary(d), ...(summary && { payments: summary }) };
+      }),
+    );
   });
 
   router.post('/', staffOnly, async (req, res) => {
@@ -469,6 +480,12 @@ export const agreementRoutes = (ctx: ModuleContext): Router => {
       throw conflict(ERRORS.agreements.executedCannotCancel);
     if (current.status === AgreementStatus.Cancelled)
       throw conflict(ERRORS.agreements.alreadyCancelled);
+    if (req.principal!.role !== Role.CompanyAdmin) {
+      const held = await heldFor(req.repo, current._id);
+      if (held > 0) {
+        throw forbidden(ERRORS.payments.cancelHoldsMoney(formatMoney(held, current.currency)));
+      }
+    }
     const at = now();
     const doc = await voidAgreement(req.repo, current, at, {
       reason,

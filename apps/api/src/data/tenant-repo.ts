@@ -51,6 +51,7 @@ export type CollectionName =
   | 'agreementTemplates'
   | 'agreements'
   | 'agreementFiles'
+  | 'agreementPayments'
   | 'taxRates'
   | 'referralPrograms';
 

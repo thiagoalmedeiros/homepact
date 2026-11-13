@@ -32,6 +32,7 @@ import { LoadState } from '../../shared/load-state';
 import { RelativeTimePipe } from '../../shared/relative-time.pipe';
 import { Sheet } from '../../shared/sheet';
 import { AGREEMENT_LABEL } from '../../shared/status';
+import { AgreementPayments } from './agreement-payments';
 import { AgreementTermsSheet } from './agreement-terms-sheet';
 
 interface Handout extends SignerInvitation {
@@ -49,6 +50,7 @@ interface Handout extends SignerInvitation {
     RelativeTimePipe,
     AgreementDocument,
     AgreementTermsSheet,
+    AgreementPayments,
     Sheet,
     Icon,
     LocalDatePipe,
@@ -111,7 +113,7 @@ export class AgreementPage {
 
   protected readonly open = computed(() => {
     const status = this.a()?.status;
-    return !!status && isOpenAgreement(status);
+    return !!status && isOpenAgreement(status) && this.auth.isStaff();
   });
 
   protected readonly signedCount = computed(

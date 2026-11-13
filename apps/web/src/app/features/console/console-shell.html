@@ -1,10 +1,10 @@
 <div class="console">
   <aside class="sidebar chrome">
-    <a [routerLink]="paths.console.overview" class="brand">
+    <a [routerLink]="auth.home()" class="brand">
       <hc-logo [height]="30" />
     </a>
     <nav class="side-nav" aria-label="Console" i18n-aria-label="@@console.shell.label">
-      @for (item of nav; track item.path) {
+      @for (item of nav(); track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="active"
@@ -22,6 +22,8 @@
           <span class="tiny muted">
             @if (auth.isAdmin()) {
               <ng-container i18n="@@console.shell.administrator">Administrator</ng-container>
+            } @else if (auth.isFinance()) {
+              <ng-container i18n="@@console.shell.finance">Finance</ng-container>
             } @else {
               <ng-container i18n="@@console.shell.sales">Sales</ng-container>
             }

@@ -44,6 +44,12 @@ describe('messages', () => {
     expect(THREAD.agreementSigned('Bea', 'A-1', 1, 1)).toBe(
       'Bea signed purchase agreement A-1 (1 of 1 purchaser).',
     );
+    expect(THREAD.paymentReceived('$5', 'A-1', '2026-10-31')).toBe(
+      'Payment of $5 received on 2026-10-31 for purchase agreement A-1.',
+    );
+    expect(THREAD.refundIssued('$5', 'A-1', '2026-10-31')).toBe(
+      'Refund of $5 issued on 2026-10-31 for purchase agreement A-1.',
+    );
     expect(THREAD.agreementAmended('Sam', 'A-1', 0)).toBe('Sam changed purchase agreement A-1.');
     expect(THREAD.agreementAmended('Sam', 'A-1', 1)).toBe(
       'Sam changed purchase agreement A-1; 1 signature is no longer valid and must be given again.',

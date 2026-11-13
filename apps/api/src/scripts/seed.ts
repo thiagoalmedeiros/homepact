@@ -1,6 +1,7 @@
 import {
   AccessResourceType,
   agreementTemplateInputSchema,
+  AgreementStatus,
   applyChanges,
   ChangeDecision,
   ChangeRequestStatus,
@@ -8,14 +9,21 @@ import {
   formatMoney,
   HouseStatus,
   InventoryStatus,
+  keyClauses,
   Party,
+  PaymentAction,
+  PaymentKind,
+  PaymentMethod,
+  PaymentStatus,
   priceBeforeTax,
   ProposalStatus,
   Role,
+  SignerStatus,
   type Adjustment,
   type AgreementTemplateInput,
   type Catalog,
   type Change,
+  type CompanyRole,
   type Currency,
   type PriceOverride,
   type QuoteExtras,
@@ -25,11 +33,20 @@ import {
 } from '@homepact/shared';
 import type { Db } from 'mongodb';
 import { hashPassword } from '../auth/passwords.js';
-import { newId, reference } from '../data/ids.js';
+import { newId, reference, sha256 } from '../data/ids.js';
 import { companiesCollection, listTaxPresets, type CompanyDoc } from '../data/platform-repo.js';
 import { tenantRepo, type TenantRepo } from '../data/tenant-repo.js';
 import { createAccessKey } from '../modules/access-keys/keys.js';
 import type { AgreementTemplateDoc } from '../modules/agreement-templates/store.js';
+import { composeAgreement } from '../modules/agreements/document.js';
+import { withIds } from '../modules/agreements/purchasers.js';
+import { builtInSignatureProvider } from '../modules/agreements/signature-provider.js';
+import { renderAgreementPdf } from '../modules/agreements/pdf.js';
+import {
+  toAgreement,
+  type AgreementDoc,
+  type AgreementFileDoc,
+} from '../modules/agreements/store.js';
 import type { UserDoc } from '../modules/auth/users.js';
 import {
   loadCatalog,
@@ -40,6 +57,7 @@ import {
 import type { HouseDoc } from '../modules/houses/store.js';
 import { ASKING_PRICE_LABEL } from '../modules/houses/pricing.js';
 import type { InventoryHomeDoc } from '../modules/inventory/store.js';
+import type { PaymentDoc } from '../modules/payments/store.js';
 import type { ReferralProgramDoc } from '../modules/referrals/store.js';
 import type { TaxRateDoc } from '../modules/sales-tax/store.js';
 import { addStarterPresets } from '../modules/tax-presets/routes.js';
@@ -281,8 +299,9 @@ interface Ctx {
   ids: Awaited<ReturnType<typeof seedCatalog>>;
 }
 
-/** Seeds Example Homes (catalog, plans, homes, team, sales tax, referral programs and sample
- * proposals in every state) and a fictional second tenant. Idempotent. */
+/** Seeds Example Homes (catalog, plans, homes, team with finance, sales tax, referral programs,
+ * proposals in every state, a signed and an executed agreement with payments) and a second
+ * tenant. Idempotent. */
 export const seedShowcase = async (db: Db, opts: ShowcaseOptions): Promise<ShowcaseResult> => {
   const now = opts.now ?? new Date();
   const currency: Currency = 'CAD';
@@ -303,7 +322,7 @@ export const seedShowcase = async (db: Db, opts: ShowcaseOptions): Promise<Showc
   const repo = tenantRepo(db, company._id);
   const team = [];
   for (const m of SHOWCASE_COMPANY.team) team.push(await addUser(repo, m, opts.password));
-  const [morgan, jordan, casey] = team as [UserDoc, UserDoc, UserDoc];
+  const [morgan, jordan, casey, riley] = team as [UserDoc, UserDoc, UserDoc, UserDoc];
   const buyer = await addUser(repo, { ...SHOWCASE_COMPANY.buyer, role: Role.Buyer }, opts.password);
 
   const ids = await seedCatalog(repo);
@@ -453,6 +472,82 @@ export const seedShowcase = async (db: Db, opts: ShowcaseOptions): Promise<Showc
     );
     await decide(c, p, cr, casey, [true, false], at(t0, 60 * 50), STORY.jamie.answer);
     await sign(c, p, STORY.jamie.buyer.name, at(t0, 60 * 24 * 2));
+  }
+
+  {
+    const t0 = at(now, -20 * day);
+    const p = await propose(c, {
+      house: 'maple',
+      selections: { elevation: ['pkg', 'mountain'], interior: ['pkg', 'signature'] },
+      buyer: { ...STORY.lee.buyer },
+      rep: jordan,
+      at: t0,
+    });
+    await sign(c, p, STORY.lee.buyer.name, at(t0, day));
+    const agreement = await seedAgreement(c, company, p, {
+      rep: jordan,
+      when: at(t0, 3 * day),
+      purchasers: STORY.lee.purchasers,
+      deposits: [
+        { label: STORY.lee.deposits.onSigning, dollars: 10_000 },
+        { label: STORY.lee.deposits.second, dollars: 20_000, dueInDays: 30 },
+      ],
+      closingInDays: 120,
+    });
+    await recordPayment(c, p, agreement, riley, {
+      status: PaymentStatus.Posted,
+      amountCents: agreement.terms.deposits[0]!.amountCents,
+      receivedOn: at(t0, 3 * day),
+      method: PaymentMethod.Cheque,
+      externalRef: STORY.lee.cheque,
+    });
+    await recordPayment(c, p, agreement, jordan, {
+      status: PaymentStatus.Pending,
+      amountCents: agreement.terms.deposits[1]!.amountCents,
+      receivedOn: at(now, -day),
+      method: PaymentMethod.Wire,
+      externalRef: STORY.lee.wire,
+      note: STORY.lee.note,
+    });
+  }
+
+  {
+    const t0 = at(now, -60 * day);
+    const sam = await addUser(repo, { ...STORY.rivera.buyer, role: Role.Buyer }, opts.password);
+    const p = await propose(c, {
+      inventory: inventory.get(STORY.rivera.home)!,
+      buyer: { ...STORY.rivera.buyer },
+      buyerUserId: sam._id,
+      rep: casey,
+      at: t0,
+    });
+    await sign(c, p, sam.name, at(t0, day));
+    const agreement = await seedAgreement(c, company, p, {
+      rep: casey,
+      when: at(t0, 3 * day),
+      purchasers: [{ name: sam.name, email: sam.email }],
+      deposits: [
+        { label: STORY.rivera.deposits.onSigning, dollars: 15_000 },
+        { label: STORY.rivera.deposits.second, dollars: 25_000, dueInDays: 30 },
+      ],
+      closingInDays: 90,
+      countersignedBy: morgan,
+    });
+    await recordPayment(c, p, agreement, riley, {
+      status: PaymentStatus.Posted,
+      amountCents: agreement.terms.deposits[0]!.amountCents,
+      receivedOn: at(t0, 3 * day),
+      method: PaymentMethod.Cheque,
+      externalRef: STORY.rivera.cheque,
+    });
+    await recordPayment(c, p, agreement, casey, {
+      status: PaymentStatus.Posted,
+      amountCents: agreement.terms.deposits[1]!.amountCents,
+      receivedOn: at(t0, 30 * day),
+      method: PaymentMethod.Wire,
+      externalRef: STORY.rivera.wire,
+      approvedBy: riley,
+    });
   }
 
   return { created: true, companyId: company._id, invites };
@@ -769,6 +864,194 @@ const sign = async (c: Ctx, p: Seeded, fullName: string, when: Date) => {
     THREAD.signed(fullName, doc.currentRevision, formatMoney(doc.currentTotalCents, doc.currency)),
     when,
   );
+};
+
+interface AgreementPlan {
+  rep: UserDoc;
+  when: Date;
+  purchasers: readonly { name: string; email: string }[];
+  deposits: readonly { label: string; dollars: number; dueInDays?: number }[];
+  closingInDays: number;
+  countersignedBy?: UserDoc;
+}
+
+/** The agreement of a signed proposal, signed by every purchaser; with a countersigner it is
+ * executed, and its PDF kept, the way a countersignature keeps it. */
+const seedAgreement = async (
+  c: Ctx,
+  company: CompanyDoc,
+  p: Seeded,
+  plan: AgreementPlan,
+): Promise<AgreementDoc> => {
+  const { doc, rev, house } = await revisionOf(c, p);
+  const template = (await c.repo
+    .of<AgreementTemplateDoc>('agreementTemplates')
+    .findOne({ isDefault: true }))!;
+  const day = (offset: number) =>
+    at(plan.when, offset * 24 * 60)
+      .toISOString()
+      .slice(0, 10);
+  const content = composeAgreement({
+    reference: reference('A'),
+    preparedAt: plan.when,
+    company,
+    proposal: { ...doc, signature: doc.signature! },
+    revision: rev,
+    house,
+    template,
+    purchasers: withIds([...plan.purchasers]),
+    terms: {
+      deposits: plan.deposits.map((d) => ({
+        label: d.label,
+        amountCents: cents(d.dollars),
+        ...(d.dueInDays !== undefined && { dueDate: day(d.dueInDays) }),
+      })),
+      conditions: [],
+      closingDate: day(plan.closingInDays),
+    },
+  });
+  const ts = plan.when.toISOString();
+  const signature = (fullName: string) => ({
+    fullName,
+    signedAt: ts,
+    contentHash: content.contentHash,
+    provider: builtInSignatureProvider.id,
+  });
+  const signed: AgreementDoc = {
+    _id: newId(),
+    companyId: c.repo.companyId,
+    ...content,
+    status: AgreementStatus.Signed,
+    purchasers: content.purchasers.map((purchaser) => ({
+      ...purchaser,
+      status: SignerStatus.Signed,
+      invitedAt: ts,
+      signature: { ...signature(purchaser.name), initials: keyClauses(content.sections) },
+    })),
+    issuedAt: ts,
+    issuedByName: plan.rep.name,
+    signedAt: ts,
+    createdByName: plan.rep.name,
+    createdAt: ts,
+    updatedAt: ts,
+  };
+  const { companyId: _, ...agreement } = plan.countersignedBy
+    ? await executed(c, signed, signature(plan.countersignedBy.name))
+    : signed;
+  const saved = await c.repo.of<AgreementDoc>('agreements').insertOne(agreement);
+  await c.repo
+    .of<ProposalDoc>('proposals')
+    .updateOne({ _id: doc._id }, { $set: { agreementId: saved._id } });
+  const tell = (body: string) => say(c, p, Party.System, NAMES.system, body, plan.when);
+  await tell(THREAD.agreementSent(plan.rep.name, saved.reference));
+  await tell(THREAD.agreementAllSigned(saved.reference));
+  if (plan.countersignedBy) {
+    await tell(THREAD.agreementExecuted(plan.countersignedBy.name, saved.reference));
+    if (doc.inventoryHomeId) {
+      await c.repo
+        .of<InventoryHomeDoc>('inventoryHomes')
+        .updateOne({ _id: doc.inventoryHomeId }, { $set: { status: InventoryStatus.Sold } });
+    }
+  }
+  return saved;
+};
+
+const executed = async (
+  c: Ctx,
+  signed: AgreementDoc,
+  counterSignature: AgreementDoc['purchasers'][number]['signature'] & object,
+): Promise<AgreementDoc> => {
+  const doc: AgreementDoc = {
+    ...signed,
+    status: AgreementStatus.Executed,
+    counterSignature,
+    executedAt: signed.signedAt!,
+  };
+  const pdf = await renderAgreementPdf(toAgreement(doc));
+  const executedPdf = { fileId: newId(), sha256: sha256(pdf), size: pdf.length };
+  await c.repo.of<AgreementFileDoc>('agreementFiles').insertOne({
+    _id: executedPdf.fileId,
+    agreementId: doc._id,
+    kind: 'executed',
+    contentType: 'application/pdf',
+    data: pdf,
+    sha256: executedPdf.sha256,
+    size: executedPdf.size,
+    createdAt: doc.executedAt!,
+  });
+  return { ...doc, executedPdf };
+};
+
+const recordPayment = async (
+  c: Ctx,
+  p: Seeded,
+  agreement: AgreementDoc,
+  by: UserDoc,
+  entry: Pick<PaymentDoc, 'status' | 'amountCents' | 'method' | 'externalRef' | 'note'> & {
+    receivedOn: Date;
+    approvedBy?: UserDoc;
+  },
+) => {
+  const { approvedBy, ...fields } = entry;
+  const ts = entry.receivedOn.toISOString();
+  const actor = (u: UserDoc) => ({ id: u._id, name: u.name, role: u.role as CompanyRole });
+  await c.repo.of<PaymentDoc>('agreementPayments').insertOne({
+    _id: newId(),
+    reference: reference('PAY'),
+    agreementId: agreement._id,
+    agreementReference: agreement.reference,
+    kind: PaymentKind.Payment,
+    currency: agreement.currency,
+    ...fields,
+    receivedOn: ts.slice(0, 10),
+    recordedBy: actor(by),
+    recordedAt: ts,
+    ...(approvedBy && { reviewedBy: actor(approvedBy), reviewedAt: ts }),
+    history: [
+      { at: ts, by: actor(by), action: PaymentAction.Recorded },
+      ...(approvedBy ? [{ at: ts, by: actor(approvedBy), action: PaymentAction.Approved }] : []),
+    ],
+    updatedAt: ts,
+  });
+  if (entry.status === PaymentStatus.Posted) {
+    const amount = formatMoney(entry.amountCents, agreement.currency);
+    const body = THREAD.paymentReceived(amount, agreement.reference, ts.slice(0, 10));
+    await say(c, p, Party.System, NAMES.system, body, entry.receivedOn);
+  }
+};
+
+export interface SummaryOptions {
+  showcaseOrigins: string[];
+  secondOrigin: string;
+  platformOrigin: string;
+  platformEmail: string;
+  password: string;
+}
+
+/** What `task up` prints once the demo is seeded: where to go, and who to sign in as. */
+export const showcaseSummary = (result: ShowcaseResult, o: SummaryOptions): string => {
+  if (!result.created) {
+    return `\n  Already seeded; origins refreshed (${o.showcaseOrigins.join(', ')}).\n`;
+  }
+  const site = o.showcaseOrigins[0];
+  const login = (role: Role) =>
+    `${SHOWCASE_COMPANY.team.find((m) => m.role === role)!.email} / ${o.password}`;
+  return [
+    '',
+    '  Example Homes — negotiation demo is ready',
+    '  ─────────────────────────────────────────',
+    `  Seller console    ${site}/console   ${login(Role.CompanyStaff)}`,
+    `  Finance console   ${site}/console/payments   ${login(Role.CompanyFinance)}`,
+    `  Buyer account     ${site}            ${SHOWCASE_COMPANY.buyer.email} / ${o.password}`,
+    `  Platform console  ${o.platformOrigin}   ${o.platformEmail}`,
+    `  Second tenant     ${o.secondOrigin}   (Northwind Homes, fictional)`,
+    `  Purchase agreement  ${site}/console/agreements   (Jamie Okafor's signed proposal is ready for one)`,
+    `  Payments          ${site}/console/payments   (the Lees' second deposit waits for finance)`,
+    `  Buyer with a contract  ${site}/proposals   ${STORY.rivera.buyer.email} / ${o.password}   (pre-existing home, executed, receipts)`,
+    '  Buyer invite links (open in a private window):',
+    ...(result.invites ?? []).map((i) => `    ${i.label}: ${site}/k?key=${i.key}`),
+    '',
+  ].join('\n');
 };
 
 const seedNorthwind = async (db: Db, opts: ShowcaseOptions) => {

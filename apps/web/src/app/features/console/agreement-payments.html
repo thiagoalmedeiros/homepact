@@ -1,0 +1,225 @@
+@if (shown() && l(); as l) {
+  @let totals = l.schedule.totals;
+  <section class="card stack payments" data-testid="payments">
+    <div class="spread head">
+      <div class="stack tight">
+        <h2 class="title-3" i18n="@@payments.title">Payments</h2>
+        <span class="small" data-testid="payments-received" i18n="@@payments.received"
+          >Received {{ totals.netPaidCents | money: l.currency }} of
+          {{ totals.totalCents | money: l.currency }} · outstanding
+          {{ totals.outstandingCents | money: l.currency }}</span
+        >
+        @if (totals.overdueCents) {
+          <span class="small attention" data-testid="payments-overdue" i18n="@@payments.overdue"
+            >{{ totals.overdueCents | money: l.currency }} overdue</span
+          >
+        }
+        @if (totals.pendingCount) {
+          <span class="small muted" data-testid="payments-pending" i18n="@@payments.pending"
+            >{{ totals.pendingCount }} payment(s) ({{ totals.pendingCents | money: l.currency }})
+            waiting for approval</span
+          >
+        }
+      </div>
+      <div class="row">
+        @if (payable() && auth.isTeam()) {
+          <button
+            class="btn btn-sm"
+            type="button"
+            (click)="form.set({ mode: 'record' })"
+            data-testid="record-payment"
+          >
+            <hc-icon name="plus" [size]="14" />
+            <ng-container i18n="@@payments.record">Record payment</ng-container>
+          </button>
+        }
+        @if (canRefund()) {
+          <button
+            class="btn btn-secondary btn-sm"
+            type="button"
+            (click)="form.set({ mode: 'refund' })"
+            data-testid="record-refund"
+          >
+            <ng-container i18n="@@payments.refund">Record refund</ng-container>
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (agreement().status === AgreementStatus.Cancelled && held()) {
+      <div class="callout warn small" data-testid="payments-held" i18n="@@payments.held">
+        This agreement is cancelled, and the company still holds
+        {{ held() | money: l.currency }} of the buyer's money.
+      </div>
+    }
+
+    <ul class="schedule">
+      @for (line of l.schedule.lines; track $index) {
+        @let label = LINE[line.status];
+        <li class="line" [attr.data-testid]="'schedule-line-' + $index">
+          <div class="body">
+            @if (line.kind === 'closing') {
+              <span class="truncate" i18n="@@payments.closing">Balance due on closing</span>
+            } @else {
+              <span class="truncate" [title]="line.label">{{ line.label }}</span>
+            }
+            @if (line.dueDate) {
+              <span class="tiny muted" i18n="@@payments.dueAndPaid"
+                >due {{ line.dueDate | localDate: 'calendar' }} ·
+                {{ line.paidCents | money: l.currency }} paid</span
+              >
+            } @else {
+              <span class="tiny muted" i18n="@@payments.paidSoFar"
+                >{{ line.paidCents | money: l.currency }} paid</span
+              >
+            }
+          </div>
+          <span class="tabular amount">{{ line.amountCents | money: l.currency }}</span>
+          <span class="pill" [class]="label.tone">{{ label.text }}</span>
+        </li>
+      }
+    </ul>
+
+    <ul class="list ledger">
+      @for (p of l.payments; track p.id) {
+        @let status = STATUS[p.status];
+        <li class="entry" [attr.data-testid]="'payment-' + p.id">
+          <div class="body">
+            <span class="strong tabular">
+              @if (p.kind === PaymentKind.Refund) {
+                <ng-container i18n="@@payments.refundOf"
+                  >Refund of {{ p.amountCents | money: p.currency }}</ng-container
+                >
+              } @else {
+                {{ p.amountCents | money: p.currency }}
+              }
+            </span>
+            <span class="meta tiny muted">
+              <span>{{ p.receivedOn | localDate: 'calendar' }}</span>
+              <span>· {{ METHOD[p.method] }}</span>
+              @if (p.externalRef) {
+                <span class="truncate" [title]="p.externalRef">{{ p.externalRef }}</span>
+              }
+              <span>· {{ p.reference }}</span>
+            </span>
+            @if (p.reviewedBy && p.status === PaymentStatus.Posted) {
+              <span class="tiny muted truncate" i18n="@@payments.recordedAndApproved"
+                >Recorded by {{ p.recordedBy.name }} · approved by {{ p.reviewedBy.name }}</span
+              >
+            } @else {
+              <span class="tiny muted truncate" i18n="@@payments.recordedBy"
+                >Recorded by {{ p.recordedBy.name }}</span
+              >
+            }
+            @if (p.voidReason) {
+              <span class="tiny clamp-2" [title]="p.voidReason" i18n="@@payments.voidedBecause"
+                >Voided by {{ p.voidedBy?.name }}: {{ p.voidReason }}</span
+              >
+            }
+            @if (p.rejectReason) {
+              <span class="tiny clamp-2" [title]="p.rejectReason" i18n="@@payments.rejectedBecause"
+                >Rejected by {{ p.reviewedBy?.name }}: {{ p.rejectReason }}</span
+              >
+            }
+            @if (p.note) {
+              <span class="tiny muted clamp-2" [title]="p.note">{{ p.note }}</span>
+            }
+          </div>
+          <div class="side">
+            <span class="pill" [class]="status.tone">{{ status.text }}</span>
+            <div class="actions">
+              @if (actions.canReview(p)) {
+                <button
+                  class="btn btn-sm"
+                  type="button"
+                  [disabled]="actions.busy()"
+                  (click)="approve(p)"
+                  [attr.data-testid]="'approve-' + p.id"
+                  i18n="@@payments.approve"
+                >
+                  Approve
+                </button>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  type="button"
+                  (click)="asking.set({ mode: 'reject', entry: p })"
+                  [attr.data-testid]="'reject-' + p.id"
+                  i18n="@@payments.rejectAction"
+                >
+                  Reject
+                </button>
+              }
+              @if (actions.canChange(p)) {
+                <button
+                  class="btn btn-secondary btn-sm"
+                  type="button"
+                  (click)="form.set({ mode: 'edit', entry: p })"
+                  [attr.data-testid]="'edit-' + p.id"
+                  i18n="@@payments.edit"
+                >
+                  Fix
+                </button>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  type="button"
+                  [disabled]="actions.busy()"
+                  (click)="withdraw(p)"
+                  [attr.data-testid]="'withdraw-' + p.id"
+                  i18n="@@payments.withdraw"
+                >
+                  Take back
+                </button>
+              }
+              @if (actions.canVoid(p)) {
+                <button
+                  class="btn btn-secondary btn-sm"
+                  type="button"
+                  (click)="asking.set({ mode: 'void', entry: p })"
+                  [attr.data-testid]="'void-' + p.id"
+                  i18n="@@payments.voidAction"
+                >
+                  Void
+                </button>
+              }
+              @if (canReenter(p)) {
+                <button
+                  class="btn btn-secondary btn-sm"
+                  type="button"
+                  (click)="form.set({ mode: 'reenter', entry: p })"
+                  [attr.data-testid]="'reenter-' + p.id"
+                  i18n="@@payments.reenter"
+                >
+                  Record the right one
+                </button>
+              }
+            </div>
+          </div>
+        </li>
+      } @empty {
+        <li class="muted small" i18n="@@payments.empty">No payment recorded yet.</li>
+      }
+    </ul>
+  </section>
+
+  @if (form(); as f) {
+    <hc-payment-sheet
+      [title]="titles[f.mode]"
+      [kind]="f.mode === 'refund' ? PaymentKind.Refund : PaymentKind.Payment"
+      [initial]="initialOf(f)"
+      [needsApproval]="!auth.managesPayments() && f.mode !== 'refund'"
+      [busy]="actions.busy()"
+      (submitted)="save(f, $event)"
+      (closed)="form.set(null)"
+    />
+  }
+  @if (asking(); as ask) {
+    <hc-reason-sheet
+      [title]="reasons[ask.mode].title"
+      [message]="reasons[ask.mode].message"
+      [confirmLabel]="reasons[ask.mode].confirm"
+      [busy]="actions.busy()"
+      (confirmed)="explain(ask, $event)"
+      (closed)="asking.set(null)"
+    />
+  }
+}

@@ -1,0 +1,109 @@
+<hc-sheet [title]="title()" (closed)="closed.emit()">
+  <form class="stack" #f="ngForm" (ngSubmit)="f.valid && submit()">
+    @if (needsApproval()) {
+      <p
+        class="callout small"
+        data-testid="payment-approval-hint"
+        i18n="@@paymentSheet.approvalHint"
+      >
+        Finance approves it before it counts toward what the buyer has paid.
+      </p>
+    }
+    <div class="field">
+      <label for="p-amount">
+        @if (kind() === PaymentKind.Refund) {
+          <ng-container i18n="@@paymentSheet.refundAmount">Amount refunded</ng-container>
+        } @else {
+          <ng-container i18n="@@paymentSheet.amount">Amount received</ng-container>
+        }
+      </label>
+      <input
+        id="p-amount"
+        class="input tabular"
+        type="number"
+        min="0.01"
+        step="0.01"
+        name="amount"
+        [(ngModel)]="amount"
+        required
+        data-testid="payment-amount"
+      />
+    </div>
+    <div class="field">
+      <label for="p-date">
+        @if (kind() === PaymentKind.Refund) {
+          <ng-container i18n="@@paymentSheet.refundedOn">Date refunded</ng-container>
+        } @else {
+          <ng-container i18n="@@paymentSheet.receivedOn">Date received</ng-container>
+        }
+      </label>
+      <input
+        id="p-date"
+        class="input"
+        type="date"
+        name="receivedOn"
+        [max]="today"
+        [(ngModel)]="receivedOn"
+        required
+        data-testid="payment-date"
+      />
+    </div>
+    <div class="field">
+      <label for="p-method" i18n="@@paymentSheet.method">Method</label>
+      <select
+        id="p-method"
+        class="select"
+        name="method"
+        [(ngModel)]="method"
+        data-testid="payment-method"
+      >
+        @for (m of methods; track m.id) {
+          <option [value]="m.id">{{ m.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="p-ref"
+        ><ng-container i18n="@@paymentSheet.reference">Reference</ng-container>
+        <span class="hint" i18n="@@paymentSheet.referenceHint"
+          >cheque number, wire reference…</span
+        ></label
+      >
+      <input
+        id="p-ref"
+        class="input"
+        name="externalRef"
+        maxlength="80"
+        [(ngModel)]="externalRef"
+        data-testid="payment-ref"
+      />
+    </div>
+    <div class="field">
+      <label for="p-note"
+        ><ng-container i18n="@@paymentSheet.note">Note</ng-container>
+        <span class="hint" i18n="@@paymentSheet.noteHint">never shown to the buyer</span></label
+      >
+      <textarea
+        id="p-note"
+        class="input"
+        name="note"
+        rows="2"
+        maxlength="1000"
+        [(ngModel)]="note"
+        data-testid="payment-note"
+      ></textarea>
+    </div>
+    <button
+      class="btn btn-lg btn-block"
+      type="submit"
+      [disabled]="busy() || f.invalid"
+      data-testid="payment-submit"
+    >
+      @if (kind() === PaymentKind.Refund) {
+        <ng-container i18n="@@paymentSheet.submitRefund">Record refund</ng-container>
+      } @else {
+        <ng-container i18n="@@paymentSheet.submit">Record payment</ng-container>
+      }
+    </button>
+  </form>
+</hc-sheet>

@@ -105,6 +105,32 @@ export const ERRORS = {
     alreadyCancelled: 'This agreement is already cancelled',
     priceChanged: 'The price of the signed proposal changed; this agreement is void',
   },
+  payments: {
+    agreementNotFound: 'Agreement not found',
+    notFound: 'Payment not found on this agreement',
+    signingLinkOnly: 'A signing link only opens the agreement to sign it',
+    agreementNotSigned: 'Payments can be recorded once every purchaser has signed the agreement',
+    agreementCancelled: 'This agreement is cancelled; only refunds can be recorded',
+    notRefundable: 'Refunds can only be recorded on a signed, executed or cancelled agreement',
+    futureDate: 'The date received cannot be in the future',
+    aboveBalance: (left: string, countingPending: boolean) =>
+      `This is more than the ${left} left to pay${countingPending ? ', counting payments waiting for approval' : ''}`,
+    refundsAreFinance: 'Only finance or an administrator can record a refund',
+    refundAboveHeld: (held: string) => `You can refund at most the ${held} received`,
+    duplicate:
+      'A payment with the same amount, date and reference is already recorded; confirm to record it anyway',
+    replacesOnlyClosed: 'A correction can only replace a voided or rejected entry of the same kind',
+    alreadyReplaced: 'This entry was already corrected',
+    onlyAuthor: 'Only whoever recorded this entry can change or withdraw it',
+    notPending: 'This entry is no longer waiting for approval',
+    notPosted: 'Only a posted entry can be voided',
+    cannotApproveOwn: 'Someone else must approve an entry you recorded',
+    voidRefundFirst: 'Refunds would exceed what was received; void the refund first',
+    changedReload: 'This entry changed meanwhile; reload it',
+    noReceipt: 'Only money received or refunded has a receipt',
+    cancelHoldsMoney: (held: string) =>
+      `This agreement holds ${held} in payments; only an administrator can cancel it`,
+  },
   templates: {
     nameTaken: 'A template with this name already exists',
   },
@@ -170,6 +196,10 @@ export const THREAD = {
     `The price changed to ${total}, so purchase agreement ${reference} is void and this proposal is back in negotiation.`,
   agreementCancelled: (name: string, reference: string, reason?: string) =>
     `${name} cancelled purchase agreement ${reference}.${reason ? ` ${reason}` : ''}`,
+  paymentReceived: (amount: string, reference: string, receivedOn: string) =>
+    `Payment of ${amount} received on ${receivedOn} for purchase agreement ${reference}.`,
+  refundIssued: (amount: string, reference: string, receivedOn: string) =>
+    `Refund of ${amount} issued on ${receivedOn} for purchase agreement ${reference}.`,
 } as const;
 
 export const CHANGE_LABELS = {
@@ -286,5 +316,32 @@ export const AGREEMENT_TEXT = {
     closingToBeConfirmed: 'To be confirmed',
     footer: (seller: string, reference: string) => `${seller}  ·  Agreement ${reference}`,
     page: (n: number, count: number) => `Page ${n} of ${count}`,
+  },
+  receipt: {
+    title: { payment: 'Payment receipt', refund: 'Refund confirmation' },
+    subject: (reference: string) => `Receipt ${reference}`,
+    meta: (reference: string, confirmed: string) =>
+      `Receipt ${reference}  ·  confirmed ${confirmed}`,
+    party: { payment: 'Received from', refund: 'Refunded to' },
+    amount: { payment: 'Amount received', refund: 'Amount refunded' },
+    date: { payment: 'Date received', refund: 'Date refunded' },
+    method: 'Method',
+    for: 'For',
+    agreement: (reference: string) => `Purchase agreement ${reference}`,
+    methods: {
+      cheque: 'Cheque',
+      bank_draft: 'Bank draft',
+      wire: 'Wire transfer',
+      eft: 'Electronic transfer',
+      card: 'Card',
+      cash: 'Cash',
+      other: 'Other',
+    },
+    note: {
+      payment: (seller: string) =>
+        `${seller} confirms it received this amount toward the purchase agreement above. The agreement and its schedule are unchanged.`,
+      refund: (seller: string) =>
+        `${seller} confirms it returned this amount to the buyer under the purchase agreement above.`,
+    },
   },
 } as const;

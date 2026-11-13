@@ -4,9 +4,14 @@ Angular web UI, deployed unchanged for every company. Run with `npm install && n
 
 - `public/config.json`: runtime API URL (`{ "apiBaseUrl": "http://localhost:3000" }`); nginx
   generates it from `API_PUBLIC_URL` in containers.
-- `src/styles.scss`: the design system (tokens, light/dark, buttons, forms, sheets).
-- `src/app/features`: the buyer site (`buyer`, `key-access`, `auth`), the company `console` and
-  the `platform` console. `src/app/shared` holds building blocks used by both.
+- `src/styles.scss`: the design system (tokens, light/dark, buttons, forms, sheets) and layout
+  helpers: `.truncate` (one line with an ellipsis; put the full text in `title`), `.clamp-2`,
+  `.hide-sm` and `.only-sm`.
+- `src/app/features`: the buyer site (`buyer`, `key-access`, `auth`), the company `console`
+  (sales, finance and administrators, payments included) and the `platform` console.
+  `src/app/shared` holds building blocks used by both.
+- The `@angular/*` framework packages are pinned to one exact version, because they require each
+  other's exact version: upgrade them together. `@angular/build` and `@angular/cli` follow `^`.
 
 ## Conventions
 
@@ -37,6 +42,15 @@ this.toast.success($localize`:@@room.toasts.sentTo:Sent to ${rep}:rep: for revie
 
 **Constants, not string literals,** for API endpoints (`core/api-endpoints.ts`, `API.proposals.one(id)`)
 and page paths (`core/app-paths.ts`, `PATHS.console.proposal(id)`).
+
+**Values from `@homepact/shared` come from its zod-free entries** (`/enums`, `/format`, `/changes`,
+`/agreement-fields`, `/mortgage`, `/payment-schedule`); the root entry is for types only, so the
+schemas never ship to the browser. ESLint enforces it.
+
+**Access by role.** Routes use the guards in `core/guards.ts`: `teamGuard` (the console),
+`sellSideGuard` (console pages finance does not use), `buyerGuard` and `superAdminGuard`. Someone
+signed in without access goes to `AuthService.home()` for their role; a visitor goes to sign in.
+What a page shows follows the same roles (`isStaff`, `isFinance`, `managesPayments`).
 
 ## Translations
 

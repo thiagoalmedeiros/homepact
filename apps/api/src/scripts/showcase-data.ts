@@ -18,6 +18,7 @@ export const SHOWCASE_COMPANY = {
     { name: 'Morgan Reyes', email: 'admin@example-homes.demo', role: Role.CompanyAdmin },
     { name: 'Jordan Blake', email: 'jordan@example-homes.demo', role: Role.CompanyStaff },
     { name: 'Casey Moreau', email: 'casey@example-homes.demo', role: Role.CompanyStaff },
+    { name: 'Riley Chen', email: 'riley@example-homes.demo', role: Role.CompanyFinance },
   ],
   buyer: { name: 'Taylor Singh', email: 'taylor@example.com', phone: '403-555-0142' },
 };
@@ -727,6 +728,24 @@ export const STORY = {
     buyer: { name: 'Alex Morgan', email: 'alex.morgan@example.com' },
     note: 'This Willow is ready for immediate possession and is offered as built.',
     invite: 'Alex Morgan (pre-existing Willow, locked)',
+  },
+  lee: {
+    buyer: { name: 'Avery Lee', email: 'avery.lee@example.com' },
+    purchasers: [
+      { name: 'Avery Lee', email: 'avery.lee@example.com' },
+      { name: 'Chris Lee', email: 'chris.lee@example.com' },
+    ],
+    deposits: { onSigning: 'on signing', second: 'within 30 days of signing' },
+    cheque: '#2041',
+    wire: 'WIRE-88213',
+    note: 'Second deposit instalment, wire confirmation forwarded by the buyers.',
+  },
+  rivera: {
+    buyer: { name: 'Sam Rivera', email: 'sam.rivera@example.com', phone: '403-555-0188' },
+    home: '73 Sunvale Gardens SE',
+    deposits: { onSigning: 'on signing', second: 'within 30 days of signing' },
+    cheque: '#1187',
+    wire: 'WIRE-20611',
   },
   jamie: {
     buyer: { name: 'Jamie Okafor', email: 'jamie@example.com' },

@@ -34,6 +34,7 @@ const principal = (role: PrincipalRole, sub: string, name: string): Principal =>
 });
 export const ADMIN = principal(Role.CompanyAdmin, 'admin-1', 'Alex Admin');
 export const STAFF = principal(Role.CompanyStaff, 'staff-1', 'Sam Staff');
+export const FINANCE = principal(Role.CompanyFinance, 'finance-1', 'Fran Finance');
 export const BUYER = principal(Role.Buyer, 'buyer-1', 'Bea Buyer');
 export const SUPER_ADMIN = principal(Role.SuperAdmin, 'super-1', 'Platform Admin');
 export const keyHolder = (proposalId: string): Principal => ({

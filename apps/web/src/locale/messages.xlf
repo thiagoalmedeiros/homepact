@@ -118,7 +118,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/layout/site-nav.html</context>
-          <context context-type="linenumber">35,39</context>
+          <context context-type="linenumber">32,36</context>
         </context-group>
       </trans-unit>
       <trans-unit id="auth.login.newHere" datatype="html">
@@ -139,7 +139,7 @@
         <source>Sign in failed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/auth/login.page.ts</context>
-          <context context-type="linenumber">47</context>
+          <context context-type="linenumber">40</context>
         </context-group>
       </trans-unit>
       <trans-unit id="auth.register.title" datatype="html">
@@ -419,116 +419,229 @@
           <context context-type="linenumber">100,102</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="agreementRoom.payments" datatype="html">
+        <source>Your payments</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">108,109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.paymentsReceived" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ l.schedule.totals.netPaidCents | money: l.currency }}"/> received · <x id="INTERPOLATION_1" equiv-text="{{ l.schedule.totals.outstandingCents | money: l.currency }}"/> left to pay</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">110,113</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.closingBalance" datatype="html">
+        <source>Balance due on closing</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">119,121</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.refunded" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ p.amountCents | money: p.currency }}"/> refunded</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">141,142</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.open" datatype="html">
+        <source> Receipt </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">154,156</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.number" datatype="html">
+        <source>Receipt <x id="INTERPOLATION" equiv-text="{{ r.reference }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">175,176</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.refundedTo" datatype="html">
+        <source>Refunded to</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">181,183</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.receivedFrom" datatype="html">
+        <source>Received from</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">183,185</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.amount" datatype="html">
+        <source>Amount</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">188,189</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.date" datatype="html">
+        <source>Date</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">192,193</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.method" datatype="html">
+        <source>Method</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">196,197</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.for" datatype="html">
+        <source>For</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">200,201</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.agreement" datatype="html">
+        <source>Purchase agreement <x id="INTERPOLATION" equiv-text="{{ a.reference }}"/> · <x id="INTERPOLATION_1" equiv-text="{{ a.home.model
+                }}"/><x id="INTERPOLATION_2" equiv-text="{{ a.home.address ? &apos;, &apos; + a.home.address : &apos;&apos; }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">202,204</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.download" datatype="html">
+        <source>Download the PDF</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
+          <context context-type="linenumber">215,217</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="agreementRoom.otherPurchasers" datatype="html">
         <source>The other purchasers</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">107,108</context>
+          <context context-type="linenumber">223,224</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.otherSigned" datatype="html">
         <source>Signed <x id="INTERPOLATION" equiv-text="{{ p.signature?.signedAt | localDate: &apos;dateTime&apos; }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">114,115</context>
+          <context context-type="linenumber">230,231</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.otherMustSignAgain" datatype="html">
         <source>Must sign again</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">119,122</context>
+          <context context-type="linenumber">235,238</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.otherWaiting" datatype="html">
         <source>Not signed yet</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">123,126</context>
+          <context context-type="linenumber">239,242</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.sign" datatype="html">
         <source>Sign agreement</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">141,142</context>
+          <context context-type="linenumber">257,258</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.preparing" datatype="html">
         <source>Preparing…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">153,155</context>
+          <context context-type="linenumber">269,271</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.download" datatype="html">
         <source>Download PDF</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">155,157</context>
+          <context context-type="linenumber">271,273</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.initialsHint" datatype="html">
         <source> Initial the <x id="INTERPOLATION" equiv-text="{{ keyClauses().length }}"/> key clause(s) below before you sign. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">161,164</context>
+          <context context-type="linenumber">277,280</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.signSheet.title" datatype="html">
         <source>Sign the purchase agreement</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">177,178</context>
+          <context context-type="linenumber">293,294</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.signSheet.meta" datatype="html">
         <source>Agreement <x id="INTERPOLATION" equiv-text="{{ a.reference }}"/> · <x id="INTERPOLATION_1" equiv-text="{{ a.seller.name }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">185,187</context>
+          <context context-type="linenumber">301,303</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.signSheet.deposit" datatype="html">
         <source>Deposit <x id="INTERPOLATION" equiv-text="{{ a.terms.depositCents | money: a.currency }}"/>, paid in <x id="INTERPOLATION_1" equiv-text="{{ a.terms.deposits.length }}"/> instalment(s)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">189,192</context>
+          <context context-type="linenumber">305,308</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.signSheet.typeName" datatype="html">
         <source>Type your full name</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">194,196</context>
+          <context context-type="linenumber">310,312</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.signSheet.agree" datatype="html">
         <source> I have read agreement <x id="INTERPOLATION" equiv-text="{{ a.reference }}"/>, including Schedule A, initialled its key clauses, and agree to buy this home from <x id="INTERPOLATION_1" equiv-text="{{ a.seller.name }}"/> on these terms. I understand that typing my name is my electronic signature. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">214,217</context>
+          <context context-type="linenumber">330,333</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.signSheet.signing" datatype="html">
         <source>Signing…</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">226,228</context>
+          <context context-type="linenumber">342,344</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.signSheet.submit" datatype="html">
         <source>Sign agreement</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.html</context>
-          <context context-type="linenumber">228,230</context>
+          <context context-type="linenumber">344,346</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.title" datatype="html">
+        <source>Payment receipt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.ts</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="agreementRoom.receipt.refundTitle" datatype="html">
+        <source>Refund confirmation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.ts</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="agreementRoom.signed" datatype="html">
         <source>Thank you — your signature is on file.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/agreement-room.page.ts</context>
-          <context context-type="linenumber">114</context>
+          <context context-type="linenumber">138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="landing.headline" datatype="html">
@@ -644,11 +757,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console-shell.html</context>
-          <context context-type="linenumber">33,34</context>
+          <context context-type="linenumber">35,36</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console-shell.html</context>
-          <context context-type="linenumber">35,36</context>
+          <context context-type="linenumber">37,38</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/platform/platform.page.html</context>
@@ -1173,7 +1286,7 @@
         <source>your representative</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">129</context>
+          <context context-type="linenumber">130</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/text.ts</context>
@@ -1184,70 +1297,268 @@
         <source>Sent to <x id="rep" equiv-text="this.firstName()"/> for review</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">184</context>
+          <context context-type="linenumber">186</context>
         </context-group>
       </trans-unit>
       <trans-unit id="room.confirmWithdraw.title" datatype="html">
         <source>Withdraw your change request?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">194</context>
+          <context context-type="linenumber">196</context>
         </context-group>
       </trans-unit>
       <trans-unit id="room.confirmWithdraw.message" datatype="html">
         <source>The proposal goes back to the current revision, and you can ask again.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">195</context>
+          <context context-type="linenumber">197</context>
         </context-group>
       </trans-unit>
       <trans-unit id="room.confirmWithdraw.confirm" datatype="html">
         <source>Withdraw request</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">196</context>
+          <context context-type="linenumber">198</context>
         </context-group>
       </trans-unit>
       <trans-unit id="room.toasts.requestWithdrawn" datatype="html">
         <source>Request withdrawn</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">201</context>
+          <context context-type="linenumber">203</context>
         </context-group>
       </trans-unit>
       <trans-unit id="room.toasts.signed" datatype="html">
         <source>Signed. Congratulations on your new home!</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">222</context>
+          <context context-type="linenumber">224</context>
         </context-group>
       </trans-unit>
       <trans-unit id="room.confirmDecline.title" datatype="html">
         <source>Decline this proposal?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">229</context>
+          <context context-type="linenumber">231</context>
         </context-group>
       </trans-unit>
       <trans-unit id="room.confirmDecline.message" datatype="html">
         <source><x id="rep" equiv-text="this.firstName()"/> will be told you&apos;ve decided not to go ahead. This cannot be undone.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">230</context>
+          <context context-type="linenumber">232</context>
         </context-group>
       </trans-unit>
       <trans-unit id="room.confirmDecline.confirm" datatype="html">
         <source>Decline proposal</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">231</context>
+          <context context-type="linenumber">233</context>
         </context-group>
       </trans-unit>
       <trans-unit id="room.toasts.declined" datatype="html">
         <source>Proposal declined</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/buyer/proposal-room.page.ts</context>
-          <context context-type="linenumber">237</context>
+          <context context-type="linenumber">239</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.title" datatype="html">
+        <source>Payments</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.received" datatype="html">
+        <source>Received <x id="INTERPOLATION" equiv-text="{{ totals.netPaidCents | money: l.currency }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ totals.totalCents | money: l.currency }}"/> · outstanding <x id="INTERPOLATION_2" equiv-text="{{ totals.outstandingCents | money: l.currency }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">8,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.overdue" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ totals.overdueCents | money: l.currency }}"/> overdue</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.pending" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ totals.pendingCount }}"/> payment(s) (<x id="INTERPOLATION_1" equiv-text="{{ totals.pendingCents | money: l.currency }}"/>) waiting for approval</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">19,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.record" datatype="html">
+        <source>Record payment</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">33,34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.refund" datatype="html">
+        <source>Record refund</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">43,44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.held" datatype="html">
+        <source> This agreement is cancelled, and the company still holds <x id="INTERPOLATION" equiv-text="{{ held() | money: l.currency }}"/> of the buyer&apos;s money. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">51,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.closing" datatype="html">
+        <source>Balance due on closing</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">62,64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.dueAndPaid" datatype="html">
+        <source>due <x id="INTERPOLATION" equiv-text="{{ line.dueDate | localDate: &apos;calendar&apos; }}"/> · <x id="INTERPOLATION_1" equiv-text="{{ line.paidCents | money: l.currency }}"/> paid</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">68,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.paidSoFar" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ line.paidCents | money: l.currency }}"/> paid</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">73,74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.refundOf" datatype="html">
+        <source>Refund of <x id="INTERPOLATION" equiv-text="{{ p.amountCents | money: p.currency }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">91,92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.recordedAndApproved" datatype="html">
+        <source>Recorded by <x id="INTERPOLATION" equiv-text="{{ p.recordedBy.name }}"/> · approved by <x id="INTERPOLATION_1" equiv-text="{{ p.reviewedBy.name }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">107,108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.recordedBy" datatype="html">
+        <source>Recorded by <x id="INTERPOLATION" equiv-text="{{ p.recordedBy.name }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">111,112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.voidedBecause" datatype="html">
+        <source>Voided by <x id="INTERPOLATION" equiv-text="{{ p.voidedBy?.name }}"/>: <x id="INTERPOLATION_1" equiv-text="{{ p.voidReason }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">116,117</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">60,62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.rejectedBecause" datatype="html">
+        <source>Rejected by <x id="INTERPOLATION" equiv-text="{{ p.reviewedBy?.name }}"/>: <x id="INTERPOLATION_1" equiv-text="{{ p.rejectReason }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">121,122</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">55,57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.approve" datatype="html">
+        <source> Approve </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">140,141</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">74,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.rejectAction" datatype="html">
+        <source> Reject </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">149,150</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">83,85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.edit" datatype="html">
+        <source> Fix </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">160,161</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.withdraw" datatype="html">
+        <source> Take back </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">170,171</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.voidAction" datatype="html">
+        <source> Void </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">181,182</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.reenter" datatype="html">
+        <source> Record the right one </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">192,193</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.empty" datatype="html">
+        <source>No payment recorded yet.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.html</context>
+          <context context-type="linenumber">199,202</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.recordTitle" datatype="html">
+        <source>Record a payment</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.refundTitle" datatype="html">
+        <source>Record a refund</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.editTitle" datatype="html">
+        <source>Fix this payment</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.reenterTitle" datatype="html">
+        <source>Record the right payment</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreement-payments.ts</context>
+          <context context-type="linenumber">50</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.templateEditor.back" datatype="html">
@@ -2128,7 +2439,7 @@
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.signedBody" datatype="html">
-        <source>on <x id="INTERPOLATION" equiv-text="{{ a.signedAt | localDate: &apos;dateTime&apos; }}"/>. An administrator countersigns to execute it.</source>
+        <source>on <x id="INTERPOLATION" equiv-text="{{ a.signedAt | localDate: &apos;dateTime&apos; }}"/>; it now waits for an administrator to countersign it.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
           <context context-type="linenumber">98,99</context>
@@ -2166,308 +2477,308 @@
         <source>Purchasers</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">135,136</context>
+          <context context-type="linenumber">137,138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.signerSigned" datatype="html">
         <source>Signed <x id="INTERPOLATION" equiv-text="{{ p.signature?.signedAt | localDate: &apos;dateTime&apos; }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">145,146</context>
+          <context context-type="linenumber">147,148</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.signerInvalidated" datatype="html">
         <source>Must sign again</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">150,153</context>
+          <context context-type="linenumber">152,155</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.signerWaiting" datatype="html">
         <source>Waiting for signature</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">156,158</context>
+          <context context-type="linenumber">158,160</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.signerNotSent" datatype="html">
         <source>Not sent yet</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">159,162</context>
+          <context context-type="linenumber">161,164</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.reinvite" datatype="html">
         <source>New link and code</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">171,173</context>
+          <context context-type="linenumber">173,175</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.fromProposal" datatype="html">
         <source>From proposal</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">178,179</context>
+          <context context-type="linenumber">180,182</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.revisionSigned" datatype="html">
         <source>Revision <x id="INTERPOLATION" equiv-text="{{ a.proposalSignature.revision }}"/> signed by <x id="INTERPOLATION_1" equiv-text="{{ a.proposalSignature.fullName }}"/> on <x id="INTERPOLATION_2" equiv-text="{{ a.proposalSignature.signedAt | localDate: &apos;dateTime&apos; }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">183,187</context>
+          <context context-type="linenumber">189,193</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.template" datatype="html">
         <source>Template</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">189,190</context>
+          <context context-type="linenumber">195,196</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.templateMeta" datatype="html">
         <source>Version <x id="INTERPOLATION" equiv-text="{{ a.template.version }}"/> · prepared by <x id="INTERPOLATION_1" equiv-text="{{ a.createdByName }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">192,194</context>
+          <context context-type="linenumber">198,200</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.templateEdited" datatype="html">
         <source>Edited the template since? Edit the terms to use its latest version.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">196,200</context>
+          <context context-type="linenumber">202,206</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.handoutTitle" datatype="html">
         <source>Signing links and codes</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">205,206</context>
+          <context context-type="linenumber">211,212</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.handoutBody" datatype="html">
         <source> Give each purchaser their link and read them their code over the phone. This is the only time the codes can be seen; you can always issue new ones. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">211,214</context>
+          <context context-type="linenumber">217,220</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.terms.editSubmit" datatype="html">
         <source>Update agreement</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">244,245</context>
+          <context context-type="linenumber">250,251</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.countersignTitle" datatype="html">
         <source>Countersign and execute</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">257,258</context>
+          <context context-type="linenumber">263,264</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.countersignBody" datatype="html">
         <source> Every purchaser has signed <x id="INTERPOLATION" equiv-text="{{ a.reference }}"/>. Your signature executes the agreement and stores the final PDF with its certificate of signatures. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">263,265</context>
+          <context context-type="linenumber">269,271</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.countersignName" datatype="html">
         <source>Type your full name</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">268,271</context>
+          <context context-type="linenumber">274,277</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.countersignAgree" datatype="html">
         <source> I am authorised to sign for <x id="INTERPOLATION" equiv-text="{{ a.seller.name }}"/> and I execute this agreement on its behalf. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">289,291</context>
+          <context context-type="linenumber">295,297</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.countersignSubmit" datatype="html">
         <source>Countersign</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">299,302</context>
+          <context context-type="linenumber">305,308</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.discardBody" datatype="html">
         <source>You can prepare a new agreement from the proposal afterwards.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">314,316</context>
+          <context context-type="linenumber">320,322</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.cancelBody" datatype="html">
         <source>The purchasers are told it is void, their signing links stop working and any signature given no longer counts. You can then prepare a new one.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">318,321</context>
+          <context context-type="linenumber">324,327</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.reason" datatype="html">
         <source>Reason</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">326,327</context>
+          <context context-type="linenumber">332,333</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.reasonHint" datatype="html">
         <source>shown to the buyer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">328,330</context>
+          <context context-type="linenumber">334,336</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.confirmDiscard" datatype="html">
         <source>Discard draft</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">347,349</context>
+          <context context-type="linenumber">353,355</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.confirmCancel" datatype="html">
         <source>Void agreement</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.html</context>
-          <context context-type="linenumber">349,352</context>
+          <context context-type="linenumber">355,358</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.discardTitle" datatype="html">
         <source>Discard this draft?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.cancelTitle" datatype="html">
         <source>Cancel this agreement?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">64</context>
+          <context context-type="linenumber">66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.copyLink" datatype="html">
         <source>Copy link and code</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.terms.editTitle" datatype="html">
         <source>Edit the draft</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.terms.amendTitle" datatype="html">
         <source>Change the agreement</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.confirmAmend.title" datatype="html">
         <source>Change an agreement that is already signed?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">126</context>
+          <context context-type="linenumber">128</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.confirmAmend.message" datatype="html">
         <source><x id="count" equiv-text="signed"/> signature(s) given so far will no longer be valid, and those purchasers have to read and sign the new text.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">127</context>
+          <context context-type="linenumber">129</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.confirmAmend.confirm" datatype="html">
         <source>Change it anyway</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">128</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.toasts.updated" datatype="html">
         <source>Agreement updated</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">136</context>
+          <context context-type="linenumber">138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.yourCompany" datatype="html">
         <source>your company</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">145</context>
+          <context context-type="linenumber">147</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.confirmSend.title" datatype="html">
         <source>Send this agreement for signature?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">147</context>
+          <context context-type="linenumber">149</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.confirmSend.message" datatype="html">
         <source>Each purchaser gets their own link and code to sign it on behalf of <x id="company" equiv-text="company"/>. You will countersign once they all have.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">148</context>
+          <context context-type="linenumber">150</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.confirmSend.confirm" datatype="html">
         <source>Send for signature</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">149</context>
+          <context context-type="linenumber">151</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.toasts.sent" datatype="html">
         <source>Sent for signature to <x id="count" equiv-text="issued.invitations.length"/> purchaser(s)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">159</context>
+          <context context-type="linenumber">161</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.toasts.reinvited" datatype="html">
         <source>New link and code ready</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">170</context>
+          <context context-type="linenumber">172</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.toasts.executed" datatype="html">
         <source>Agreement executed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">183</context>
+          <context context-type="linenumber">185</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.toasts.cancelled" datatype="html">
         <source>Agreement cancelled</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">201</context>
+          <context context-type="linenumber">203</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.handoutText" datatype="html">
         <source><x id="link" equiv-text="h.link"/> — code <x id="code" equiv-text="h.code"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">210</context>
+          <context context-type="linenumber">212</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreement.copied" datatype="html">
         <source>Link and code copied</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreement.page.ts</context>
-          <context context-type="linenumber">212</context>
+          <context context-type="linenumber">214</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.title" datatype="html">
@@ -2488,147 +2799,175 @@
         <source>Templates</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">10,14</context>
+          <context context-type="linenumber">11,16</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.readyTitle" datatype="html">
         <source>Ready for an agreement</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">16,17</context>
+          <context context-type="linenumber">18,19</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.readyBody" datatype="html">
         <source> These proposals are signed and have no agreement yet. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">18,21</context>
+          <context context-type="linenumber">20,23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.readyMeta" datatype="html">
         <source> · <x id="INTERPOLATION" equiv-text="{{ p.houseName }}"/> · <x id="INTERPOLATION_1" equiv-text="{{ p.reference }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">31,32</context>
+          <context context-type="linenumber">33,34</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.prepare" datatype="html">
         <source>Prepare</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">35,36</context>
+          <context context-type="linenumber">37,38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.filter" datatype="html">
         <source>Filter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">49</context>
+          <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.columns.buyer" datatype="html">
         <source>Buyer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">62,63</context>
+          <context context-type="linenumber">64,65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.columns.home" datatype="html">
         <source>Home</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">63,64</context>
+          <context context-type="linenumber">65,66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.columns.status" datatype="html">
         <source>Status</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">64,65</context>
+          <context context-type="linenumber">66,67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.columns.price" datatype="html">
         <source>Price</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">65,66</context>
+          <context context-type="linenumber">67,68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.agreements.columns.payments" datatype="html">
+        <source>Payments</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
+          <context context-type="linenumber">68,69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.columns.updated" datatype="html">
         <source>Updated</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">66,70</context>
+          <context context-type="linenumber">69,73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.signedCount" datatype="html">
         <source> <x id="INTERPOLATION" equiv-text="{{ a.signedCount }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ a.purchaserCount }}"/> purchaser(s) signed </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">84,85</context>
+          <context context-type="linenumber">87,88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.fromProposal" datatype="html">
         <source><x id="INTERPOLATION" equiv-text="{{ a.reference }}"/> · from <x id="INTERPOLATION_1" equiv-text="{{ a.proposalReference }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">89,90</context>
+          <context context-type="linenumber">92,93</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.builtToOrder" datatype="html">
         <source>Built to order</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">99,101</context>
+          <context context-type="linenumber">102,104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.agreements.received" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{ paid.netPaidCents | money: a.currency }}"/> received </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
+          <context context-type="linenumber">113,114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.agreements.overdue" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{ paid.overdueCents | money: a.currency }}"/> overdue </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
+          <context context-type="linenumber">117,118</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.agreements.waiting" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{ paid.pendingCount }}"/> waiting for approval </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
+          <context context-type="linenumber">122,123</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.empty" datatype="html">
         <source> No agreements here. Open a signed proposal to prepare its purchase agreement. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.html</context>
-          <context context-type="linenumber">112,114</context>
+          <context context-type="linenumber">132,134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.filters.all" datatype="html">
         <source>All</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.ts</context>
-          <context context-type="linenumber">40</context>
+          <context context-type="linenumber">42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.filters.draft" datatype="html">
         <source>Drafts</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.ts</context>
-          <context context-type="linenumber">41</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.filters.under_review" datatype="html">
         <source>Out for signature</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.filters.signed" datatype="html">
         <source>To countersign</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.ts</context>
-          <context context-type="linenumber">48</context>
+          <context context-type="linenumber">50</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.filters.executed" datatype="html">
         <source>Executed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.ts</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.agreements.filters.cancelled" datatype="html">
         <source>Cancelled</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/agreements.page.ts</context>
-          <context context-type="linenumber">56</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.catalog.title" datatype="html">
@@ -3018,14 +3357,21 @@
         <source>Administrator</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console-shell.html</context>
-          <context context-type="linenumber">24,26</context>
+          <context context-type="linenumber">24,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.shell.finance" datatype="html">
+        <source>Finance</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/console-shell.html</context>
+          <context context-type="linenumber">26,27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.shell.sales" datatype="html">
         <source>Sales</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console-shell.html</context>
-          <context context-type="linenumber">26,28</context>
+          <context context-type="linenumber">28,30</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.shell.nav.overview" datatype="html">
@@ -3049,151 +3395,165 @@
           <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="console.shell.nav.payments" datatype="html">
+        <source>Payments</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/console-shell.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="console.shell.nav.inventory" datatype="html">
         <source>Pre-existing homes</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console-shell.ts</context>
-          <context context-type="linenumber">49</context>
+          <context context-type="linenumber">55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.shell.nav.homes" datatype="html">
         <source>Floor plans</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console-shell.ts</context>
-          <context context-type="linenumber">55</context>
+          <context context-type="linenumber">61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.shell.nav.catalog" datatype="html">
         <source>Packages &amp; options</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console-shell.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.shell.nav.taxesReferrals" datatype="html">
         <source>Sales tax &amp; referrals</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console-shell.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.shell.nav.team" datatype="html">
         <source>Team</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console-shell.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.overview" datatype="html">
         <source>Overview</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">12</context>
+          <context context-type="linenumber">14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.proposals" datatype="html">
         <source>Proposals</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">17</context>
+          <context context-type="linenumber">20</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.newProposal" datatype="html">
         <source>New proposal</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="linenumber">26</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.proposal" datatype="html">
         <source>Proposal</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">27</context>
+          <context context-type="linenumber">32</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.agreements" datatype="html">
         <source>Purchase agreements</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">32</context>
+          <context context-type="linenumber">37</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.agreementTemplates" datatype="html">
         <source>Agreement templates</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">38</context>
+          <context context-type="linenumber">44</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.newAgreementTemplate" datatype="html">
         <source>New agreement template</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.agreementTemplate" datatype="html">
         <source>Agreement template</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.agreement" datatype="html">
         <source>Purchase agreement</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">55</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="titles.payments" datatype="html">
+        <source>Payments</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.inventory" datatype="html">
         <source>Pre-existing homes</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">60</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.homes" datatype="html">
         <source>Floor plans</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.newHome" datatype="html">
         <source>New floor plan</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.editHome" datatype="html">
         <source>Edit floor plan</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">92</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.catalog" datatype="html">
         <source>Catalog</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">80</context>
+          <context context-type="linenumber">98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.taxesReferrals" datatype="html">
         <source>Sales tax &amp; referrals</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">85</context>
+          <context context-type="linenumber">104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="titles.team" datatype="html">
         <source>Team</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/console.routes.ts</context>
-          <context context-type="linenumber">90</context>
+          <context context-type="linenumber">109</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.homes.title" datatype="html">
@@ -3915,67 +4275,354 @@
           <context context-type="linenumber">23,24</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="console.overview.paymentsToApprove" datatype="html">
+        <source>Payments to approve</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/overview.page.html</context>
+          <context context-type="linenumber">33,35</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="console.overview.homesAvailable" datatype="html">
         <source>Pre-existing homes available</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/overview.page.html</context>
-          <context context-type="linenumber">29,31</context>
+          <context context-type="linenumber">43,45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.overview.waitingOnYou" datatype="html">
         <source>Buyers waiting on you</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/overview.page.html</context>
-          <context context-type="linenumber">37,39</context>
+          <context context-type="linenumber">51,53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.overview.reviewChanges" datatype="html">
         <source>Review changes</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/overview.page.html</context>
-          <context context-type="linenumber">48,49</context>
+          <context context-type="linenumber">62,63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.overview.recent" datatype="html">
         <source>Recent proposals</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/overview.page.html</context>
-          <context context-type="linenumber">59,60</context>
+          <context context-type="linenumber">73,74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.overview.seeAll" datatype="html">
         <source>See all</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/overview.page.html</context>
-          <context context-type="linenumber">61,64</context>
+          <context context-type="linenumber">75,78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.overview.empty" datatype="html">
         <source> No proposals yet. Sit down with a buyer and build the first one. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/overview.page.html</context>
-          <context context-type="linenumber">85,89</context>
+          <context context-type="linenumber">99,103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.overview.greeting.morning" datatype="html">
         <source>Good morning, <x id="name" equiv-text="name"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/overview.page.ts</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.overview.greeting.afternoon" datatype="html">
         <source>Good afternoon, <x id="name" equiv-text="name"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/overview.page.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.overview.greeting.evening" datatype="html">
         <source>Good evening, <x id="name" equiv-text="name"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/overview.page.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.void.title" datatype="html">
+        <source>Void this payment?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.void.message" datatype="html">
+        <source>It stays on the ledger as voided, with your reason, and stops counting. You can then record the right one.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.void.confirm" datatype="html">
+        <source>Void payment</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.reject.title" datatype="html">
+        <source>Reject this payment?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.reject.message" datatype="html">
+        <source>Whoever recorded it sees your reason and can record it again.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.reject.confirm" datatype="html">
+        <source>Reject payment</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.toasts.recorded" datatype="html">
+        <source>Payment recorded</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.toasts.updated" datatype="html">
+        <source>Payment updated</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.toasts.approved" datatype="html">
+        <source><x id="reference" equiv-text="entry.reference"/> approved; it now counts</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.toasts.rejected" datatype="html">
+        <source><x id="reference" equiv-text="entry.reference"/> rejected</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.toasts.voided" datatype="html">
+        <source><x id="reference" equiv-text="entry.reference"/> voided</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.confirmWithdraw.title" datatype="html">
+        <source>Take back <x id="reference" equiv-text="entry.reference"/>?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.confirmWithdraw.message" datatype="html">
+        <source>It stays on the ledger as withdrawn and will never count.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.confirmWithdraw.confirm" datatype="html">
+        <source>Take it back</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.toasts.withdrawn" datatype="html">
+        <source><x id="reference" equiv-text="entry.reference"/> withdrawn</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">106</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.confirmDuplicate.title" datatype="html">
+        <source>Already recorded?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">123</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.confirmDuplicate.message" datatype="html">
+        <source><x id="reference" equiv-text="twin"/> has the same amount, date and reference. Record this one as well?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payments.confirmDuplicate.confirm" datatype="html">
+        <source>Record it anyway</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-actions.ts</context>
+          <context context-type="linenumber">125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.approvalHint" datatype="html">
+        <source> Finance approves it before it counts toward what the buyer has paid. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">9,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.refundAmount" datatype="html">
+        <source>Amount refunded</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">15,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.amount" datatype="html">
+        <source>Amount received</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">17,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.refundedOn" datatype="html">
+        <source>Date refunded</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">35,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.receivedOn" datatype="html">
+        <source>Date received</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">37,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.method" datatype="html">
+        <source>Method</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">52,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.reference" datatype="html">
+        <source>Reference</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">67,68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.referenceHint" datatype="html">
+        <source>cheque number, wire reference…</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">69,72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.note" datatype="html">
+        <source>Note</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">83,84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.noteHint" datatype="html">
+        <source>never shown to the buyer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">84,86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.submitRefund" datatype="html">
+        <source>Record refund</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">103,105</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="paymentSheet.submit" datatype="html">
+        <source>Record payment</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payment-sheet.html</context>
+          <context context-type="linenumber">105,107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.payments.title" datatype="html">
+        <source>Payments</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">3,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.payments.subtitleFinance" datatype="html">
+        <source>Payments recorded by sales count once you approve them.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">7,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.payments.subtitleSales" datatype="html">
+        <source>The payments you recorded, and what finance decided.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">11,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.payments.filter" datatype="html">
+        <source>Filter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.payments.recordedBy" datatype="html">
+        <source>· recorded by <x id="INTERPOLATION" equiv-text="{{ p.recordedBy.name }}"/> <x id="INTERPOLATION_1" equiv-text="{{ p.recordedAt | ago }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">50,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.payments.emptyPending" datatype="html">
+        <source>Nothing is waiting for approval.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">94,97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.payments.empty" datatype="html">
+        <source>No payment here.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.html</context>
+          <context context-type="linenumber">97,100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.payments.filters.pending" datatype="html">
+        <source>Waiting for approval</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.payments.filters.rejected" datatype="html">
+        <source>Rejected</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.ts</context>
+          <context context-type="linenumber">44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="console.payments.filters.voided" datatype="html">
+        <source>Voided</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/payments.page.ts</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.builder.back" datatype="html">
@@ -5259,102 +5906,113 @@
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.subtitle" datatype="html">
-        <source> Administrators manage the catalog and team; sales staff negotiate with buyers. </source>
+        <source> Administrators manage the catalog and team; sales staff negotiate with buyers; finance follows and approves payments. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">5,8</context>
+          <context context-type="linenumber">5,9</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.add" datatype="html">
         <source>Add member</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">11,13</context>
+          <context context-type="linenumber">12,14</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">109,110</context>
+          <context context-type="linenumber">122,123</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.columns.name" datatype="html">
         <source>Name</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">20,21</context>
+          <context context-type="linenumber">21,22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.columns.email" datatype="html">
         <source>Email</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">21,22</context>
+          <context context-type="linenumber">22,23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.columns.role" datatype="html">
         <source>Role</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">22,23</context>
+          <context context-type="linenumber">23,24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.columns.active" datatype="html">
         <source>Active</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">23,26</context>
+          <context context-type="linenumber">24,27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.sheetTitle" datatype="html">
         <source>Add team member</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">59,60</context>
+          <context context-type="linenumber">65,66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.name" datatype="html">
         <source>Name</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">65,66</context>
+          <context context-type="linenumber">71,72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.email" datatype="html">
         <source>Email</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">69,70</context>
+          <context context-type="linenumber">75,76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.password" datatype="html">
         <source>Temporary password</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">81,82</context>
+          <context context-type="linenumber">87,88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.role" datatype="html">
         <source>Role</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">92</context>
+          <context context-type="linenumber">98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.roles.company_staff" datatype="html">
         <source>Sales</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">98,100</context>
+          <context context-type="linenumber">104,106</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.ts</context>
           <context context-type="linenumber">38</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="console.team.roles.company_finance" datatype="html">
+        <source>Finance</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/team.page.html</context>
+          <context context-type="linenumber">111,113</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/console/team.page.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="console.team.roles.company_admin" datatype="html">
         <source>Administrator</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.html</context>
-          <context context-type="linenumber">105,108</context>
+          <context context-type="linenumber">118,121</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.ts</context>
@@ -5372,28 +6030,28 @@
         <source><x id="name" equiv-text="this.draft.name"/> added</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.ts</context>
-          <context context-type="linenumber">56</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.confirmDeactivate.title" datatype="html">
         <source>Deactivate <x id="name" equiv-text="u.name"/>?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.ts</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.confirmDeactivate.message" datatype="html">
         <source>They can no longer sign in to the console.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.ts</context>
-          <context context-type="linenumber">72</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="console.team.confirmDeactivate.confirm" datatype="html">
         <source>Deactivate</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/console/team.page.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="notFound.title" datatype="html">
@@ -5988,14 +6646,14 @@
         <source>Console</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/layout/site-nav.html</context>
-          <context context-type="linenumber">16,18</context>
+          <context context-type="linenumber">13,15</context>
         </context-group>
       </trans-unit>
       <trans-unit id="common.account" datatype="html">
         <source>Account</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/layout/site-nav.html</context>
-          <context context-type="linenumber">29,30</context>
+          <context context-type="linenumber">26,27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="common.actions.dismiss" datatype="html">
@@ -6733,6 +7391,13 @@ Please keep it to yourself; anyone with the link can open the proposal.</source>
           <context context-type="linenumber">81,83</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="reasonSheet.label" datatype="html">
+        <source>Reason</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/reason-sheet.html</context>
+          <context context-type="linenumber">5,7</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="time.justNow" datatype="html">
         <source>just now</source>
         <context-group purpose="location">
@@ -6793,126 +7458,245 @@ Please keep it to yourself; anyone with the link can open the proposal.</source>
         <source>With buyer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">17</context>
+          <context context-type="linenumber">20</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.proposal.changes_requested" datatype="html">
         <source>Changes requested</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">21</context>
+          <context context-type="linenumber">24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.proposal.signed" datatype="html">
         <source>Signed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.proposal.declined" datatype="html">
         <source>Declined</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">25</context>
+          <context context-type="linenumber">28</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.proposal.withdrawn" datatype="html">
         <source>Withdrawn</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">26</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.inventory.available" datatype="html">
         <source>Available</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">31</context>
+          <context context-type="linenumber">34</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.inventory.reserved" datatype="html">
         <source>Reserved</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">35</context>
+          <context context-type="linenumber">38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.inventory.sold" datatype="html">
         <source>Sold</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">38</context>
+          <context context-type="linenumber">41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.agreement.draft" datatype="html">
         <source>Draft</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">42</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.agreement.under_review" datatype="html">
         <source>Out for signature</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">47</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.agreement.signed" datatype="html">
         <source>To countersign</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">48</context>
+          <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.agreement.executed" datatype="html">
         <source>Executed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.agreement.cancelled" datatype="html">
         <source>Cancelled</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">56</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="status.payment.pending" datatype="html">
+        <source>Waiting for approval</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="status.payment.posted" datatype="html">
+        <source>Received</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="status.payment.rejected" datatype="html">
+        <source>Rejected</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="status.payment.withdrawn" datatype="html">
+        <source>Withdrawn</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="status.payment.voided" datatype="html">
+        <source>Voided</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="status.instalment.paid" datatype="html">
+        <source>Paid</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="status.instalment.partial" datatype="html">
+        <source>Partly paid</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="status.instalment.overdue" datatype="html">
+        <source>Overdue</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="status.instalment.due" datatype="html">
+        <source>Due</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="status.instalment.upcoming" datatype="html">
+        <source>Upcoming</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payment.method.cheque" datatype="html">
+        <source>Cheque</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payment.method.bank_draft" datatype="html">
+        <source>Bank draft</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payment.method.wire" datatype="html">
+        <source>Wire transfer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payment.method.eft" datatype="html">
+        <source>Electronic transfer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payment.method.card" datatype="html">
+        <source>Card</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payment.method.cash" datatype="html">
+        <source>Cash</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">101</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="payment.method.other" datatype="html">
+        <source>Other</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/status.ts</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.turn.buyerToReview" datatype="html">
         <source>Ready for you to review</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">110</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.turn.sellerWaiting" datatype="html">
         <source>Waiting for the buyer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">111</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.turn.sellerToReview" datatype="html">
         <source>Needs your review</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">114</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.turn.buyerWaitingFor" datatype="html">
         <source>Waiting for <x id="name" equiv-text="p.repName.split(&apos; &apos;)[0]"/> to review your changes</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">117</context>
         </context-group>
       </trans-unit>
       <trans-unit id="status.turn.buyerWaitingForSeller" datatype="html">
         <source>Waiting for the seller to review your changes</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shared/status.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">121</context>
         </context-group>
       </trans-unit>
       <trans-unit id="taxComponents.labelPlaceholder" datatype="html">

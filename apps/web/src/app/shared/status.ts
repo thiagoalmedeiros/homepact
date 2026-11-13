@@ -1,7 +1,10 @@
 import type { Proposal } from '@homepact/shared';
 import {
   AgreementStatus,
+  InstalmentStatus,
   InventoryStatus,
+  PaymentMethod,
+  PaymentStatus,
   Party,
   ProposalStatus,
   type ProposalParty,
@@ -56,6 +59,47 @@ export const AGREEMENT_LABEL: Record<AgreementStatus, Label> = {
     text: $localize`:@@status.agreement.cancelled:Cancelled`,
     tone: '',
   },
+};
+
+export const PAYMENT_LABEL: Record<PaymentStatus, Label> = {
+  [PaymentStatus.Pending]: {
+    text: $localize`:@@status.payment.pending:Waiting for approval`,
+    tone: 'orange',
+  },
+  [PaymentStatus.Posted]: { text: $localize`:@@status.payment.posted:Received`, tone: 'green' },
+  [PaymentStatus.Rejected]: { text: $localize`:@@status.payment.rejected:Rejected`, tone: '' },
+  [PaymentStatus.Withdrawn]: {
+    text: $localize`:@@status.payment.withdrawn:Withdrawn`,
+    tone: '',
+  },
+  [PaymentStatus.Voided]: { text: $localize`:@@status.payment.voided:Voided`, tone: '' },
+};
+
+export const INSTALMENT_LABEL: Record<InstalmentStatus, Label> = {
+  [InstalmentStatus.Paid]: { text: $localize`:@@status.instalment.paid:Paid`, tone: 'green' },
+  [InstalmentStatus.Partial]: {
+    text: $localize`:@@status.instalment.partial:Partly paid`,
+    tone: 'blue',
+  },
+  [InstalmentStatus.Overdue]: {
+    text: $localize`:@@status.instalment.overdue:Overdue`,
+    tone: 'orange',
+  },
+  [InstalmentStatus.Due]: { text: $localize`:@@status.instalment.due:Due`, tone: 'blue' },
+  [InstalmentStatus.Upcoming]: {
+    text: $localize`:@@status.instalment.upcoming:Upcoming`,
+    tone: '',
+  },
+};
+
+export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  [PaymentMethod.Cheque]: $localize`:@@payment.method.cheque:Cheque`,
+  [PaymentMethod.BankDraft]: $localize`:@@payment.method.bank_draft:Bank draft`,
+  [PaymentMethod.Wire]: $localize`:@@payment.method.wire:Wire transfer`,
+  [PaymentMethod.Eft]: $localize`:@@payment.method.eft:Electronic transfer`,
+  [PaymentMethod.Card]: $localize`:@@payment.method.card:Card`,
+  [PaymentMethod.Cash]: $localize`:@@payment.method.cash:Cash`,
+  [PaymentMethod.Other]: $localize`:@@payment.method.other:Other`,
 };
 
 /** Whose move it is, phrased for the person looking at the proposal. */

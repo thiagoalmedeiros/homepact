@@ -33,6 +33,18 @@ describe('ensureIndexes', () => {
     unique('taxRates', { companyId: 1, code: 1 });
   });
 
+  it('serves an agreement’s ledger and the approval queue from indexes', async () => {
+    const created = await run();
+    expect(created).toContainEqual({
+      name: 'agreementPayments',
+      keys: { companyId: 1, agreementId: 1, receivedOn: 1, recordedAt: 1 },
+    });
+    expect(created).toContainEqual({
+      name: 'agreementPayments',
+      keys: { companyId: 1, status: 1, recordedAt: 1 },
+    });
+  });
+
   it('expires refresh tokens with a TTL index', async () => {
     expect(await run()).toContainEqual({
       name: 'refreshTokens',

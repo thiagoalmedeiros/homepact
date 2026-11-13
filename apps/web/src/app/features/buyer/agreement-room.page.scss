@@ -24,3 +24,25 @@ header h1 {
 .loading {
   height: 60vh;
 }
+
+.tight {
+  --gap: 2px;
+}
+
+.tight-row {
+  --gap: 4px;
+  flex-wrap: nowrap;
+}
+.kv > :first-child {
+  white-space: nowrap;
+}
+.kv .value {
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+.pay-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}

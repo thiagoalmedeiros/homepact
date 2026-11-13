@@ -55,10 +55,8 @@ export class LandingPage implements OnInit {
   ];
 
   ngOnInit(): void {
-    if (this.auth.isStaff())
-      void this.router.navigateByUrl(PATHS.console.overview, { replaceUrl: true });
-    else if (this.auth.isBuyer())
-      void this.router.navigateByUrl(PATHS.myProposals, { replaceUrl: true });
+    if (this.auth.isTeam() || this.auth.isBuyer())
+      void this.router.navigateByUrl(this.auth.home(), { replaceUrl: true });
   }
 
   protected open(): void {

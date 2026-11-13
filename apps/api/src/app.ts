@@ -22,6 +22,7 @@ import { companyRoutes } from './modules/companies/routes.js';
 import { adminHouseRoutes } from './modules/houses/routes.js';
 import { inventoryRoutes } from './modules/inventory/routes.js';
 import { marketRateRoutes } from './modules/market-rates/routes.js';
+import { agreementPaymentRoutes, paymentQueueRoutes } from './modules/payments/routes.js';
 import { bankOfCanadaSource, type RateSource } from './modules/market-rates/source.js';
 import { proposalRoutes } from './modules/proposals/routes.js';
 import { referralProgramRoutes } from './modules/referrals/routes.js';
@@ -119,7 +120,9 @@ export const createApp = ({
   api.use('/admin/access-keys', adminAccessKeyRoutes(ctx));
   api.use('/proposals', proposalRoutes(ctx));
   api.use('/agreement-templates', agreementTemplateRoutes(ctx));
+  api.use('/agreements/:agreementId/payments', agreementPaymentRoutes(ctx));
   api.use('/agreements', agreementRoutes(ctx));
+  api.use('/agreement-payments', paymentQueueRoutes(ctx));
   api.use('/tax-presets', taxPresetRoutes(ctx));
   api.use('/tax-rates', taxRateRoutes(ctx));
   api.use('/referral-programs', referralProgramRoutes(ctx));

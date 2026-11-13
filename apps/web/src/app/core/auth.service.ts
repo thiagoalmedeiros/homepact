@@ -1,4 +1,4 @@
-import { Role, isStaffRole } from '@homepact/shared/enums';
+import { Role, isCompanyRole, isPaymentManager, isStaffRole } from '@homepact/shared/enums';
 import { HttpBackend, HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import type {
@@ -12,6 +12,7 @@ import type {
 } from '@homepact/shared';
 import { firstValueFrom } from 'rxjs';
 import { API } from './api-endpoints';
+import { PATHS } from './app-paths';
 import { ApiService } from './api.service';
 import { RuntimeConfigService } from './runtime-config';
 import { safeStorage } from './storage';
@@ -19,6 +20,21 @@ import { safeStorage } from './storage';
 const USER_KEY = 'hc.session';
 const GUEST_KEY = 'hc.guest';
 const PENDING_KEY = 'hc.pendingKey';
+
+/** Where each role starts, and lands when it opens a page that is not for it. */
+const homeOf = (role: Role | undefined): string => {
+  switch (role) {
+    case Role.Buyer:
+      return PATHS.myProposals;
+    case Role.CompanyFinance:
+      return PATHS.console.payments;
+    case Role.CompanyAdmin:
+    case Role.CompanyStaff:
+      return PATHS.console.overview;
+    default:
+      return PATHS.home;
+  }
+};
 
 interface StoredSession {
   tokens: TokenPair;
@@ -39,7 +55,11 @@ export class AuthService {
   readonly guest = signal<AccessSession | null>(this.session.read<AccessSession>(GUEST_KEY));
   readonly user = computed(() => this.stored()?.user ?? null);
   readonly isStaff = computed(() => isStaffRole(this.user()?.role));
+  readonly isTeam = computed(() => isCompanyRole(this.user()?.role));
   readonly isAdmin = computed(() => this.user()?.role === Role.CompanyAdmin);
+  readonly isFinance = computed(() => this.user()?.role === Role.CompanyFinance);
+  readonly managesPayments = computed(() => isPaymentManager(this.user()?.role));
+  readonly home = computed(() => homeOf(this.user()?.role));
   readonly isBuyer = computed(() => this.user()?.role === Role.Buyer);
   readonly isSuperAdmin = computed(() => this.user()?.role === Role.SuperAdmin);
   private refreshing: Promise<string | null> | null = null;

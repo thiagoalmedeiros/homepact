@@ -1,4 +1,4 @@
-import { Role, STAFF_ROLES, userCreateSchema, userUpdateSchema } from '@homepact/shared';
+import { COMPANY_ROLES, Role, userCreateSchema, userUpdateSchema } from '@homepact/shared';
 import { Router } from 'express';
 import { hashPassword } from '../../auth/passwords.js';
 import type { ModuleContext } from '../../context.js';
@@ -7,16 +7,17 @@ import { badRequest, conflict, isDuplicateKey, notFound, parse } from '../../htt
 import { toAuthUser, type UserDoc } from '../auth/users.js';
 import { ERRORS } from '../../messages.js';
 
-/** Company team management. Staff can list colleagues (to assign reps); admins manage them. */
+/** Company team management (sales, finance and administrators). Everyone on the team can list
+ * colleagues; administrators manage them. */
 export const userRoutes = ({ guards, now }: ModuleContext): Router => {
   const router = Router();
-  router.use(guards.requireAuth, guards.requireRole(...STAFF_ROLES));
+  router.use(guards.requireAuth, guards.requireRole(...COMPANY_ROLES));
   const adminOnly = guards.requireRole(Role.CompanyAdmin);
 
   router.get('/', async (req, res) => {
     const users = await req.repo
       .of<UserDoc>('users')
-      .find({ role: { $in: [...STAFF_ROLES] } }, { sort: { name: 1 } });
+      .find({ role: { $in: [...COMPANY_ROLES] } }, { sort: { name: 1 } });
     res.json(users.map(toAuthUser));
   });
 
@@ -43,12 +44,13 @@ export const userRoutes = ({ guards, now }: ModuleContext): Router => {
   router.patch('/:id', adminOnly, async (req, res) => {
     const input = parse(userUpdateSchema, req.body);
     const id = req.params['id'] as string;
-    if (id === req.principal!.sub && (input.active === false || input.role === Role.CompanyStaff)) {
+    const demoted = input.role !== undefined && input.role !== Role.CompanyAdmin;
+    if (id === req.principal!.sub && (input.active === false || demoted)) {
       throw badRequest(ERRORS.users.cannotDemoteSelf);
     }
     const user = await req.repo
       .of<UserDoc>('users')
-      .findOneAndUpdate({ _id: id, role: { $in: [...STAFF_ROLES] } }, { $set: input });
+      .findOneAndUpdate({ _id: id, role: { $in: [...COMPANY_ROLES] } }, { $set: input });
     if (!user) throw notFound();
     res.json(toAuthUser(user));
   });

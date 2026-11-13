@@ -1,0 +1,53 @@
+.console-head h1,
+.console-head p {
+  margin: 0 0 6px;
+}
+.filters {
+  margin-bottom: 16px;
+}
+.queue {
+  padding: 4px 24px;
+  @media (max-width: 600px) {
+    padding-inline: 16px;
+  }
+}
+.entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 20px;
+  @media (max-width: 600px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+  > * {
+    flex: none;
+  }
+  > .truncate {
+    flex: 0 1 auto;
+  }
+}
+.amount {
+  font-size: 17px;
+}
+.side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  @media (max-width: 600px) {
+    justify-content: flex-start;
+  }
+}

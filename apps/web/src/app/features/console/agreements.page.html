@@ -5,10 +5,12 @@
       Signed proposals, turned into agreements of purchase and sale.
     </p>
   </div>
-  <a class="btn btn-secondary" [routerLink]="paths.console.templates" data-testid="templates"
-    ><hc-icon name="doc" [size]="16" />
-    <ng-container i18n="@@console.agreements.templates">Templates</ng-container></a
-  >
+  @if (auth.isStaff()) {
+    <a class="btn btn-secondary" [routerLink]="paths.console.templates" data-testid="templates"
+      ><hc-icon name="doc" [size]="16" />
+      <ng-container i18n="@@console.agreements.templates">Templates</ng-container></a
+    >
+  }
 </header>
 
 @if (ready().length) {
@@ -63,6 +65,7 @@
         <th i18n="@@console.agreements.columns.home">Home</th>
         <th i18n="@@console.agreements.columns.status">Status</th>
         <th class="num" i18n="@@console.agreements.columns.price">Price</th>
+        <th class="num" i18n="@@console.agreements.columns.payments">Payments</th>
         <th class="num hide-sm" i18n="@@console.agreements.columns.updated">Updated</th>
       </tr>
     </thead>
@@ -77,8 +80,8 @@
           (keydown.space)="$event.preventDefault(); open(a)"
           [attr.data-testid]="'agreement-row-' + a.reference"
         >
-          <td>
-            <div class="strong">{{ a.buyerName }}</div>
+          <td class="fill buyer">
+            <div class="strong truncate" [title]="a.buyerName">{{ a.buyerName }}</div>
             @if (a.purchaserCount > 1) {
               <div class="tiny muted" i18n="@@console.agreements.signedCount">
                 {{ a.signedCount }} of {{ a.purchaserCount }} purchaser(s) signed
@@ -90,11 +93,11 @@
               >
             </div>
           </td>
-          <td>
+          <td class="fill home">
             <div>{{ a.houseName }}</div>
             <div class="tiny muted">
               @if (a.address) {
-                {{ a.address }}
+                <span class="truncate" [title]="a.address">{{ a.address }}</span>
               } @else {
                 <ng-container i18n="@@console.agreements.builtToOrder">Built to order</ng-container>
               }
@@ -103,12 +106,29 @@
           <td>
             <span class="pill" [class]="label.tone">{{ label.text }}</span>
           </td>
-          <td class="num tabular">{{ a.totalCents | money: a.currency }}</td>
-          <td class="num hide-sm muted small">{{ a.updatedAt | ago }}</td>
+          <td class="num tabular nowrap">{{ a.totalCents | money: a.currency }}</td>
+          <td class="num small nowrap">
+            @if (a.payments; as paid) {
+              <div class="tabular" i18n="@@console.agreements.received">
+                {{ paid.netPaidCents | money: a.currency }} received
+              </div>
+              @if (paid.overdueCents) {
+                <div class="tiny attention" i18n="@@console.agreements.overdue">
+                  {{ paid.overdueCents | money: a.currency }} overdue
+                </div>
+              }
+              @if (paid.pendingCount) {
+                <div class="tiny muted" i18n="@@console.agreements.waiting">
+                  {{ paid.pendingCount }} waiting for approval
+                </div>
+              }
+            }
+          </td>
+          <td class="num hide-sm muted small nowrap">{{ a.updatedAt | ago }}</td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="5" class="empty" i18n="@@console.agreements.empty">
+          <td colspan="6" class="empty" i18n="@@console.agreements.empty">
             No agreements here. Open a signed proposal to prepare its purchase agreement.
           </td>
         </tr>

@@ -45,14 +45,19 @@ export const settle = async (fixture?: { detectChanges(): void }) => {
 };
 
 /** Signs in through the real AuthService, answering the login call. */
-export const signInAs = async (http: HttpTestingController, role: Role, name = 'Jordan Blake') => {
+export const signInAs = async (
+  http: HttpTestingController,
+  role: Role,
+  name = 'Jordan Blake',
+  id = 'me',
+) => {
   const login = TestBed.inject(AuthService).login({ email: 'me@x.test', password: 'pw' });
   http.expectOne('/api/auth/login').flush({
     accessToken: 'a',
     refreshToken: 'r',
     expiresIn: 900,
     user: {
-      id: 'me',
+      id,
       email: 'me@x.test',
       name,
       role,

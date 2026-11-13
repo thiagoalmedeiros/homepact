@@ -20,6 +20,7 @@ export const PATHS = {
     taxesAndReferrals: '/console/taxes-referrals',
     agreements: '/console/agreements',
     agreement: (id: string) => ['/console/agreements', id],
+    payments: '/console/payments',
     templates: '/console/agreements/templates',
     newTemplate: '/console/agreements/templates/new',
     template: (id: string) => ['/console/agreements/templates', id],

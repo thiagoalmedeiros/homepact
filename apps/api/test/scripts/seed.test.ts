@@ -1,8 +1,13 @@
 import {
   agreementTemplateInputSchema,
+  AgreementStatus,
   CANADIAN_TAX_PRESETS,
+  InventoryStatus,
+  PaymentKind,
+  PaymentStatus,
   ProposalStatus,
   Role,
+  SignerStatus,
   type QuoteSnapshot,
 } from '@homepact/shared';
 import type { Db } from 'mongodb';
@@ -14,7 +19,7 @@ import {
   taxPresetsCollection,
 } from '../../src/data/platform-repo.js';
 import { tenantRepo } from '../../src/data/tenant-repo.js';
-import { seedShowcase, seedSuperAdmin } from '../../src/scripts/seed.js';
+import { seedShowcase, seedSuperAdmin, showcaseSummary } from '../../src/scripts/seed.js';
 import { SHOWCASE_COMPANY } from '../../src/scripts/showcase-data.js';
 
 vi.mock('../../src/auth/passwords.js', () => ({ hashPassword: vi.fn() }));
@@ -226,6 +231,114 @@ describe('seedShowcase', () => {
       expect(k['hash']).toMatch(/^[0-9a-f]{64}$/);
       expect(JSON.stringify(k)).not.toContain(result.invites![0]!.key);
     }
+  });
+
+  it('someone from finance is on the team, with the same demo password', async () => {
+    const { db, table } = memoryDb();
+    await seedShowcase(db, opts);
+    expect(table('users').filter((u) => u['role'] === Role.CompanyFinance)).toEqual([
+      expect.objectContaining({
+        email: 'riley@example-homes.demo',
+        passwordHash: 'hashed(Showcase2026!)',
+        active: true,
+      }),
+    ]);
+  });
+
+  it('finance has work waiting: a signed agreement, its deposit received, a payment to approve', async () => {
+    const { db, table } = memoryDb();
+    await seedShowcase(db, opts);
+    const [agreement] = table('agreements');
+    expect(agreement).toMatchObject({
+      status: AgreementStatus.Signed,
+      issuedAt: expect.any(String),
+    });
+    const purchasers = agreement!['purchasers'] as {
+      status: SignerStatus;
+      signature?: { contentHash: string };
+    }[];
+    for (const p of purchasers) {
+      expect(p.status).toBe(SignerStatus.Signed);
+      expect(p.signature?.contentHash).toBe(agreement!['contentHash']);
+    }
+    expect(table('proposals').find((p) => p['agreementId'] === agreement!['_id'])).toMatchObject({
+      status: ProposalStatus.Signed,
+    });
+
+    const payments = table('agreementPayments').filter(
+      (p) => p['agreementId'] === agreement!['_id'],
+    );
+    expect(
+      payments.map((p) => [p['kind'], p['status'], (p['recordedBy'] as { role: Role }).role]),
+    ).toEqual([
+      [PaymentKind.Payment, PaymentStatus.Posted, Role.CompanyFinance],
+      [PaymentKind.Payment, PaymentStatus.Pending, Role.CompanyStaff],
+    ]);
+    const deposit = (agreement!['terms'] as { depositCents: number }).depositCents;
+    const recorded = payments.reduce((t, p) => t + (p['amountCents'] as number), 0);
+    expect(recorded).toBeLessThanOrEqual(deposit);
+  });
+
+  it('the ready message gives every demo login, finance included', async () => {
+    const { db } = memoryDb();
+    const result = await seedShowcase(db, opts);
+    const message = showcaseSummary(result, {
+      showcaseOrigins: ['http://localhost:4200'],
+      secondOrigin: 'http://127.0.0.1:4200',
+      platformOrigin: 'http://localhost:4300',
+      platformEmail: 'admin@platform.demo',
+      password: 'Showcase2026!',
+    });
+    expect(message).toMatch(
+      /Finance console +http:\/\/localhost:4200\/console\/payments +riley@example-homes\.demo \/ Showcase2026!/,
+    );
+    expect(message).toContain('jordan@example-homes.demo / Showcase2026!');
+    expect(message).toContain('taylor@example.com / Showcase2026!');
+  });
+
+  it('a buyer account already owns an executed contract for a pre-existing home, with receipts', async () => {
+    const { db, table } = memoryDb();
+    await seedShowcase(db, opts);
+    const buyer = table('users').find((u) => u['email'] === 'sam.rivera@example.com');
+    expect(buyer).toMatchObject({ role: Role.Buyer, passwordHash: 'hashed(Showcase2026!)' });
+    const proposal = table('proposals').find((p) => p['buyerUserId'] === buyer!['_id']);
+    expect(proposal).toMatchObject({ kind: 'inventory', status: ProposalStatus.Signed });
+    expect(
+      table('inventoryHomes').find((h) => h['_id'] === proposal!['inventoryHomeId']),
+    ).toMatchObject({ status: InventoryStatus.Sold });
+
+    const agreement = table('agreements').find((a) => a['_id'] === proposal!['agreementId']);
+    expect(agreement).toMatchObject({
+      status: AgreementStatus.Executed,
+      executedAt: expect.any(String),
+      counterSignature: expect.objectContaining({ contentHash: agreement!['contentHash'] }),
+    });
+    const pdf = agreement!['executedPdf'] as { fileId: string };
+    expect(table('agreementFiles').find((f) => f['_id'] === pdf.fileId)).toMatchObject({
+      agreementId: agreement!['_id'],
+      kind: 'executed',
+    });
+
+    const receipts = table('agreementPayments').filter(
+      (p) => p['agreementId'] === agreement!['_id'],
+    );
+    expect(receipts.length).toBeGreaterThan(1);
+    expect(receipts.every((p) => p['status'] === PaymentStatus.Posted)).toBe(true);
+    const deposit = (agreement!['terms'] as { depositCents: number }).depositCents;
+    expect(receipts.reduce((t, p) => t + (p['amountCents'] as number), 0)).toBe(deposit);
+  });
+
+  it('the ready message gives the login of the buyer who can see their receipts', async () => {
+    const { db } = memoryDb();
+    const result = await seedShowcase(db, opts);
+    const message = showcaseSummary(result, {
+      showcaseOrigins: ['http://localhost:4200'],
+      secondOrigin: 'http://127.0.0.1:4200',
+      platformOrigin: 'http://localhost:4300',
+      platformEmail: 'admin@platform.demo',
+      password: 'Showcase2026!',
+    });
+    expect(message).toContain('sam.rivera@example.com / Showcase2026!');
   });
 
   it('is idempotent: a second run only refreshes the origins', async () => {

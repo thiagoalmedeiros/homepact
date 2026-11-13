@@ -30,6 +30,10 @@
     "./mortgage": {
       "types": "./dist/mortgage.d.ts",
       "default": "./dist/mortgage.js"
+    },
+    "./payment-schedule": {
+      "types": "./dist/payment-schedule.d.ts",
+      "default": "./dist/payment-schedule.js"
     }
   },
   "files": [

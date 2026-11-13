@@ -14,6 +14,7 @@ export * from './inventory.js';
 export * from './proposal.js';
 export * from './access.js';
 export * from './agreement.js';
+export * from './payment.js';
 
 export interface ApiError {
   error: string;

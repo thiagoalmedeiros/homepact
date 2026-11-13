@@ -25,7 +25,7 @@ export default tseslint.config(
               name: '@homepact/shared',
               allowTypeImports: true,
               message:
-                'The root entry ships the zod schemas to the browser: import values from @homepact/shared/enums, /format, /changes or /agreement-fields (type imports are fine).',
+                'The root entry ships the zod schemas to the browser: import values from @homepact/shared/enums, /format, /changes, /agreement-fields or /payment-schedule (type imports are fine).',
             },
           ],
         },

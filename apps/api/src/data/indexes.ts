@@ -27,6 +27,10 @@ export const ensureIndexes = async (db: Db): Promise<void> => {
     db.collection('agreements').createIndex({ companyId: 1, updatedAt: -1 }),
     db.collection('agreements').createIndex({ companyId: 1, proposalId: 1 }),
     db.collection('agreementFiles').createIndex({ companyId: 1, agreementId: 1 }),
+    db
+      .collection('agreementPayments')
+      .createIndex({ companyId: 1, agreementId: 1, receivedOn: 1, recordedAt: 1 }),
+    db.collection('agreementPayments').createIndex({ companyId: 1, status: 1, recordedAt: 1 }),
     db.collection('taxPresets').createIndex({ code: 1 }),
     db.collection('taxRates').createIndex({ companyId: 1, code: 1 }, { unique: true }),
     db.collection('referralPrograms').createIndex({ companyId: 1, name: 1 }),

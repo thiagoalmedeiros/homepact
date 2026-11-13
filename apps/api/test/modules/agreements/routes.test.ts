@@ -1,4 +1,11 @@
-import { AgreementStatus, InventoryStatus, ProposalStatus, SignerStatus } from '@homepact/shared';
+import {
+  AgreementStatus,
+  InventoryStatus,
+  PaymentKind,
+  PaymentStatus,
+  ProposalStatus,
+  SignerStatus,
+} from '@homepact/shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { findCompany } from '../../../src/data/platform-repo.js';
 import { composeAgreement } from '../../../src/modules/agreements/document.js';
@@ -13,6 +20,7 @@ import {
   agreementDoc,
   houseDoc,
   inventoryDoc,
+  paymentDoc,
   proposalDoc,
   purchaserDoc,
   quote,
@@ -26,6 +34,7 @@ import {
   BUYER,
   COMPANY_ID,
   COMPANY_TENANT,
+  FINANCE,
   NOW,
   NOW_ISO,
   PLATFORM_TENANT,
@@ -90,6 +99,7 @@ const col = {
   houses: () => repo.col('houses'),
   homes: () => repo.col('inventoryHomes'),
   files: () => repo.col('agreementFiles'),
+  payments: () => repo.col('agreementPayments'),
 };
 const signedProposal = (over = {}) =>
   proposalDoc({ status: ProposalStatus.Signed, signature: SIGNATURE, ...over });
@@ -170,6 +180,26 @@ describe('access', () => {
     expect(col.agreements().findOneAndUpdate).not.toHaveBeenCalled();
   });
 
+  it('finance reads agreements, but does not prepare, send, cancel or countersign them', async () => {
+    scene.principal = FINANCE;
+    col.agreements().find.mockResolvedValue([agreementDoc()]);
+    expect((await h.call('GET', '/')).status).toBe(200);
+    expect((await h.call('GET', '/agr-1')).status).toBe(200);
+    expect(loadProposalFor).not.toHaveBeenCalled();
+    for (const [method, path] of [
+      ['POST', '/'],
+      ['PUT', '/agr-1'],
+      ['POST', '/agr-1/issue'],
+      ['POST', '/agr-1/purchasers/pur-1/invite'],
+      ['POST', '/agr-1/cancel'],
+      ['POST', '/agr-1/countersign'],
+      ['POST', '/agr-1/sign'],
+    ] as const) {
+      expect((await h.call(method, path, {})).status, path).toBe(403);
+    }
+    expect(col.agreements().findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
   it('only an administrator of the company may countersign', async () => {
     scene.principal = STAFF;
     expect((await h.call('POST', '/agr-1/countersign', {})).status).toBe(403);
@@ -190,6 +220,42 @@ describe('GET /', () => {
       { sort: { updatedAt: -1 }, limit: 300 },
     );
     expect((await h.call('GET', '/?status=bogus')).status).toBe(400);
+  });
+
+  it('shows where each agreement that takes payments stands, in one query', async () => {
+    col
+      .agreements()
+      .find.mockResolvedValue([
+        agreementDoc(),
+        agreementDoc({ _id: 'agr-2', status: AgreementStatus.Executed }),
+        agreementDoc({ _id: 'agr-3', status: AgreementStatus.Cancelled }),
+        agreementDoc({ _id: 'agr-4', status: AgreementStatus.Cancelled }),
+      ]);
+    col
+      .payments()
+      .find.mockResolvedValue([
+        paymentDoc({ agreementId: 'agr-2' }),
+        paymentDoc({ _id: 'pay-2', agreementId: 'agr-2', status: PaymentStatus.Pending }),
+        paymentDoc({ _id: 'pay-3', agreementId: 'agr-3' }),
+      ]);
+    const res = await h.call('GET', '/');
+    expect(res.body.map((a: { payments?: object }) => a.payments)).toEqual([
+      undefined,
+      { netPaidCents: 1_000_000, outstandingCents: 49_000_000, overdueCents: 0, pendingCount: 1 },
+      { netPaidCents: 1_000_000, outstandingCents: 49_000_000, overdueCents: 0, pendingCount: 0 },
+      undefined,
+    ]);
+    expect(col.payments().find).toHaveBeenCalledTimes(1);
+    expect(col.payments().find).toHaveBeenCalledWith({
+      agreementId: { $in: ['agr-2', 'agr-3', 'agr-4'] },
+      status: { $in: [PaymentStatus.Pending, PaymentStatus.Posted] },
+    });
+  });
+
+  it('does not look for payments when no agreement can take them', async () => {
+    col.agreements().find.mockResolvedValue([agreementDoc()]);
+    await h.call('GET', '/');
+    expect(col.payments().find).not.toHaveBeenCalled();
   });
 });
 
@@ -779,6 +845,41 @@ describe('POST /:id/cancel', () => {
     expect(messages()).toEqual([
       ['proposal-1', 'Sam Staff cancelled purchase agreement A-TEST-0001. Wrong closing date.'],
     ]);
+  });
+
+  it('only an administrator may cancel an agreement that holds money', async () => {
+    stored = sent({ status: AgreementStatus.Signed, purchasers: [signedPurchaser()] });
+    col
+      .payments()
+      .find.mockResolvedValue([
+        paymentDoc(),
+        paymentDoc({ _id: 'pay-2', kind: PaymentKind.Refund, amountCents: 400_000 }),
+      ]);
+    expect(await h.call('POST', '/agr-1/cancel', {})).toMatchObject({
+      status: 403,
+      body: {
+        error: 'This agreement holds $6,000 in payments; only an administrator can cancel it',
+      },
+    });
+    expect(col.payments().find).toHaveBeenCalledWith({
+      agreementId: 'agr-1',
+      status: PaymentStatus.Posted,
+    });
+    expect(col.agreements().findOneAndUpdate).not.toHaveBeenCalled();
+
+    scene.principal = ADMIN;
+    expect((await h.call('POST', '/agr-1/cancel', {})).status).toBe(200);
+  });
+
+  it('sales may still cancel once every payment went back', async () => {
+    stored = sent({ status: AgreementStatus.Signed, purchasers: [signedPurchaser()] });
+    col
+      .payments()
+      .find.mockResolvedValue([
+        paymentDoc(),
+        paymentDoc({ _id: 'pay-2', kind: PaymentKind.Refund, amountCents: 1_000_000 }),
+      ]);
+    expect((await h.call('POST', '/agr-1/cancel', {})).status).toBe(200);
   });
 
   it('executed or already cancelled agreements stay as they are', async () => {

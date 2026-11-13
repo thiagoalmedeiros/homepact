@@ -2,11 +2,20 @@ import {
   AgreementStatus,
   HouseStatus,
   Party,
+  PaymentKind,
+  PaymentMethod,
+  PaymentStatus,
   ProposalStatus,
+  Role,
   SignerStatus,
 } from '@homepact/shared/enums';
+import { paymentSchedule } from '@homepact/shared/payment-schedule';
 import type {
   Agreement,
+  AgreementLedger,
+  AgreementPayment,
+  BuyerLedger,
+  PaymentActor,
   AgreementPurchaser,
   AgreementTemplate,
   HouseDetail,
@@ -239,3 +248,69 @@ export const TEMPLATES: AgreementTemplate[] = [
     updatedAt: '',
   },
 ];
+
+export const SALES: PaymentActor = { id: 'me', name: 'Jordan Blake', role: Role.CompanyStaff };
+export const FINANCE: PaymentActor = { id: 'fin', name: 'Riley Chen', role: Role.CompanyFinance };
+
+/** A $10,000 cheque toward the deposit of `agreement()`, posted by finance. */
+export const payment = (overrides: Partial<AgreementPayment> = {}): AgreementPayment => ({
+  id: 'pay-1',
+  reference: 'PAY-AAAA-0001',
+  agreementId: 'a1',
+  agreementReference: 'A-2001',
+  kind: PaymentKind.Payment,
+  status: PaymentStatus.Posted,
+  amountCents: 1_000_000,
+  currency: 'CAD',
+  receivedOn: '2026-11-03',
+  method: PaymentMethod.Cheque,
+  externalRef: '#1042',
+  recordedBy: FINANCE,
+  recordedAt: '2026-11-03T15:00:00.000Z',
+  history: [],
+  updatedAt: '2026-11-03T15:00:00.000Z',
+  ...overrides,
+});
+
+/** The ledger the API returns for `a`, its schedule worked out as the server does. */
+export const ledgerOf = (
+  a: Agreement,
+  payments: AgreementPayment[] = [],
+  today = '2026-11-05',
+): AgreementLedger => ({
+  agreementId: a.id,
+  agreementReference: a.reference,
+  agreementStatus: a.status,
+  currency: a.currency,
+  schedule: paymentSchedule(
+    {
+      deposits: a.terms.deposits,
+      ...(a.terms.closingDate && { closingDate: a.terms.closingDate }),
+      totalCents: a.quote.totalCents,
+    },
+    payments,
+    today,
+  ),
+  payments,
+});
+
+/** What the buyer of `a` is sent: posted entries only. */
+export const buyerLedgerOf = (a: Agreement, payments: AgreementPayment[] = []): BuyerLedger => {
+  const posted = payments.filter((p) => p.status === PaymentStatus.Posted);
+  const { schedule } = ledgerOf(a, posted);
+  return {
+    agreementId: a.id,
+    agreementReference: a.reference,
+    currency: a.currency,
+    schedule,
+    payments: posted.map((p) => ({
+      id: p.id,
+      reference: p.reference,
+      kind: p.kind,
+      amountCents: p.amountCents,
+      currency: p.currency,
+      receivedOn: p.receivedOn,
+      method: p.method,
+    })),
+  };
+};

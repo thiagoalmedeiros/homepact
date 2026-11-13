@@ -2,7 +2,8 @@
   <div>
     <h1 class="title-1" i18n="@@console.team.title">Team</h1>
     <p class="muted" i18n="@@console.team.subtitle">
-      Administrators manage the catalog and team; sales staff negotiate with buyers.
+      Administrators manage the catalog and team; sales staff negotiate with buyers; finance follows
+      and approves payments.
     </p>
   </div>
   @if (isAdmin()) {
@@ -19,26 +20,31 @@
       <tr>
         <th i18n="@@console.team.columns.name">Name</th>
         <th class="hide-sm" i18n="@@console.team.columns.email">Email</th>
-        <th i18n="@@console.team.columns.role">Role</th>
+        <th class="hide-sm" i18n="@@console.team.columns.role">Role</th>
         <th i18n="@@console.team.columns.active">Active</th>
       </tr>
     </thead>
     <tbody>
       @for (u of (users.hasValue() ? users.value() : undefined) ?? []; track u.id) {
         <tr>
-          <td>
+          <td class="fill name">
             <div class="row member">
-              <span class="avatar">{{ u.name[0] }}</span
-              ><span class="strong">{{ u.name }}</span>
+              <span class="avatar">{{ u.name[0] }}</span>
+              <span class="who">
+                <span class="strong truncate" [title]="u.name">{{ u.name }}</span>
+                <span class="tiny muted only-sm">{{ roleLabel[u.role] }}</span>
+              </span>
             </div>
           </td>
-          <td class="hide-sm muted">{{ u.email }}</td>
-          <td>
+          <td class="fill email hide-sm muted">
+            <span class="truncate" [title]="u.email">{{ u.email }}</span>
+          </td>
+          <td class="fit hide-sm">
             <span class="pill" [class.blue]="u.role === Role.CompanyAdmin">{{
               roleLabel[u.role]
             }}</span>
           </td>
-          <td>
+          <td class="fit">
             <input
               type="checkbox"
               class="switch"
@@ -96,6 +102,13 @@
           (click)="draft.role = Role.CompanyStaff"
         >
           <ng-container i18n="@@console.team.roles.company_staff">Sales</ng-container>
+        </button>
+        <button
+          type="button"
+          [attr.aria-pressed]="draft.role === Role.CompanyFinance"
+          (click)="draft.role = Role.CompanyFinance"
+        >
+          <ng-container i18n="@@console.team.roles.company_finance">Finance</ng-container>
         </button>
         <button
           type="button"

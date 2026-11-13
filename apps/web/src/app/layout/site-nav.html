@@ -8,11 +8,8 @@
       <a [href]="'tel:' + phone" class="hide-sm small phone">{{ phone }}</a>
     }
     <div class="actions">
-      @if (auth.isStaff()) {
-        <a
-          class="btn btn-sm btn-secondary"
-          [routerLink]="paths.console.overview"
-          i18n="@@nav.console"
+      @if (auth.isTeam()) {
+        <a class="btn btn-sm btn-secondary" [routerLink]="auth.home()" i18n="@@nav.console"
           >Console</a
         >
       } @else if (auth.isBuyer()) {

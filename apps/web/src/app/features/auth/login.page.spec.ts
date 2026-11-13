@@ -46,6 +46,39 @@ describe('LoginPage', () => {
     expect(router.url).toBe('/console');
   });
 
+  it('finance signs in and lands on the payments waiting for approval', async () => {
+    const http = setup([{ path: 'console/payments', children: [] }]);
+    const fixture = TestBed.createComponent(LoginPage);
+    await settle(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    for (const [sel, value] of [
+      ['#email', 'riley@example-homes.demo'],
+      ['#password', 'Showcase2026!'],
+    ] as const) {
+      const input = el.querySelector<HTMLInputElement>(sel)!;
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    }
+    await settle(fixture);
+    el.querySelector('form')!.dispatchEvent(new Event('submit'));
+    http.expectOne('/api/auth/login').flush({
+      accessToken: 'a',
+      refreshToken: 'r',
+      expiresIn: 900,
+      user: {
+        id: 'f',
+        email: 'riley@example-homes.demo',
+        name: 'Riley Chen',
+        role: Role.CompanyFinance,
+        companyId: 'c',
+        active: true,
+        createdAt: '',
+      },
+    });
+    await settle(fixture);
+    expect(TestBed.inject(Router).url).toBe('/console/payments');
+  });
+
   it('shows the error message on bad credentials', async () => {
     const http = setup();
     const fixture = TestBed.createComponent(LoginPage);

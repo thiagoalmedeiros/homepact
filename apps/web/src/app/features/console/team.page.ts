@@ -36,6 +36,7 @@ export class TeamPage {
   protected readonly roleLabel: Record<Role, string> = {
     [Role.CompanyAdmin]: $localize`:@@console.team.roles.company_admin:Administrator`,
     [Role.CompanyStaff]: $localize`:@@console.team.roles.company_staff:Sales`,
+    [Role.CompanyFinance]: $localize`:@@console.team.roles.company_finance:Finance`,
     [Role.Buyer]: '',
     [Role.SuperAdmin]: '',
   };

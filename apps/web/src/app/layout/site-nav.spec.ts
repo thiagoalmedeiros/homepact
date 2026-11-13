@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { TenantService } from '../core/tenant.service';
-import { settle, setup } from '../testing';
+import { Role } from '@homepact/shared/enums';
+import { settle, setup, signInAs } from '../testing';
 import { SiteNav } from './site-nav';
 
 describe('SiteNav', () => {
@@ -34,5 +35,16 @@ describe('SiteNav', () => {
     await settle(fixture);
     expect(el.textContent).toContain('Example Homes');
     expect(el.querySelector('img')).toBeNull();
+  });
+
+  it('finance finds the way back to their console from the site', async () => {
+    const http = setup();
+    await signInAs(http, Role.CompanyFinance, 'Riley Chen');
+    const fixture = TestBed.createComponent(SiteNav);
+    await settle(fixture);
+    const link = [...(fixture.nativeElement as HTMLElement).querySelectorAll('a')].find(
+      (a) => a.textContent?.trim() === 'Console',
+    );
+    expect(link?.getAttribute('href')).toBe('/console/payments');
   });
 });

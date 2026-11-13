@@ -23,6 +23,20 @@
     <span class="muted small" i18n="@@console.overview.signedValue">Signed value</span>
     <span class="value">{{ signedValue() | money: currency() }}</span>
   </div>
+  @if (toApprove.hasValue()) {
+    <a
+      class="card stat-card plain"
+      [routerLink]="paths.console.payments"
+      data-testid="payments-waiting"
+    >
+      <span class="muted small" i18n="@@console.overview.paymentsToApprove"
+        >Payments to approve</span
+      >
+      <span class="value" [class.attention]="toApprove.value().length">{{
+        toApprove.value().length
+      }}</span>
+    </a>
+  }
   <a class="card stat-card plain" [routerLink]="paths.console.inventory">
     <span class="muted small"
       ><ng-container i18n="@@console.overview.homesAvailable"

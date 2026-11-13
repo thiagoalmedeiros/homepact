@@ -1,5 +1,5 @@
-import type { Agreement } from '@homepact/shared';
-import { agreementFileName } from '@homepact/shared/agreement-fields';
+import type { Agreement, BuyerPayment } from '@homepact/shared';
+import { agreementFileName, receiptFileName } from '@homepact/shared/agreement-fields';
 import { API } from '../core/api-endpoints';
 import type { ApiService } from '../core/api.service';
 
@@ -24,3 +24,14 @@ export const downloadAgreement = async (
   a: Pick<Agreement, 'id' | 'reference' | 'status'>,
 ): Promise<void> =>
   saveFile(await api.getBlob(API.agreements.pdf(a.id)), agreementFileName(a.reference, a.status));
+
+/** Downloads the PDF receipt of a payment received (or refunded) for an agreement. */
+export const downloadReceipt = async (
+  api: ApiService,
+  agreementId: string,
+  p: Pick<BuyerPayment, 'id' | 'reference'>,
+): Promise<void> =>
+  saveFile(
+    await api.getBlob(API.payments.receipt(agreementId, p.id)),
+    receiptFileName(p.reference),
+  );

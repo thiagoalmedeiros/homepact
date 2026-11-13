@@ -1,6 +1,7 @@
-import { AgreementStatus, ChangeRequestStatus, ProposalStatus } from '@homepact/shared/enums';
+import { AgreementStatus, ChangeRequestStatus, ProposalStatus, Role } from '@homepact/shared/enums';
 import { TestBed } from '@angular/core/testing';
-import { settle, setup } from '../../testing';
+import { Router } from '@angular/router';
+import { settle, setup, signInAs } from '../../testing';
 import { HOUSE_DETAIL, pause, proposalDetail, quote } from '../../testing-fixtures';
 import { ProposalRoomPage } from './proposal-room.page';
 
@@ -17,6 +18,16 @@ const byTestId = (el: HTMLElement, id: string) =>
   el.querySelector<HTMLElement>(`[data-testid="${id}"]`);
 
 describe('ProposalRoomPage', () => {
+  it('someone from finance opening a buyer proposal link is taken to the payments to approve', async () => {
+    const http = setup([{ path: 'console/payments', children: [] }]);
+    await signInAs(http, Role.CompanyFinance, 'Riley Chen');
+    const fixture = TestBed.createComponent(ProposalRoomPage);
+    fixture.componentRef.setInput('id', 'p1');
+    await settle(fixture);
+    http.expectNone('/api/proposals/p1');
+    expect(TestBed.inject(Router).url).toBe('/console/payments');
+  });
+
   it('a locked pre-existing home can be signed but not changed', async () => {
     const { el } = await mount(
       proposalDetail({ kind: 'inventory', locked: true, address: '140 Sample Common SE' }),

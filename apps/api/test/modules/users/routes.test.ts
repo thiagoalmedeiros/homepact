@@ -1,4 +1,4 @@
-import { Role, STAFF_ROLES } from '@homepact/shared';
+import { COMPANY_ROLES, Role } from '@homepact/shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { hashPassword } from '../../../src/auth/passwords.js';
 import { toAuthUser } from '../../../src/modules/auth/users.js';
@@ -8,6 +8,7 @@ import {
   ADMIN,
   BUYER,
   COMPANY_TENANT,
+  FINANCE,
   NOW_ISO,
   STAFF,
   mockContext,
@@ -22,7 +23,7 @@ vi.mock('../../../src/auth/passwords.js', () => ({ hashPassword: vi.fn() }));
 vi.mock('../../../src/data/ids.js', () => ({ newId: vi.fn(() => 'user-new') }));
 vi.mock('../../../src/modules/auth/users.js', () => ({ toAuthUser: vi.fn() }));
 
-const STAFF_FILTER = { role: { $in: [...STAFF_ROLES] } };
+const TEAM_FILTER = { role: { $in: [...COMPANY_ROLES] } };
 let h: Harness;
 let repo: MockRepo;
 let scene: Scene;
@@ -37,15 +38,17 @@ beforeEach(async () => {
 afterEach(() => h.close());
 
 describe('GET /users', () => {
-  it('lists the company team (staff roles only) sorted by name', async () => {
+  it('lists the company team (sales, finance and administrators) sorted by name', async () => {
     repo.col('users').find.mockResolvedValue([userDoc({ _id: 'u1' }), userDoc({ _id: 'u2' })]);
-    scene.principal = STAFF;
-    const res = await h.call('GET', '/');
-    expect(res).toMatchObject({ status: 200, body: [{ id: 'u1' }, { id: 'u2' }] });
-    expect(repo.col('users').find).toHaveBeenCalledWith(STAFF_FILTER, { sort: { name: 1 } });
+    for (const who of [STAFF, FINANCE]) {
+      scene.principal = who;
+      const res = await h.call('GET', '/');
+      expect(res).toMatchObject({ status: 200, body: [{ id: 'u1' }, { id: 'u2' }] });
+    }
+    expect(repo.col('users').find).toHaveBeenCalledWith(TEAM_FILTER, { sort: { name: 1 } });
   });
 
-  it('is staff-only', async () => {
+  it('is for the company team only', async () => {
     scene.principal = BUYER;
     expect((await h.call('GET', '/')).status).toBe(403);
     delete scene.principal;
@@ -78,9 +81,19 @@ describe('POST /users', () => {
     expect(JSON.stringify(res.body)).not.toContain('long-password');
   });
 
-  it('staff cannot create users', async () => {
-    scene.principal = STAFF;
-    expect((await h.call('POST', '/', body)).status).toBe(403);
+  it('admins can add finance to the team', async () => {
+    const res = await h.call('POST', '/', { ...body, role: Role.CompanyFinance });
+    expect(res.status).toBe(201);
+    expect(repo.col('users').insertOne).toHaveBeenCalledWith(
+      expect.objectContaining({ role: Role.CompanyFinance }),
+    );
+  });
+
+  it('sales and finance cannot create users', async () => {
+    for (const who of [STAFF, FINANCE]) {
+      scene.principal = who;
+      expect((await h.call('POST', '/', body)).status).toBe(403);
+    }
     expect(repo.col('users').insertOne).not.toHaveBeenCalled();
   });
 
@@ -105,13 +118,17 @@ describe('PATCH /users/:id', () => {
     const res = await h.call('PATCH', '/staff-1', { role: Role.CompanyAdmin });
     expect(res).toMatchObject({ status: 200, body: { id: 'staff-1' } });
     expect(repo.col('users').findOneAndUpdate).toHaveBeenCalledWith(
-      { _id: 'staff-1', ...STAFF_FILTER },
+      { _id: 'staff-1', ...TEAM_FILTER },
       { $set: { role: Role.CompanyAdmin } },
     );
   });
 
   it('admins cannot deactivate or demote themselves', async () => {
-    for (const change of [{ active: false }, { role: Role.CompanyStaff }]) {
+    for (const change of [
+      { active: false },
+      { role: Role.CompanyStaff },
+      { role: Role.CompanyFinance },
+    ]) {
       expect(await h.call('PATCH', `/${ADMIN.sub}`, change)).toMatchObject({
         status: 400,
         body: { error: 'You cannot deactivate or demote yourself' },
@@ -123,7 +140,9 @@ describe('PATCH /users/:id', () => {
 
   it('is a 404 for buyers or unknown users, and admin-only', async () => {
     expect((await h.call('PATCH', '/buyer-1', { active: false })).status).toBe(404);
-    scene.principal = STAFF;
-    expect((await h.call('PATCH', '/staff-2', { active: false })).status).toBe(403);
+    for (const who of [STAFF, FINANCE]) {
+      scene.principal = who;
+      expect((await h.call('PATCH', '/staff-2', { active: false })).status).toBe(403);
+    }
   });
 });

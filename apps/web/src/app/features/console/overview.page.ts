@@ -1,7 +1,7 @@
-import { InventoryStatus, Party, ProposalStatus } from '@homepact/shared/enums';
+import { InventoryStatus, Party, PaymentStatus, ProposalStatus } from '@homepact/shared/enums';
 import { ChangeDetectionStrategy, Component, computed, inject, resource } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import type { InventoryHome, Proposal } from '@homepact/shared';
+import type { AgreementPayment, InventoryHome, Proposal } from '@homepact/shared';
 import { API } from '../../core/api-endpoints';
 import { ApiService } from '../../core/api.service';
 import { PATHS } from '../../core/app-paths';
@@ -33,6 +33,11 @@ export class OverviewPage {
   });
   protected readonly inventory = resource({
     loader: () => this.api.get<InventoryHome[]>(API.inventory.list),
+  });
+  protected readonly toApprove = resource({
+    params: () => (this.auth.managesPayments() ? PaymentStatus.Pending : undefined),
+    loader: ({ params }) =>
+      this.api.get<AgreementPayment[]>(API.payments.queue, { status: params }),
   });
   private readonly all = computed(
     () => (this.proposals.hasValue() ? this.proposals.value() : undefined) ?? [],

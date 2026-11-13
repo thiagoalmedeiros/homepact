@@ -14,3 +14,26 @@
 .table-card {
   padding: 8px 16px;
 }
+
+.attention {
+  color: var(--warning);
+}
+.fill {
+  max-width: 0;
+  > div {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+.buyer {
+  width: 38%;
+  min-width: 10rem;
+}
+.home {
+  width: 24%;
+  min-width: 8rem;
+}
+.nowrap {
+  white-space: nowrap;
+}

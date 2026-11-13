@@ -1,4 +1,3 @@
-import { Role } from '@homepact/shared/enums';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -34,14 +33,8 @@ export class LoginPage {
     this.busy.set(true);
     this.error.set(null);
     try {
-      const user = await this.auth.login({ email: this.email, password: this.password });
-      const home =
-        user.role === Role.SuperAdmin
-          ? PATHS.home
-          : user.role === Role.Buyer
-            ? PATHS.myProposals
-            : PATHS.console.overview;
-      void this.router.navigateByUrl(safeNext(this.next(), home));
+      await this.auth.login({ email: this.email, password: this.password });
+      void this.router.navigateByUrl(safeNext(this.next(), this.auth.home()));
     } catch (err) {
       this.error.set(
         err instanceof Error ? err.message : $localize`:@@errors.signInFailed:Sign in failed`,

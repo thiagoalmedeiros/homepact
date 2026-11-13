@@ -102,6 +102,122 @@
       </div>
     }
 
+    @if (paid(); as l) {
+      <section class="card stack" data-testid="buyer-payments">
+        <div class="stack tight">
+          <h2 class="title-3" i18n="@@agreementRoom.payments">Your payments</h2>
+          <span class="small tabular" i18n="@@agreementRoom.paymentsReceived"
+            >{{ l.schedule.totals.netPaidCents | money: l.currency }} received ·
+            {{ l.schedule.totals.outstandingCents | money: l.currency }} left to pay</span
+          >
+        </div>
+        @for (line of l.schedule.lines; track $index) {
+          @let label = LINE[line.status];
+          <div class="pay-line">
+            <span class="stack tight">
+              @if (line.kind === 'closing') {
+                <span i18n="@@agreementRoom.closingBalance">Balance due on closing</span>
+              } @else {
+                <span>{{ line.label }}</span>
+              }
+              <span class="tiny muted tabular"
+                >{{ line.paidCents | money: l.currency }} /
+                {{ line.amountCents | money: l.currency }}</span
+              >
+            </span>
+            <span class="pill" [class]="label.tone">{{ label.text }}</span>
+          </div>
+        }
+        @for (p of l.payments; track p.id) {
+          <div class="pay-line tiny muted" [attr.data-testid]="'buyer-payment-' + p.id">
+            <span class="truncate"
+              >{{ p.receivedOn | localDate: 'calendar' }} · {{ METHOD[p.method] }} ·
+              {{ p.reference }}</span
+            >
+            <span class="row tight-row">
+              <span class="tabular">
+                @if (p.kind === PaymentKind.Refund) {
+                  <ng-container i18n="@@agreementRoom.refunded"
+                    >{{ p.amountCents | money: p.currency }} refunded</ng-container
+                  >
+                } @else {
+                  {{ p.amountCents | money: p.currency }}
+                }
+              </span>
+              <button
+                class="btn btn-ghost btn-sm"
+                type="button"
+                (click)="receipt.set(p)"
+                [attr.data-testid]="'receipt-' + p.id"
+                i18n="@@agreementRoom.receipt.open"
+              >
+                Receipt
+              </button>
+            </span>
+          </div>
+        }
+      </section>
+    }
+
+    @if (receipt(); as r) {
+      <hc-sheet
+        [title]="receiptTitle[r.kind]"
+        (closed)="receipt.set(null)"
+        data-testid="buyer-receipt"
+      >
+        <div class="stack">
+          <div class="stack tight">
+            <span class="strong">{{ a.seller.name }}</span>
+            @if (a.seller.address) {
+              <span class="tiny muted">{{ a.seller.address }}</span>
+            }
+            <span class="tiny muted" i18n="@@agreementRoom.receipt.number"
+              >Receipt {{ r.reference }}</span
+            >
+          </div>
+          <div>
+            <div class="kv">
+              @if (r.kind === PaymentKind.Refund) {
+                <span i18n="@@agreementRoom.receipt.refundedTo">Refunded to</span>
+              } @else {
+                <span i18n="@@agreementRoom.receipt.receivedFrom">Received from</span>
+              }
+              <span class="value">{{ a.buyer.name }}</span>
+            </div>
+            <div class="kv">
+              <span i18n="@@agreementRoom.receipt.amount">Amount</span>
+              <span class="value strong">{{ r.amountCents | money: r.currency }}</span>
+            </div>
+            <div class="kv">
+              <span i18n="@@agreementRoom.receipt.date">Date</span>
+              <span class="value">{{ r.receivedOn | localDate: 'calendar' }}</span>
+            </div>
+            <div class="kv">
+              <span i18n="@@agreementRoom.receipt.method">Method</span>
+              <span class="value">{{ METHOD[r.method] }}</span>
+            </div>
+            <div class="kv">
+              <span i18n="@@agreementRoom.receipt.for">For</span>
+              <span class="value" i18n="@@agreementRoom.receipt.agreement"
+                >Purchase agreement {{ a.reference }} · {{ a.home.model
+                }}{{ a.home.address ? ', ' + a.home.address : '' }}</span
+              >
+            </div>
+          </div>
+          <button
+            class="btn btn-secondary btn-block"
+            type="button"
+            [disabled]="downloading()"
+            (click)="downloadReceipt(a, r)"
+            data-testid="receipt-download"
+          >
+            <hc-icon name="download" [size]="16" />
+            <ng-container i18n="@@agreementRoom.receipt.download">Download the PDF</ng-container>
+          </button>
+        </div>
+      </hc-sheet>
+    }
+
     @if (others().length) {
       <section class="card stack others" data-testid="other-purchasers">
         <h2 class="title-3" i18n="@@agreementRoom.otherPurchasers">The other purchasers</h2>

@@ -2,7 +2,7 @@ import { AgreementStatus, Role, SignerStatus } from '@homepact/shared/enums';
 import { TestBed } from '@angular/core/testing';
 import { ConfirmService } from '../../core/confirm.service';
 import { settle, setup, signInAs } from '../../testing';
-import { agreement, purchaser, signedPurchaser, TEMPLATES } from '../../testing-fixtures';
+import { agreement, ledgerOf, purchaser, signedPurchaser, TEMPLATES } from '../../testing-fixtures';
 import { AgreementPage } from './agreement.page';
 
 const byTestId = <T extends HTMLElement = HTMLElement>(root: ParentNode, id: string) =>
@@ -33,6 +33,8 @@ const mount = async (body = agreement(), role = Role.CompanyStaff, name = 'Jorda
   fixture.componentRef.setInput('id', 'a1');
   await settle(fixture);
   http.expectOne('/api/agreements/a1').flush(body);
+  await settle(fixture);
+  for (const ledger of http.match('/api/agreements/a1/payments')) ledger.flush(ledgerOf(body));
   await settle(fixture);
   return { http, fixture, el: fixture.nativeElement as HTMLElement };
 };

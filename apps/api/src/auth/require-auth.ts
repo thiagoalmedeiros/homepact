@@ -1,4 +1,4 @@
-import { isStaffRole, Role, type PrincipalRole } from '@homepact/shared';
+import { isCompanyRole, isStaffRole, Role, type PrincipalRole } from '@homepact/shared';
 import type { RequestHandler } from 'express';
 import { forbidden, unauthorized } from '../http/errors.js';
 import type { Principal, TokenService } from './tokens.js';
@@ -48,4 +48,8 @@ export const createAuthGuards = (tokens: TokenService) => {
 
 export type AuthGuards = ReturnType<typeof createAuthGuards>;
 
+/** The sell side: administrators and sales. */
 export const isStaff = (p: Principal | undefined): boolean => isStaffRole(p?.role);
+
+/** Anyone who works for the company, finance included. */
+export const isCompanyMember = (p: Principal | undefined): boolean => isCompanyRole(p?.role);
