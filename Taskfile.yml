@@ -12,16 +12,28 @@ tasks:
     silent: true
 
   up:
-    desc: Build and start the stack (MongoDB, API, web) with demo data, then print the demo logins
-    deps: [env, install]
+    desc: Run the whole app with no Docker (own MongoDB with demo data, API, web build); Ctrl+C stops it
+    deps: [install]
     cmds:
-      - '{{.COMPOSE}} up --build -d {{.CLI_ARGS}}'
-      - '{{.COMPOSE}} logs --no-log-prefix seed'
+      - npm start -- {{.CLI_ARGS}}
 
-  down:
-    desc: Stop the stack and keep its data (task down -- -v also deletes the data)
+  dev:
+    desc: Run the whole app with no Docker, with live reload (API restarts, web reloads on change)
+    deps: [install]
     cmds:
-      - '{{.COMPOSE}} down {{.CLI_ARGS}}'
+      - npm run dev
+
+  e2e:
+    desc: Run the browser tests (starts the app with no Docker unless it is already up)
+    deps: [install]
+    cmds:
+      - npm run e2e -- {{.CLI_ARGS}}
+
+  check:
+    desc: Lint, format check, typecheck and every unit test
+    deps: [install]
+    cmds:
+      - npm run check
 
   test:
     desc: Run all unit tests (shared, web, API)
@@ -47,15 +59,27 @@ tasks:
     cmds:
       - npm test -w apps/api -- {{.CLI_ARGS}}
 
+  docker:up:
+    desc: Optional. Build and start the containers (MongoDB, API, web) with demo data, then print the logins
+    deps: [env, install]
+    cmds:
+      - '{{.COMPOSE}} up --build -d {{.CLI_ARGS}}'
+      - '{{.COMPOSE}} logs --no-log-prefix seed'
+
+  docker:down:
+    desc: Optional. Stop the containers and keep their data (task docker:down -- -v also deletes it)
+    cmds:
+      - '{{.COMPOSE}} down {{.CLI_ARGS}}'
+
   clean:
-    desc: Delete all node_modules, package-lock.json files, build output and caches (keeps .env)
+    desc: Delete all node_modules, build output and caches (keeps .env and package-lock.json, which pins the versions)
     cmds:
       - |
         find . -name .git -prune -o -type d \( -name node_modules -o -name dist -o -name .angular -o -name .vite -o -name .cache -o -name coverage -o -name .nyc_output -o -name out-tsc -o -name .turbo -o -name .nx -o -name .parcel-cache -o -name .sass-cache \) -prune -exec rm -rf {} +
       - |
-        find . -name .git -prune -o -type f \( -name package-lock.json -o -name '*.tsbuildinfo' -o -name .eslintcache -o -name .stylelintcache -o -name .prettiercache -o -name '*.log' \) -exec rm -f {} +
+        find . -name .git -prune -o -type f \( -name '*.tsbuildinfo' -o -name .eslintcache -o -name .stylelintcache -o -name .prettiercache -o -name '*.log' \) -exec rm -f {} +
       - rm -rf .task
-      - echo "Removed node_modules, package-lock.json files, build output and caches"
+      - echo "Removed node_modules, build output and caches"
 
   env:
     internal: true

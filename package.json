@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Client–constructor contract agreement for a house purchase (monorepo).",
-  "packageManager": "npm@11.19.1",
+  "packageManager": "npm@10.9.9",
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -13,13 +13,24 @@
   },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "qa": "npm install --no-audit --no-fund && npm test",
-    "pretest": "npm run build -w packages/shared",
+    "build:shared": "npm run build -w @homepact/shared",
+    "build:api": "npm run build -w @homepact/api",
+    "build:web": "npm run build -w @homepact/web",
     "test": "npm run test --workspaces --if-present",
+    "test:shared": "npm run test -w @homepact/shared",
+    "test:api": "npm run test -w @homepact/api",
+    "test:web": "npm run test -w @homepact/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm test",
+    "qa": "npm install --no-audit --no-fund && npm run check",
+    "dev": "node scripts/stack.mjs --dev",
+    "start": "node scripts/stack.mjs",
+    "dev:api": "npm run dev -w @homepact/api",
+    "dev:web": "npm run dev -w @homepact/web",
+    "e2e:install": "playwright install chromium",
     "e2e": "playwright test"
   },
   "devDependencies": {
@@ -28,7 +39,7 @@
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
     "prettier": "^3.9.10",
-    "typescript": "~6.0.2",
+    "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.0"
   },
   "overrides": {

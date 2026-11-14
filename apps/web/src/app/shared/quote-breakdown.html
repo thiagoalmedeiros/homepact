@@ -32,8 +32,7 @@
       <p class="tiny muted group-label" i18n="@@quote.adjustments">Adjustments</p>
       @for (a of q.adjustments; track $index) {
         <div class="kv small" [class.credit]="a.amountCents < 0">
-          <span>{{ a.label }}</span
-          ><span>{{ a.amountCents | money: q.currency : true }}</span>
+          <span>{{ a.label }}</span><span>{{ a.amountCents | money: q.currency : true }}</span>
         </div>
       }
     </div>

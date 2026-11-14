@@ -3,15 +3,18 @@
 Angular web UI, deployed unchanged for every company. Run with `npm install && npm run dev` here, or `npm run dev -w apps/web` from the repo root.
 
 - `public/config.json`: runtime API URL (`{ "apiBaseUrl": "http://localhost:3000" }`); nginx
-  generates it from `API_PUBLIC_URL` in containers.
+  generates it from `API_PUBLIC_URL` in containers, and so does `npm run preview`, which serves the
+  last `npm run build` like nginx does (on `WEB_PORT` and `ADMIN_PORT`) with no Docker.
 - `src/styles.scss`: the design system (tokens, light/dark, buttons, forms, sheets) and layout
   helpers: `.truncate` (one line with an ellipsis; put the full text in `title`), `.clamp-2`,
   `.hide-sm` and `.only-sm`.
 - `src/app/features`: the buyer site (`buyer`, `key-access`, `auth`), the company `console`
   (sales, finance and administrators, payments included) and the `platform` console.
   `src/app/shared` holds building blocks used by both.
-- The `@angular/*` framework packages are pinned to one exact version, because they require each
-  other's exact version: upgrade them together. `@angular/build` and `@angular/cli` follow `^`.
+- Every `@angular/*` package is pinned to an exact version, and they are upgraded together: the
+  framework packages require each other's exact version, and a `^` on `@angular/build` or
+  `@angular/cli` let their peers install a second, newer framework next to the pinned one.
+  `npm ls @angular/core` must show a single version.
 
 ## Conventions
 

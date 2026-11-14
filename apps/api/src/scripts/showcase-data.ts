@@ -768,5 +768,5 @@ export const SEED_TEXT = {
   superAdminName: 'Platform Admin',
   missingTaxPreset: (code: string) => `The platform has no sales tax suggestion for ${code}.`,
   originTaken: (owner: string) =>
-    `Origin already belongs to "${owner}". Run \`task down -- -v\` then \`task up\` to start from fresh demo data.`,
+    `Origin already belongs to "${owner}". To start from fresh demo data, delete the MONGO_DATA_DIR folder (or run \`task docker:down -- -v\` for the containers).`,
 } as const;

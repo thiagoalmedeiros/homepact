@@ -1028,7 +1028,7 @@ export interface SummaryOptions {
   password: string;
 }
 
-/** What `task up` prints once the demo is seeded: where to go, and who to sign in as. */
+/** What the seed prints once the demo is seeded: where to go, and who to sign in as. */
 export const showcaseSummary = (result: ShowcaseResult, o: SummaryOptions): string => {
   if (!result.created) {
     return `\n  Already seeded; origins refreshed (${o.showcaseOrigins.join(', ')}).\n`;

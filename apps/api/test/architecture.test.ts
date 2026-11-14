@@ -31,6 +31,7 @@ describe('layering', () => {
       'context.ts',
       'scripts/seed-super-admin.ts',
       'scripts/seed-showcase.ts',
+      'scripts/memory.ts',
       'scripts/showcase-data.ts',
     ]);
     const untested = walk(src)

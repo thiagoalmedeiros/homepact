@@ -88,4 +88,23 @@ describe('connectDatabase', () => {
     );
     await expect(database.ping()).rejects.toThrow('ECONNREFUSED');
   });
+
+  it('uses the in-memory database for a memory: URI, without a MongoDB client', async () => {
+    const database = await connectDatabase({ uri: 'memory:', dbName: 'hc' }, logger as never);
+    expect(driver.options).toEqual([]);
+    expect(logger.info).toHaveBeenCalledWith({ file: null }, 'Using the in-memory database');
+    await database.db
+      .collection<{ _id: string; email: string }>('users')
+      .insertOne({ _id: 'u1', email: 'a@b.c' });
+    expect(
+      await database.db
+        .collection<{ _id: string; email: string }>('users')
+        .findOne({ email: 'a@b.c' }),
+    ).toEqual({
+      _id: 'u1',
+      email: 'a@b.c',
+    });
+    await expect(database.ping()).resolves.toBeUndefined();
+    await database.close();
+  });
 });

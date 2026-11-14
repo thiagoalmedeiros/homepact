@@ -3,32 +3,79 @@
 Negotiation system for new-home sales: proposals, change requests, purchase agreements,
 signatures and the deposits paid against them, for many companies from one install.
 
-## Test
+## Setup
+
+Node.js 22 (`.nvmrc`; at least 22.22.3, which the Angular CLI requires) and the npm it ships with.
+`.npmrc` sets `engine-strict`, so an older Node fails at install with a clear message. Nothing else:
+no Docker and no MongoDB to install; the app starts its own database.
 
 ```bash
-npm run qa   # install, build the shared package, run every unit test (no Docker or database)
+nvm install && nvm use   # Node 22
+npm install              # one install at the root covers every package
 ```
 
-Needs the Node.js version in `.nvmrc`: the Angular CLI refuses older ones.
+The database is MongoDB 8.0's `mongod`, downloaded on the first run (~80 MB) and cached. Where it
+cannot be downloaded or started (no network, unsupported platform), the app falls back on its own
+to an in-memory database written in JavaScript (`apps/api/src/data/memory-db.ts`), which needs
+nothing at all. `DB_ENGINE=memory` always uses it; `DB_ENGINE=mongod` never falls back. To have
+`mongod` in a sandbox without network at run time, run `npm run mongo:download -w apps/api` while
+it has network (or point `MONGOMS_SYSTEM_BINARY` at a local `mongod`). The end-to-end tests need
+Chromium: `npm run e2e:install`, once.
 
 ## Run
 
-Needs Node.js (see `.nvmrc`), [go-task](https://taskfile.dev/installation/) and Docker.
-
 ```bash
-task up      # MongoDB, API and web with demo data; prints the logins (seller, finance, buyers)
-task down
+npm run dev   # everything, with live reload: API restarts and web reloads on change
+npm start     # everything, as in production: builds the web app and serves the build
 ```
 
-### One app on its own
+Both start the database (see Setup), seed the showcase, print the logins (seller, finance, buyers, platform)
+and serve the API on `:3000`, the company sites on `localhost:4200` (Example Homes) and
+`127.0.0.1:4200` (Northwind, a second company) and the platform console on `localhost:4300`.
+Ctrl+C stops everything. The data lives in memory and the next run starts fresh, unless
+`MONGO_DATA_DIR` names a folder to keep it in (`MONGO_DATA_DIR=data/mongo npm run dev`, or set it
+in `.env`); the seed then skips what is already there. `npm start -- --no-build` reuses the last
+build.
 
-Each app installs and runs from its own folder; no root `npm install` first. `dev`, `build`, `test`
-and `typecheck` build `packages/shared` before they run.
+One piece at a time, from the root or from the package folder (without `-w`):
+
+| Command                         | Runs                                                                   |
+| ------------------------------- | ---------------------------------------------------------------------- |
+| `npm run dev -w apps/api`       | API on its own MongoDB with the showcase, restarting on change         |
+| `npm run dev -w apps/web`       | Angular dev server on `:4200` and `:4300`, reloading on change         |
+| `npm run preview -w apps/web`   | the last `npm run build -w apps/web`, served as in production          |
+| `npm run dev:mongo -w apps/api` | API on a MongoDB you run yourself at `MONGO_URI` (copy `.env.example`) |
+
+## Test
 
 ```bash
-cd apps/api && npm install && npm run dev   # needs MongoDB at MONGO_URI (copy .env.example to .env)
-cd apps/web && npm install && npm run dev   # http://localhost:4200
+npm run check        # lint, format check, typecheck and every unit test
+npm test             # every unit test: shared, API (layers mocked, no database), web
+npm run e2e:install  # once: the browser for the end-to-end tests
+npm run e2e          # end-to-end tests; starts the app (as npm start) unless it is already up
+npm run qa           # install, then check
 ```
+
+One package at a time, from the root or from its folder (each builds `packages/shared` first):
+
+| Package           | From the root         | From its folder | One file                                             |
+| ----------------- | --------------------- | --------------- | ---------------------------------------------------- |
+| `packages/shared` | `npm run test:shared` | `npm test`      | `npm test -- test/quote.test.ts`                     |
+| `apps/api`        | `npm run test:api`    | `npm test`      | `npm test -- test/modules/payments/routes.test.ts`   |
+| `apps/web`        | `npm run test:web`    | `npm test`      | `npm test -- --include src/app/shared/dates.spec.ts` |
+
+`npm run typecheck` and `npm run build` work the same way, at the root (every package) or in a
+package folder. From the root, `-w <folder>` runs any package script: `npm run build -w apps/web`.
+A package installs on its own too: `cd apps/api && npm install` installs only what it needs.
+
+With [go-task](https://taskfile.dev/installation/), `task --list` shows the same commands
+(`task up`, `task dev`, `task e2e`, `task check`, `task test:api`, …).
+
+### Containers (optional)
+
+`infra/` and the Dockerfiles package the app for deployment; nothing above needs them.
+`task docker:up` builds and starts MongoDB, API and web with the demo data, `npm run e2e` runs
+against it, and `task docker:down` stops it.
 
 ## Roles
 

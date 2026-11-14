@@ -44,8 +44,9 @@
         @for (c of (companies.hasValue() ? companies.value() : undefined) ?? []; track c.id) {
           <tr>
             <td>
-              <span class="strong">{{ c.name }}</span
-              ><br /><span class="tiny muted">{{ c.slug }} · {{ c.currency }}</span>
+              <span class="strong">{{ c.name }}</span><br /><span class="tiny muted"
+                >{{ c.slug }} · {{ c.currency }}</span
+              >
             </td>
             <td class="hide-sm">
               <span class="logo-cell"
@@ -137,8 +138,9 @@
         @for (p of (presets.hasValue() ? presets.value() : undefined) ?? []; track p.id) {
           <tr [attr.data-testid]="'preset-' + p.code">
             <td>
-              <span class="strong">{{ p.name }}</span
-              ><span class="tiny muted"> · {{ p.code }}</span>
+              <span class="strong">{{ p.name }}</span><span class="tiny muted">
+                · {{ p.code }}</span
+              >
             </td>
             <td class="tabular">{{ summary(p.components) }}</td>
             <td class="hide-sm small muted">{{ p.note }}</td>
