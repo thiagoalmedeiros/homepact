@@ -32,6 +32,7 @@ import { LoadState } from '../../shared/load-state';
 import { RelativeTimePipe } from '../../shared/relative-time.pipe';
 import { Sheet } from '../../shared/sheet';
 import { AGREEMENT_LABEL } from '../../shared/status';
+import { AgreementAmendments } from './agreement-amendments';
 import { AgreementPayments } from './agreement-payments';
 import { AgreementTermsSheet } from './agreement-terms-sheet';
 
@@ -51,6 +52,7 @@ interface Handout extends SignerInvitation {
     AgreementDocument,
     AgreementTermsSheet,
     AgreementPayments,
+    AgreementAmendments,
     Sheet,
     Icon,
     LocalDatePipe,

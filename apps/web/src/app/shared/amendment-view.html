@@ -1,0 +1,109 @@
+@let a = amendment();
+<article class="stack amendment" data-testid="amendment-view">
+  <div class="spread head">
+    <div class="stack tight">
+      <span class="strong" i18n="@@amendment.title"
+        >Change order {{ a.number }} to agreement
+        <span class="nowrap">{{ a.agreementReference }}</span></span
+      >
+      <span class="tiny muted" i18n="@@amendment.meta"
+        >{{ a.reference }} · asked by {{ a.requestedBy.name }} on
+        {{ a.createdAt | localDate: 'dateTime' }}</span
+      >
+    </div>
+    <span class="pill" [class]="label().tone" data-testid="amendment-status">{{
+      label().text
+    }}</span>
+  </div>
+
+  @if (a.note) {
+    <blockquote class="small request" data-testid="amendment-note">{{ a.note }}</blockquote>
+  }
+  @if (lines().length) {
+    <hc-change-lines [changes]="lines()" [currency]="a.currency" />
+  }
+  @if (a.adjustments.length) {
+    <div class="stack tight">
+      <span class="tiny muted" i18n="@@amendment.adjustments">Fees and credits</span>
+      @for (adj of a.adjustments; track $index) {
+        <div class="spread small">
+          <span>{{ adj.label }}</span>
+          <span class="tabular">{{ adj.amountCents | money: a.currency : true }}</span>
+        </div>
+      }
+    </div>
+  }
+  @if (a.deposits.length) {
+    <div class="stack tight">
+      <span class="tiny muted" i18n="@@amendment.deposits">Added to the deposit schedule</span>
+      @for (d of a.deposits; track $index) {
+        <div class="spread small">
+          <span
+            >{{ d.label }}
+            @if (d.dueDate) {
+              <span class="muted">· {{ d.dueDate | localDate: 'calendar' }}</span>
+            }
+          </span>
+          <span class="tabular">{{ d.amountCents | money: a.currency }}</span>
+        </div>
+      }
+    </div>
+  }
+  @if (a.closingDate) {
+    <p class="small" data-testid="amendment-closing">
+      @if (a.before.terms.closingDate; as was) {
+        <ng-container i18n="@@amendment.closingMoved"
+          >Closing and possession moves from {{ was | localDate: 'calendar' }} to
+          {{ a.closingDate | localDate: 'calendar' }}</ng-container
+        >
+      } @else {
+        <ng-container i18n="@@amendment.closingSet"
+          >Closing and possession set for {{ a.closingDate | localDate: 'calendar' }}</ng-container
+        >
+      }
+    </p>
+  }
+  @if (a.pricingNote) {
+    <p class="small" data-testid="amendment-pricing-note">{{ a.pricingNote }}</p>
+  }
+
+  <div class="price">
+    <div class="kv">
+      <span i18n="@@amendment.priceBefore">Price before</span>
+      <span class="value tabular">{{ a.before.quote.totalCents | money: a.currency }}</span>
+    </div>
+    @if (a.after; as after) {
+      <div class="kv">
+        <span i18n="@@amendment.priceAfter">Price after</span>
+        <span class="value strong tabular">{{ after.quote.totalCents | money: a.currency }}</span>
+      </div>
+      <div class="kv">
+        <span i18n="@@amendment.priceChange">Change</span>
+        <span class="value tabular">{{ change() | money: a.currency : true }}</span>
+      </div>
+      @if (after.quote.tax; as tax) {
+        <span class="tiny muted" i18n="@@amendment.taxIncluded"
+          >Sales tax included ({{ tax.regionName }})</span
+        >
+      }
+    } @else {
+      <span class="tiny muted" i18n="@@amendment.notPriced"
+        >{{ a.seller.name }} has not priced it yet.</span
+      >
+    }
+  </div>
+
+  @if (a.approvedBy) {
+    <p class="small approval" data-testid="approved-by" i18n="@@amendment.approvedBy">
+      Approved by {{ a.approvedBy.name }} on {{ a.approvedAt | localDate: 'dateTime' }}
+    </p>
+  } @else if (a.approval?.required && open()) {
+    <p class="small approval" data-testid="approval-reasons">
+      <span class="strong" i18n="@@amendment.needsApproval">Needs approval:</span>
+      {{ reasons() }}
+    </p>
+  }
+  @if (a.closeReason) {
+    <p class="small muted" data-testid="close-reason">{{ a.closeReason }}</p>
+  }
+</article>

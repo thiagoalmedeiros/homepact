@@ -1,5 +1,7 @@
 import {
   AgreementStatus,
+  AmendmentStatus,
+  ChangeDecision,
   HouseStatus,
   Party,
   PaymentKind,
@@ -12,6 +14,7 @@ import {
 import { paymentSchedule } from '@homepact/shared/payment-schedule';
 import type {
   Agreement,
+  Amendment,
   AgreementLedger,
   AgreementPayment,
   BuyerLedger,
@@ -314,3 +317,74 @@ export const buyerLedgerOf = (a: Agreement, payments: AgreementPayment[] = []): 
     })),
   };
 };
+
+/** An executed agreement at $629,475 with 5% GST (Alberta), as buyer and company see it. */
+export const executedAgreement = (overrides: Partial<Agreement> = {}): Agreement =>
+  agreement({
+    status: AgreementStatus.Executed,
+    quote: taxedQuote(),
+    issuedAt: '2026-11-02T10:00:00.000Z',
+    signedAt: '2026-11-03T10:00:00.000Z',
+    executedAt: '2026-11-04T09:00:00.000Z',
+    purchasers: [signedPurchaser(), signedPurchaser({ id: 'pur-2', name: 'Sam Buyer' })],
+    ...overrides,
+  });
+
+/** Change order 1 to `executedAgreement()`: the stone exterior, asked by the buyer, not priced
+ * yet. `pricedAmendment()` is the same once sales priced it: $9,000 plus GST, $638,925 in all. */
+export const amendment = (overrides: Partial<Amendment> = {}): Amendment => ({
+  id: 'amd-1',
+  reference: 'CO-AAAA-0001',
+  number: 1,
+  agreementId: 'a1',
+  agreementReference: 'A-2001',
+  proposalId: 'p1',
+  status: AmendmentStatus.Requested,
+  basis: { number: 0, contentHash: HASH },
+  requestedBy: { party: Party.Buyer, name: 'Robin Buyer' },
+  changes: [
+    {
+      id: 'chg-1',
+      change: { type: 'add_item', areaSlug: 'exterior', itemId: 'stone' },
+      label: 'Add Stone (Exterior)',
+      deltaCents: 900_000,
+    },
+  ],
+  adjustments: [],
+  deposits: [],
+  before: { selections: {}, quote: executedAgreement().quote, terms: executedAgreement().terms },
+  seller: { name: 'Example Homes' },
+  home: { kind: 'plan', model: 'Alder' },
+  purchasers: [purchaser(), purchaser({ id: 'pur-2', name: 'Sam Buyer' })],
+  currency: 'CAD',
+  history: [],
+  createdAt: '2026-11-10T10:00:00.000Z',
+  updatedAt: '2026-11-10T10:00:00.000Z',
+  ...overrides,
+});
+
+export const pricedAmendment = (overrides: Partial<Amendment> = {}): Amendment =>
+  amendment({
+    status: AmendmentStatus.Priced,
+    changes: [{ ...amendment().changes[0]!, decision: ChangeDecision.Approved }],
+    after: {
+      selections: { exterior: { itemIds: ['stone'] } },
+      quote: taxedQuote({
+        subtotalCents: 60_850_000,
+        tax: {
+          regionCode: 'AB',
+          regionName: 'Alberta',
+          lines: [{ label: 'GST', ratePercent: 5, amountCents: 3_042_500 }],
+          totalCents: 3_042_500,
+        },
+        totalCents: 63_892_500,
+      }),
+      terms: executedAgreement().terms,
+    },
+    approval: { required: false, reasons: [] },
+    contentHash: 'c'.repeat(64),
+    pricedAt: '2026-11-11T10:00:00.000Z',
+    pricedBy: { id: 'me', name: 'Jordan Blake', role: Role.CompanyStaff },
+    updatedAt: '2026-11-11T10:00:00.000Z',
+    ...overrides,
+  });

@@ -45,6 +45,18 @@ describe('ensureIndexes', () => {
     });
   });
 
+  it('serves an agreement’s change orders and the company’s approval queue from indexes', async () => {
+    const created = await run();
+    expect(created).toContainEqual({
+      name: 'agreementAmendments',
+      keys: { companyId: 1, agreementId: 1, createdAt: 1 },
+    });
+    expect(created).toContainEqual({
+      name: 'agreementAmendments',
+      keys: { companyId: 1, status: 1, updatedAt: -1 },
+    });
+  });
+
   it('expires refresh tokens with a TTL index', async () => {
     expect(await run()).toContainEqual({
       name: 'refreshTokens',

@@ -50,6 +50,11 @@ export const routes: Routes = [
           import('./features/buyer/agreement-room.page').then((m) => m.AgreementRoomPage),
       },
       {
+        path: 'change-orders/:id',
+        loadComponent: () =>
+          import('./features/buyer/change-order.page').then((m) => m.ChangeOrderPage),
+      },
+      {
         path: 'k',
         loadComponent: () =>
           import('./features/key-access/key-access.page').then((m) => m.KeyAccessPage),

@@ -3,6 +3,11 @@ import {
   ACTIVE_PROPOSAL_STATUSES,
   AccessKeyStatus,
   AccessResourceType,
+  AmendmentAction,
+  AmendmentStatus,
+  ApprovalReason,
+  isOpenAmendment,
+  OPEN_AMENDMENT_STATUSES,
   AgreementStatus,
   COMPANY_ROLES,
   InstalmentStatus,
@@ -62,7 +67,35 @@ describe('enums', () => {
     ]);
     expect(Object.values(SignerStatus)).toEqual(['pending', 'signed', 'invalidated']);
     expect(Object.values(AccessKeyStatus)).toEqual(['active', 'revoked', 'claimed']);
-    expect(Object.values(AccessResourceType)).toEqual(['proposal', 'agreement']);
+    expect(Object.values(AccessResourceType)).toEqual(['proposal', 'agreement', 'amendment']);
+    expect(Object.values(AmendmentStatus)).toEqual([
+      'requested',
+      'priced',
+      'under_review',
+      'awaiting_approval',
+      'executed',
+      'declined',
+      'withdrawn',
+      'rejected',
+    ]);
+    expect(Object.values(AmendmentAction)).toEqual([
+      'requested',
+      'priced',
+      'sent',
+      'signed',
+      'awaiting_approval',
+      'approved',
+      'rejected',
+      'declined',
+      'withdrawn',
+      'executed',
+    ]);
+    expect(Object.values(ApprovalReason)).toEqual([
+      'credit',
+      'adjustment',
+      'above_threshold',
+      'refund_due',
+    ]);
     expect(Object.values(HealthStatus)).toEqual(['ok', 'degraded']);
     expect(Object.values(ServiceState)).toEqual(['up', 'down']);
     expect(Object.values(PaymentKind)).toEqual(['payment', 'refund']);
@@ -108,6 +141,24 @@ describe('enums', () => {
     expect(isOpenAgreement(AgreementStatus.UnderReview)).toBe(true);
     expect(isOpenAgreement(AgreementStatus.Executed)).toBe(false);
     expect(isOpenAgreement(AgreementStatus.Cancelled)).toBe(false);
+  });
+
+  it('an amendment is open, and holds its agreement, until it is executed or closed', () => {
+    expect(OPEN_AMENDMENT_STATUSES).toEqual([
+      AmendmentStatus.Requested,
+      AmendmentStatus.Priced,
+      AmendmentStatus.UnderReview,
+      AmendmentStatus.AwaitingApproval,
+    ]);
+    expect(isOpenAmendment(AmendmentStatus.AwaitingApproval)).toBe(true);
+    for (const closed of [
+      AmendmentStatus.Executed,
+      AmendmentStatus.Declined,
+      AmendmentStatus.Withdrawn,
+      AmendmentStatus.Rejected,
+    ]) {
+      expect(isOpenAmendment(closed)).toBe(false);
+    }
   });
 
   it('staff are company administrators and sales staff', () => {

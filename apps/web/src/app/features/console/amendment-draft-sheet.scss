@@ -1,0 +1,31 @@
+.request {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--line, #d2d2d7);
+  white-space: pre-line;
+}
+.instalment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 8rem 10rem auto;
+  gap: 0.5rem;
+  align-items: center;
+
+  input {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* On a phone the label takes its own line; amount, date and the remove button share the next. */
+@media (max-width: 600px) {
+  .instalment {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+
+    .label {
+      grid-column: 1 / -1;
+    }
+  }
+}
+.add {
+  align-self: flex-start;
+}

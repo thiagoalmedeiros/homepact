@@ -1,7 +1,10 @@
 import {
   AccessKeyStatus,
   AccessResourceType,
+  AmendmentAction,
+  AmendmentStatus,
   AgreementStatus,
+  ChangeDecision,
   ChangeRequestStatus,
   SignerStatus,
   HouseStatus,
@@ -21,6 +24,7 @@ import {
 import type { AccessKeyDoc } from '../../src/modules/access-keys/keys.js';
 import type { AgreementTemplateDoc } from '../../src/modules/agreement-templates/store.js';
 import type { AgreementDoc } from '../../src/modules/agreements/store.js';
+import type { AmendmentDoc } from '../../src/modules/amendments/store.js';
 import type { RefreshTokenDoc } from '../../src/modules/auth/sessions.js';
 import type { UserDoc } from '../../src/modules/auth/users.js';
 import type { AreaDoc, CatalogItemDoc, PackageDoc } from '../../src/modules/catalog/store.js';
@@ -412,6 +416,73 @@ export const paymentDoc = (over: Partial<PaymentDoc> = {}): PaymentDoc => ({
       action: PaymentAction.Recorded,
     },
   ],
+  updatedAt: NOW_ISO,
+  ...over,
+});
+
+/** Amendment 1 to `agreementDoc()`, priced: oak flooring added, $8,000 more. */
+export const amendmentDoc = (over: Partial<AmendmentDoc> = {}): AmendmentDoc => ({
+  _id: 'amd-1',
+  companyId: COMPANY_ID,
+  reference: 'CO-TEST-0001',
+  number: 1,
+  agreementId: 'agr-1',
+  agreementReference: 'A-TEST-0001',
+  proposalId: 'proposal-1',
+  status: AmendmentStatus.Priced,
+  basis: { number: 0, contentHash: HASH },
+  requestedBy: { party: Party.Buyer, name: 'Bea Buyer' },
+  changes: [
+    {
+      id: 'chg-1',
+      change: { type: 'add_item', areaSlug: 'flooring', itemId: 'item-oak' },
+      label: 'Add Oak (Flooring)',
+      deltaCents: 800_000,
+      decision: ChangeDecision.Approved,
+    },
+  ],
+  adjustments: [],
+  deposits: [],
+  before: { selections: {}, quote: quote(), terms: TERMS },
+  after: {
+    selections: { flooring: { itemIds: ['item-oak'] } },
+    quote: quote({
+      lines: [
+        {
+          areaSlug: 'flooring',
+          areaLabel: 'Flooring',
+          kind: 'item',
+          refId: 'item-oak',
+          name: 'Oak',
+          unitCents: 800_000,
+        },
+      ],
+      subtotalCents: 50_800_000,
+      totalCents: 50_800_000,
+    }),
+    terms: TERMS,
+  },
+  approval: { required: false, reasons: [] },
+  seller: agreementDoc().seller,
+  home: agreementDoc().home,
+  purchasers: [purchaserDoc()],
+  currency: 'CAD',
+  contentHash: 'a1'.repeat(32),
+  pricedAt: NOW_ISO,
+  pricedBy: { id: 'staff-1', name: 'Sam Staff', role: Role.CompanyStaff },
+  history: [
+    {
+      at: NOW_ISO,
+      by: { id: 'buyer-1', name: 'Bea Buyer', role: Role.Buyer },
+      action: AmendmentAction.Requested,
+    },
+    {
+      at: NOW_ISO,
+      by: { id: 'staff-1', name: 'Sam Staff', role: Role.CompanyStaff },
+      action: AmendmentAction.Priced,
+    },
+  ],
+  createdAt: NOW_ISO,
   updatedAt: NOW_ISO,
   ...over,
 });

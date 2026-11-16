@@ -1,6 +1,8 @@
 const proposal = (id: string) => `/proposals/${id}`;
 const agreement = (id: string) => `/agreements/${id}`;
 const payment = (agreementId: string, id: string) => `${agreement(agreementId)}/payments/${id}`;
+const amendments = (agreementId: string) => `${agreement(agreementId)}/amendments`;
+const amendment = (agreementId: string, id: string) => `${amendments(agreementId)}/${id}`;
 const house = (id: string) => `/admin/houses/${id}`;
 const company = (id: string) => `/platform/companies/${id}`;
 
@@ -77,6 +79,25 @@ export const API = {
     sign: (id: string) => `${agreement(id)}/sign`,
     countersign: (id: string) => `${agreement(id)}/countersign`,
     cancel: (id: string) => `${agreement(id)}/cancel`,
+  },
+  amendments: {
+    list: amendments,
+    current: (agreementId: string) => `${amendments(agreementId)}/current`,
+    options: (agreementId: string) => `${amendments(agreementId)}/options`,
+    preview: (agreementId: string) => `${amendments(agreementId)}/preview`,
+    one: amendment,
+    byId: (id: string) => `/amendments/${id}`,
+    pricePreview: (agreementId: string, id: string) =>
+      `${amendment(agreementId, id)}/price-preview`,
+    issue: (agreementId: string, id: string) => `${amendment(agreementId, id)}/issue`,
+    invite: (agreementId: string, id: string, purchaserId: string) =>
+      `${amendment(agreementId, id)}/purchasers/${purchaserId}/invite`,
+    sign: (agreementId: string, id: string) => `${amendment(agreementId, id)}/sign`,
+    approve: (agreementId: string, id: string) => `${amendment(agreementId, id)}/approve`,
+    reject: (agreementId: string, id: string) => `${amendment(agreementId, id)}/reject`,
+    decline: (agreementId: string, id: string) => `${amendment(agreementId, id)}/decline`,
+    withdraw: (agreementId: string, id: string) => `${amendment(agreementId, id)}/withdraw`,
+    pdf: (agreementId: string, id: string) => `${amendment(agreementId, id)}/pdf`,
   },
   payments: {
     ledger: (agreementId: string) => `${agreement(agreementId)}/payments`,

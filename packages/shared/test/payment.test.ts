@@ -173,6 +173,14 @@ describe('paymentSchedule', () => {
     expect(totals).toMatchObject({ outstandingCents: 0, creditCents: 100 });
   });
 
+  it('carries a credit into the summary only when the price fell below what was received', () => {
+    const over = paymentSchedule(TERMS, [paid(50_250_000)], '2026-12-05');
+    expect(paymentSummary(over)).toMatchObject({ outstandingCents: 0, creditCents: 250_000 });
+    expect(paymentSummary(paymentSchedule(TERMS, [paid(1)], '2026-12-05'))).not.toHaveProperty(
+      'creditCents',
+    );
+  });
+
   it('summarises the schedule for the agreements list', () => {
     const schedule = paymentSchedule(
       TERMS,

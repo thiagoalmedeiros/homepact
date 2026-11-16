@@ -5,14 +5,17 @@ import {
   paymentSummary,
   PaymentKind,
   PaymentStatus,
+  scheduleTermsOf,
   type AgreementPayment,
   type AgreementPaymentSummary,
+  type AgreementState,
   type BuyerPayment,
   type LedgerEntry,
   type PaymentSchedule,
 } from '@homepact/shared';
 import type { TenantDoc, TenantRepo } from '../../data/tenant-repo.js';
 import type { AgreementDoc } from '../agreements/store.js';
+import { statesOf } from '../amendments/store.js';
 
 export interface PaymentDoc extends TenantDoc, Omit<AgreementPayment, 'id'> {}
 
@@ -39,20 +42,12 @@ export const toBuyerPayment = (d: PaymentDoc): BuyerPayment => ({
 export const ledgerOf = (repo: TenantRepo, agreementId: string): Promise<PaymentDoc[]> =>
   paymentsOf(repo).find({ agreementId }, { sort: { receivedOn: 1, recordedAt: 1 } });
 
+/** Where the ledger stands against the agreement's current price and instalments. */
 export const scheduleOf = (
-  agreement: AgreementDoc,
+  state: AgreementState,
   entries: readonly LedgerEntry[],
   today: string,
-): PaymentSchedule =>
-  paymentSchedule(
-    {
-      deposits: agreement.terms.deposits,
-      ...(agreement.terms.closingDate && { closingDate: agreement.terms.closingDate }),
-      totalCents: agreement.quote.totalCents,
-    },
-    entries,
-    today,
-  );
+): PaymentSchedule => paymentSchedule(scheduleTermsOf(state), entries, today);
 
 /** Sum of the entries of one kind and status. */
 export const totalOf = (
@@ -83,10 +78,11 @@ export const paymentSummaries = async (
   const byAgreement = new Map<string, PaymentDoc[]>();
   for (const e of entries)
     byAgreement.set(e.agreementId, [...(byAgreement.get(e.agreementId) ?? []), e]);
+  const states = await statesOf(repo, relevant);
   for (const a of relevant) {
     const own = byAgreement.get(a._id) ?? [];
     if (a.status === AgreementStatus.Cancelled && !own.length) continue;
-    summaries.set(a._id, paymentSummary(scheduleOf(a, own, today)));
+    summaries.set(a._id, paymentSummary(scheduleOf(states.get(a._id)!, own, today)));
   }
   return summaries;
 };

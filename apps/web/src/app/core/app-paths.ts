@@ -6,6 +6,7 @@ export const PATHS = {
   myProposals: '/proposals',
   proposal: (id: string) => ['/proposals', id],
   agreement: (id: string) => ['/agreements', id],
+  changeOrder: (id: string) => ['/change-orders', id],
   console: {
     overview: '/console',
     proposals: '/console/proposals',

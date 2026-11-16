@@ -1,5 +1,9 @@
-import type { Agreement, BuyerPayment } from '@homepact/shared';
-import { agreementFileName, receiptFileName } from '@homepact/shared/agreement-fields';
+import type { Agreement, Amendment, BuyerPayment } from '@homepact/shared';
+import {
+  agreementFileName,
+  amendmentFileName,
+  receiptFileName,
+} from '@homepact/shared/agreement-fields';
 import { API } from '../core/api-endpoints';
 import type { ApiService } from '../core/api.service';
 
@@ -34,4 +38,14 @@ export const downloadReceipt = async (
   saveFile(
     await api.getBlob(API.payments.receipt(agreementId, p.id)),
     receiptFileName(p.reference),
+  );
+
+/** Downloads a change order's PDF: the one kept since it was executed, or a draft. */
+export const downloadAmendment = async (
+  api: ApiService,
+  a: Pick<Amendment, 'id' | 'agreementId' | 'reference' | 'status'>,
+): Promise<void> =>
+  saveFile(
+    await api.getBlob(API.amendments.pdf(a.agreementId, a.id)),
+    amendmentFileName(a.reference, a.status),
   );

@@ -36,6 +36,7 @@ import { assertKeyActive } from '../access-keys/keys.js';
 import type { AgreementTemplateDoc } from '../agreement-templates/store.js';
 import type { HouseDoc } from '../houses/store.js';
 import type { InventoryHomeDoc } from '../inventory/store.js';
+import { statesOf } from '../amendments/store.js';
 import { heldFor, paymentSummaries } from '../payments/store.js';
 import {
   addMessage,
@@ -198,11 +199,17 @@ export const agreementRoutes = (ctx: ModuleContext): Router => {
       { ...(q.status && { status: q.status }), ...(q.proposalId && { proposalId: q.proposalId }) },
       { sort: { updatedAt: -1 }, limit: 300 },
     );
-    const payments = await paymentSummaries(req.repo, docs, isoDay(now()));
+    const [payments, states] = await Promise.all([
+      paymentSummaries(req.repo, docs, isoDay(now())),
+      statesOf(req.repo, docs),
+    ]);
     res.json(
       docs.map((d) => {
         const summary = payments.get(d._id);
-        return { ...toAgreementSummary(d), ...(summary && { payments: summary }) };
+        return {
+          ...toAgreementSummary(d, states.get(d._id)),
+          ...(summary && { payments: summary }),
+        };
       }),
     );
   });

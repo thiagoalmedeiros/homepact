@@ -13,7 +13,12 @@ export interface SignatureEnvelope {
   reference: string;
   title: string;
   contentHash: string;
+  /** What the signing links open; the agreement itself unless an amendment is named. */
+  resource?: { type: AccessResourceType; id: string };
 }
+
+const resourceOf = (envelope: Pick<SignatureEnvelope, 'agreementId' | 'resource'>) =>
+  envelope.resource ?? { type: AccessResourceType.Agreement, id: envelope.agreementId };
 
 export interface SignerRef {
   id: string;
@@ -43,8 +48,11 @@ export interface SignatureProvider {
     envelope: SignatureEnvelope,
     signers: SignerRef[],
   ): Promise<SignerInvitation[]>;
-  /** Stops outstanding invitations (agreement executed, cancelled or voided). */
-  revoke(ctx: SignatureContext, envelope: Pick<SignatureEnvelope, 'agreementId'>): Promise<void>;
+  /** Stops outstanding invitations (executed, cancelled, voided or re-priced). */
+  revoke(
+    ctx: SignatureContext,
+    envelope: Pick<SignatureEnvelope, 'agreementId' | 'resource'>,
+  ): Promise<void>;
   /** Turns a submission into the evidence kept on the agreement. */
   capture(
     ctx: SignatureContext,
@@ -59,14 +67,15 @@ export const builtInSignatureProvider: SignatureProvider = {
 
   async invite(ctx, envelope, signers) {
     const invitations: SignerInvitation[] = [];
+    const resource = resourceOf(envelope);
     for (const signer of signers) {
       const code = randomCode();
-      const { key } = await createAccessKey(
-        ctx.repo,
-        AccessResourceType.Agreement,
-        envelope.agreementId,
-        { createdBy: ctx.actorId, now: ctx.now, code, signerId: signer.id },
-      );
+      const { key } = await createAccessKey(ctx.repo, resource.type, resource.id, {
+        createdBy: ctx.actorId,
+        now: ctx.now,
+        code,
+        signerId: signer.id,
+      });
       invitations.push({
         purchaserId: signer.id,
         name: signer.name,
@@ -79,14 +88,13 @@ export const builtInSignatureProvider: SignatureProvider = {
   },
 
   async revoke(ctx, envelope) {
-    await ctx.repo.of<AccessKeyDoc>('accessKeys').updateMany(
-      {
-        resourceType: AccessResourceType.Agreement,
-        resourceId: envelope.agreementId,
-        status: AccessKeyStatus.Active,
-      },
-      { $set: { status: AccessKeyStatus.Revoked } },
-    );
+    const resource = resourceOf(envelope);
+    await ctx.repo
+      .of<AccessKeyDoc>('accessKeys')
+      .updateMany(
+        { resourceType: resource.type, resourceId: resource.id, status: AccessKeyStatus.Active },
+        { $set: { status: AccessKeyStatus.Revoked } },
+      );
   },
 
   async capture(ctx, envelope, _signer, submission) {

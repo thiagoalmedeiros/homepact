@@ -52,6 +52,9 @@ export type CollectionName =
   | 'agreements'
   | 'agreementFiles'
   | 'agreementPayments'
+  | 'agreementAmendments'
+  | 'amendmentHeads'
+  | 'amendmentPolicies'
   | 'taxRates'
   | 'referralPrograms';
 

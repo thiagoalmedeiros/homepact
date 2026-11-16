@@ -1,0 +1,306 @@
+<section class="card stack" data-testid="agreement-amendments">
+  <div class="spread">
+    <div class="stack tight">
+      <h2 class="title-3" i18n="@@console.amendments.title">Change orders</h2>
+      <span class="small muted" i18n="@@console.amendments.lead"
+        >The executed agreement never changes; each change order is signed by every purchaser and
+        kept with its own PDF.</span
+      >
+    </div>
+    @if (auth.isStaff() && orders.hasValue() && !hasOpen()) {
+      <button
+        class="btn btn-secondary btn-sm"
+        type="button"
+        (click)="opening.set(true)"
+        data-testid="new-change-order"
+      >
+        <hc-icon name="plus" [size]="14" />
+        <ng-container i18n="@@console.amendments.new">New change order</ng-container>
+      </button>
+    }
+  </div>
+
+  @for (o of list(); track o.id) {
+    <div class="inset stack" [attr.data-testid]="'change-order-' + o.id">
+      <hc-amendment-view [amendment]="o" />
+      @if (o.status === AmendmentStatus.UnderReview) {
+        <div class="stack tight">
+          @for (p of o.purchasers; track p.id) {
+            <div class="row spread small">
+              <span>{{ p.name }}</span>
+              @if (p.status === SignerStatus.Signed) {
+                <span class="pill green" i18n="@@console.amendments.signerSigned">Signed</span>
+              } @else if (auth.isStaff()) {
+                <button
+                  class="btn btn-ghost btn-sm"
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="reinvite(o, p.id)"
+                  [attr.data-testid]="'reinvite-' + o.id + '-' + p.id"
+                  i18n="@@console.amendments.reinvite"
+                >
+                  New link and code
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+      <div class="row">
+        @if (auth.isStaff() && isUnsigned(o.status)) {
+          <button
+            class="btn btn-sm"
+            [class.btn-secondary]="o.status !== AmendmentStatus.Requested"
+            type="button"
+            (click)="drafting.set(o)"
+            [attr.data-testid]="'draft-' + o.id"
+          >
+            <hc-icon name="edit" [size]="14" />
+            @if (o.status === AmendmentStatus.Requested) {
+              <ng-container i18n="@@console.amendments.prepare">Prepare the draft</ng-container>
+            } @else {
+              <ng-container i18n="@@console.amendments.edit">Edit the draft</ng-container>
+            }
+          </button>
+        }
+        @if (auth.isStaff() && o.status === AmendmentStatus.Priced) {
+          <button
+            class="btn btn-sm"
+            type="button"
+            (click)="openSend(o)"
+            [attr.data-testid]="'send-' + o.id"
+          >
+            <hc-icon name="send" [size]="14" />
+            <ng-container i18n="@@console.amendments.send">Sign and send</ng-container>
+          </button>
+        }
+        @if (mayApprove(o)) {
+          <button
+            class="btn btn-sm"
+            type="button"
+            (click)="openApprove(o)"
+            [attr.data-testid]="'approve-' + o.id"
+          >
+            <hc-icon name="pen" [size]="14" />
+            <ng-container i18n="@@console.amendments.approve">Approve</ng-container>
+          </button>
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            (click)="rejecting.set(o)"
+            [attr.data-testid]="'reject-' + o.id"
+            i18n="@@console.amendments.reject"
+          >
+            Refuse
+          </button>
+        } @else if (auth.isAdmin() && o.status === AmendmentStatus.AwaitingApproval) {
+          <span
+            class="small muted"
+            data-testid="approve-someone-else"
+            i18n="@@console.amendments.someoneElse"
+            >You priced or sent it. Another administrator must approve it.</span
+          >
+        }
+        @if (o.after) {
+          <button
+            class="btn btn-secondary btn-sm"
+            type="button"
+            (click)="download(o)"
+            [attr.data-testid]="'download-' + o.id"
+          >
+            <hc-icon name="download" [size]="14" />
+            <ng-container i18n="@@console.amendments.pdf">PDF</ng-container>
+          </button>
+        }
+        @if (auth.isStaff() && isUnsigned(o.status)) {
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            (click)="declining.set(o)"
+            [attr.data-testid]="'decline-' + o.id"
+            i18n="@@console.amendments.decline"
+          >
+            Decline
+          </button>
+        }
+      </div>
+    </div>
+  } @empty {
+    @if (orders.hasValue()) {
+      <p class="small muted" i18n="@@console.amendments.none">No change order yet.</p>
+    }
+  }
+</section>
+
+@if (drafting(); as o) {
+  <hc-amendment-draft-sheet [amendment]="o" (saved)="drafted()" (closed)="drafting.set(null)" />
+}
+
+@if (sending(); as o) {
+  <hc-sheet
+    title="Sign for the company and send"
+    i18n-title="@@console.amendments.sendTitle"
+    (closed)="sending.set(null)"
+  >
+    <form class="stack" (ngSubmit)="send(o)">
+      <hc-amendment-view [amendment]="o" />
+      <div class="field">
+        <label for="send-name" i18n="@@console.amendments.typeName">Type your full name</label>
+        <input
+          id="send-name"
+          class="input"
+          name="name"
+          [(ngModel)]="signName"
+          data-testid="send-name"
+        />
+      </div>
+      <label class="row agree small">
+        <input
+          type="checkbox"
+          class="checkbox"
+          name="agree"
+          [(ngModel)]="signAgree"
+          data-testid="send-agree"
+        />
+        <span i18n="@@console.amendments.sendAgree">
+          {{ o.seller.name }} offers these changes at this price. Typing my name signs change order
+          {{ o.reference }} for the company; each purchaser then gets their own link and code.
+        </span>
+      </label>
+      <button
+        class="btn btn-lg btn-block"
+        type="submit"
+        [disabled]="busy() || !signAgree || signName.trim().length < 2"
+        data-testid="send-submit"
+        i18n="@@console.amendments.sendSubmit"
+      >
+        Sign and send
+      </button>
+    </form>
+  </hc-sheet>
+}
+
+@if (approving(); as o) {
+  <hc-sheet
+    title="Approve the change order"
+    i18n-title="@@console.amendments.approveTitle"
+    (closed)="approving.set(null)"
+  >
+    <form class="stack" (ngSubmit)="approve(o)">
+      <hc-amendment-view [amendment]="o" />
+      <div class="field">
+        <label for="approve-name" i18n="@@console.amendments.typeName">Type your full name</label>
+        <input
+          id="approve-name"
+          class="input"
+          name="name"
+          [(ngModel)]="signName"
+          data-testid="approve-name"
+        />
+      </div>
+      <label class="row agree small">
+        <input
+          type="checkbox"
+          class="checkbox"
+          name="agree"
+          [(ngModel)]="signAgree"
+          data-testid="approve-agree"
+        />
+        <span i18n="@@console.amendments.approveAgree">
+          I approve change order {{ o.reference }} for {{ o.seller.name }}, as every purchaser
+          signed it. It takes effect now.
+        </span>
+      </label>
+      <button
+        class="btn btn-lg btn-block"
+        type="submit"
+        [disabled]="busy() || !signAgree || signName.trim().length < 2"
+        data-testid="approve-submit"
+        i18n="@@console.amendments.approveSubmit"
+      >
+        Approve
+      </button>
+    </form>
+  </hc-sheet>
+}
+
+@if (rejecting(); as o) {
+  <hc-reason-sheet
+    [title]="text.rejectTitle"
+    [message]="text.rejectMessage"
+    [confirmLabel]="text.rejectConfirm"
+    [busy]="busy()"
+    (confirmed)="reject(o, $event)"
+    (closed)="rejecting.set(null)"
+  />
+}
+
+@if (declining(); as o) {
+  <hc-reason-sheet
+    [title]="text.declineTitle"
+    [message]="text.declineMessage"
+    [confirmLabel]="text.declineConfirm"
+    [busy]="busy()"
+    (confirmed)="decline(o, $event)"
+    (closed)="declining.set(null)"
+  />
+}
+
+@if (opening()) {
+  <hc-sheet
+    title="New change order"
+    i18n-title="@@console.amendments.newTitle"
+    (closed)="opening.set(false)"
+  >
+    <form class="stack" (ngSubmit)="openForBuyer()">
+      <div class="field">
+        <label for="new-note" i18n="@@console.amendments.newNote">What the buyer asked for</label>
+        <textarea
+          id="new-note"
+          class="input"
+          name="note"
+          rows="3"
+          [(ngModel)]="newNote"
+          data-testid="new-note"
+        ></textarea>
+      </div>
+      <button
+        class="btn btn-lg btn-block"
+        type="submit"
+        [disabled]="busy() || !newNote.trim()"
+        data-testid="new-submit"
+        i18n="@@console.amendments.newSubmit"
+      >
+        Open and draft it
+      </button>
+    </form>
+  </hc-sheet>
+}
+
+@if (handouts().length) {
+  <hc-sheet
+    title="Signing links and codes"
+    i18n-title="@@console.agreement.handoutTitle"
+    (closed)="handouts.set([])"
+  >
+    <div class="stack">
+      <p class="small muted" i18n="@@console.amendments.handoutBody">
+        Give each purchaser their link to the change order and read them their code over the phone.
+        This is the only time the codes can be seen; you can always issue new ones.
+      </p>
+      @for (h of handouts(); track h.purchaserId) {
+        <div class="inset stack" [attr.data-testid]="'handout-' + h.purchaserId">
+          <span class="strong">{{ h.name }}</span>
+          <code class="tiny break" [attr.data-testid]="'link-' + h.purchaserId">{{ h.link }}</code>
+          <span class="title-3 tabular" [attr.data-testid]="'code-' + h.purchaserId">{{
+            h.code
+          }}</span>
+          <button class="btn btn-secondary btn-sm" type="button" (click)="copy(h)">
+            <hc-icon name="copy" [size]="14" />
+            <ng-container i18n="@@console.amendments.copy">Copy link and code</ng-container>
+          </button>
+        </div>
+      }
+    </div>
+  </hc-sheet>
+}

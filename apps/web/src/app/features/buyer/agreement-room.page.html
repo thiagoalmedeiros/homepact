@@ -16,8 +16,8 @@
       <p class="eyebrow" i18n="@@agreementRoom.eyebrow">Purchase agreement {{ a.reference }}</p>
       <h1 class="title-1">{{ a.home.model }}{{ a.home.address ? ', ' + a.home.address : '' }}</h1>
       <p class="lead tabular">
-        {{ a.quote.totalCents | money: a.currency }}
-        @if (a.quote.tax; as tax) {
+        {{ current()?.totalCents | money: a.currency }}
+        @if (current()?.quote?.tax; as tax) {
           <span class="small muted" i18n="@@agreementRoom.taxIncluded"
             >sales tax included ({{ tax.regionName }})</span
           >
@@ -110,7 +110,14 @@
             >{{ l.schedule.totals.netPaidCents | money: l.currency }} received ·
             {{ l.schedule.totals.outstandingCents | money: l.currency }} left to pay</span
           >
+          <hc-price-changes [changes]="l.priceChanges" [currency]="l.currency" />
         </div>
+        @if (l.schedule.totals.creditCents) {
+          <div class="callout small" data-testid="buyer-credit" i18n="@@agreementRoom.credit">
+            You paid {{ l.schedule.totals.creditCents | money: l.currency }} more than the new
+            price; {{ a.seller.name }} owes it back to you.
+          </div>
+        }
         @for (line of l.schedule.lines; track $index) {
           @let label = LINE[line.status];
           <div class="pay-line">
@@ -154,6 +161,87 @@
                 Receipt
               </button>
             </span>
+          </div>
+        }
+      </section>
+    }
+
+    @if (now(); as n) {
+      <section class="card stack" data-testid="change-orders">
+        <div class="spread">
+          <div class="stack tight">
+            <h2 class="title-3" i18n="@@agreementRoom.changeOrders.title">Change orders</h2>
+            <span class="small muted" i18n="@@agreementRoom.changeOrders.lead"
+              >Your signed agreement never changes: each change becomes a change order that every
+              purchaser signs.</span
+            >
+          </div>
+          @if (canRequest()) {
+            <button
+              class="btn btn-secondary btn-sm"
+              type="button"
+              (click)="openRequest()"
+              data-testid="request-change"
+            >
+              <hc-icon name="edit" [size]="14" />
+              <ng-container i18n="@@agreementRoom.changeOrders.request"
+                >Request a change</ng-container
+              >
+            </button>
+          }
+        </div>
+        @if (n.offeredAsIs) {
+          <p
+            class="small muted"
+            data-testid="offered-as-is"
+            i18n="@@agreementRoom.changeOrders.asIs"
+          >
+            This home was offered as-is: ask {{ a.repName ?? a.seller.name }} about any change.
+          </p>
+        } @else if (n.openAmendmentId) {
+          <p
+            class="small muted"
+            data-testid="one-at-a-time"
+            i18n="@@agreementRoom.changeOrders.oneAtATime"
+          >
+            {{ a.seller.name }} handles one change order at a time; you can ask for more once this
+            one is signed or closed.
+          </p>
+        }
+        @for (o of changeOrders(); track o.id) {
+          <div class="inset stack" [attr.data-testid]="'change-order-' + o.id">
+            <hc-amendment-view [amendment]="o" audience="buyer" />
+            @if (o.status === AmendmentStatus.UnderReview) {
+              <p class="small" i18n="@@agreementRoom.changeOrders.toSign">
+                Each purchaser signs it with the link and code {{ a.seller.name }} gave them.
+              </p>
+            }
+            <div class="row">
+              @if (o.after) {
+                <button
+                  class="btn btn-secondary btn-sm"
+                  type="button"
+                  [disabled]="downloading()"
+                  (click)="downloadOrder(o)"
+                  [attr.data-testid]="'download-' + o.id"
+                >
+                  <hc-icon name="download" [size]="14" />
+                  <ng-container i18n="@@agreementRoom.changeOrders.pdf">PDF</ng-container>
+                </button>
+              }
+              @if (isUnsigned(o.status)) {
+                <button
+                  class="btn btn-ghost btn-sm"
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="withdraw(o)"
+                  [attr.data-testid]="'withdraw-' + o.id"
+                  i18n="@@agreementRoom.changeOrders.withdraw"
+                >
+                  Withdraw
+                </button>
+              }
+            </div>
           </div>
         }
       </section>
@@ -287,6 +375,85 @@
       />
     </section>
   </section>
+
+  @if (requesting()) {
+    <hc-sheet
+      title="Request a change"
+      i18n-title="@@agreementRoom.requestSheet.title"
+      (closed)="requesting.set(false)"
+      data-testid="change-request"
+    >
+      <form class="stack" (ngSubmit)="sendRequest(a)">
+        <p class="small muted" i18n="@@agreementRoom.requestSheet.lead">
+          Pick options from the catalog, describe what you would like, or both.
+          {{ a.seller.name }} prices it, sales tax included, in a change order for you to sign.
+        </p>
+        <h3 class="title-3" i18n="@@agreementRoom.requestSheet.catalog">From the catalog</h3>
+        @if (options(); as o) {
+          <hc-selection-editor
+            [areas]="o.areas"
+            [currency]="o.currency"
+            [base]="now()?.selections ?? null"
+            [(selections)]="picked"
+          />
+        } @else {
+          <div class="skeleton loading"></div>
+        }
+        <div class="field">
+          <label for="request-note" i18n="@@agreementRoom.requestSheet.words"
+            >In your own words</label
+          >
+          <textarea
+            id="request-note"
+            class="input"
+            name="note"
+            rows="3"
+            maxlength="4000"
+            [ngModel]="requestNote()"
+            (ngModelChange)="requestNote.set($event)"
+            placeholder="e.g. A wider patio door, or the stone from the show home"
+            i18n-placeholder="@@agreementRoom.requestSheet.wordsPlaceholder"
+            data-testid="request-note"
+          ></textarea>
+        </div>
+        @if (requestedChanges().length) {
+          <div class="inset stack" data-testid="request-estimate">
+            @if (estimate.value(); as e) {
+              <hc-change-lines [changes]="e.changes" [currency]="a.currency" />
+              <div class="spread">
+                <span i18n="@@agreementRoom.requestSheet.estimate">Estimated new price</span>
+                <span class="strong tabular" [class.dim]="estimate.pending()">{{
+                  e.quote.totalCents | money: a.currency
+                }}</span>
+              </div>
+              @if (e.quote.tax; as tax) {
+                <span class="tiny muted" i18n="@@agreementRoom.requestSheet.tax"
+                  >sales tax included ({{ tax.regionName }}); {{ a.seller.name }} confirms the
+                  price</span
+                >
+              }
+            } @else if (estimate.error(); as err) {
+              <span class="small">{{ err }}</span>
+            } @else {
+              <span class="small muted" i18n="@@agreementRoom.requestSheet.pricing">Pricing…</span>
+            }
+          </div>
+        }
+        <button
+          class="btn btn-lg btn-block"
+          type="submit"
+          [disabled]="!canSend()"
+          data-testid="request-submit"
+        >
+          @if (busy()) {
+            <ng-container i18n="@@agreementRoom.requestSheet.sending">Sending…</ng-container>
+          } @else {
+            <ng-container i18n="@@agreementRoom.requestSheet.submit">Send the request</ng-container>
+          }
+        </button>
+      </form>
+    </hc-sheet>
+  }
 
   @if (signing()) {
     <hc-sheet

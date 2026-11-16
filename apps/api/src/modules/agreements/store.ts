@@ -1,4 +1,5 @@
 import {
+  agreementState,
   AgreementStatus,
   OPEN_AGREEMENT_STATUSES,
   Party,
@@ -6,18 +7,22 @@ import {
   type AgreementPurchaser,
   type ProposalParty,
   type Agreement,
+  type AgreementState,
   type AgreementSummary,
 } from '@homepact/shared';
 import type { TenantDoc, TenantRepo } from '../../data/tenant-repo.js';
+import { stateOf } from '../amendments/store.js';
 
 export interface AgreementDoc
   extends TenantDoc, Omit<Agreement, 'id' | 'executedPdf' | 'viewerPurchaserId'> {
   executedPdf?: { fileId: string; sha256: string; size: number };
 }
 
+/** The PDFs that never change: the executed agreement, and each executed amendment. */
 export interface AgreementFileDoc extends TenantDoc {
   agreementId: string;
-  kind: 'executed';
+  kind: 'executed' | 'amendment';
+  amendmentId?: string;
   contentType: 'application/pdf';
   data: Uint8Array | { buffer: Uint8Array };
   sha256: string;
@@ -56,7 +61,11 @@ export const toAgreement = (d: AgreementDoc, viewerPurchaserId?: string): Agreem
   };
 };
 
-export const toAgreementSummary = (d: AgreementDoc): AgreementSummary => ({
+/** The list view of an agreement, priced at its current state (as signed when not given). */
+export const toAgreementSummary = (
+  d: AgreementDoc,
+  state: AgreementState = agreementState(d),
+): AgreementSummary => ({
   id: d._id,
   reference: d.reference,
   status: d.status,
@@ -65,7 +74,7 @@ export const toAgreementSummary = (d: AgreementDoc): AgreementSummary => ({
   buyerName: d.buyer.name,
   houseName: d.home.model,
   ...(d.home.address && { address: d.home.address }),
-  totalCents: d.quote.totalCents,
+  totalCents: state.totalCents,
   currency: d.currency,
   createdAt: d.createdAt,
   updatedAt: d.updatedAt,
@@ -114,5 +123,5 @@ export const agreementOfProposal = async (
   if (!agreementId) return undefined;
   const doc = await repo.of<AgreementDoc>('agreements').findOne({ _id: agreementId });
   if (!doc || (viewer === Party.Buyer && !doc.issuedAt)) return undefined;
-  return toAgreementSummary(doc);
+  return toAgreementSummary(doc, await stateOf(repo, doc));
 };

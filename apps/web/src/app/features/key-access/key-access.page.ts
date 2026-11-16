@@ -9,10 +9,16 @@ import { AuthService } from '../../core/auth.service';
 import { ToastService } from '../../core/toast.service';
 import { Icon } from '../../shared/icon';
 
-export const destinationOf = (s: Pick<AccessSession, 'resourceType' | 'resourceId'>): string[] =>
-  s.resourceType === AccessResourceType.Agreement
-    ? PATHS.agreement(s.resourceId)
-    : PATHS.proposal(s.resourceId);
+export const destinationOf = (s: Pick<AccessSession, 'resourceType' | 'resourceId'>): string[] => {
+  switch (s.resourceType) {
+    case AccessResourceType.Agreement:
+      return PATHS.agreement(s.resourceId);
+    case AccessResourceType.Amendment:
+      return PATHS.changeOrder(s.resourceId);
+    default:
+      return PATHS.proposal(s.resourceId);
+  }
+};
 
 /** Exchanges a private link (`/k?key=…`) for a guest session; a signing link also needs its
  * code. */

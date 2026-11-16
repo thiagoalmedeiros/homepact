@@ -1,0 +1,228 @@
+@let a = amendment();
+<hc-sheet
+  [title]="a.status === AmendmentStatus.Requested ? draftTitle : editTitle"
+  (closed)="closed.emit()"
+  data-testid="amendment-draft"
+>
+  <div class="stack">
+    @if (a.status === AmendmentStatus.UnderReview) {
+      <div class="callout warn small" i18n="@@amendmentDraft.resend">
+        It is out for signature: saving voids the signatures given so far, and you will send it
+        again.
+      </div>
+    }
+
+    <section class="stack">
+      <h3 class="title-3" i18n="@@amendmentDraft.asked">What {{ a.requestedBy.name }} asked for</h3>
+      @if (a.note) {
+        <blockquote class="small request">{{ a.note }}</blockquote>
+      }
+      @for (c of requested(); track c.id) {
+        @let d = decisions()[c.id];
+        <div class="inset stack tight">
+          <label class="row spread">
+            <span class="row">
+              <input
+                type="checkbox"
+                class="checkbox"
+                [name]="'decide-' + c.id"
+                [ngModel]="d?.approved ?? true"
+                (ngModelChange)="decide(c.id, { approved: $event })"
+                [attr.data-testid]="'decide-' + c.id"
+              />
+              <span>{{ c.label }}</span>
+            </span>
+            <span class="tabular small">{{ c.deltaCents | money: a.currency : true }}</span>
+          </label>
+          @if (d && !d.approved) {
+            <input
+              class="input"
+              [name]="'decide-note-' + c.id"
+              [ngModel]="d.note"
+              (ngModelChange)="decide(c.id, { note: $event })"
+              placeholder="Why not, for the buyer"
+              i18n-placeholder="@@amendmentDraft.declineNote"
+            />
+          }
+        </div>
+      } @empty {
+        @if (!a.note) {
+          <p class="small muted" i18n="@@amendmentDraft.noneAsked">No catalog change asked.</p>
+        }
+      }
+    </section>
+
+    <section class="stack">
+      <h3 class="title-3" i18n="@@amendmentDraft.catalog">Options from the catalog</h3>
+      <p class="tiny muted" i18n="@@amendmentDraft.catalogHint">
+        Pick what turns the request into priced options; the buyer's requested changes you keep are
+        already shown.
+      </p>
+      @if (options(); as o) {
+        <hc-selection-editor
+          [areas]="o.areas"
+          [currency]="o.currency"
+          [base]="base()"
+          [selections]="selections()"
+          (selectionsChange)="pick($event)"
+        />
+      } @else {
+        <div class="skeleton loading"></div>
+      }
+    </section>
+
+    <section class="stack" data-testid="adjustments">
+      <h3 class="title-3" i18n="@@amendmentDraft.adjustments">Fees and credits</h3>
+      <hc-adjustments-editor [(adjustments)]="adjustments" />
+    </section>
+
+    <section class="stack">
+      <h3 class="title-3" i18n="@@amendmentDraft.instalments">Added to the deposit schedule</h3>
+      @for (row of instalments(); track $index; let i = $index) {
+        <div class="instalment">
+          <input
+            class="input label"
+            [name]="'inst-label-' + i"
+            [ngModel]="row.label"
+            (ngModelChange)="setInstalment(i, { label: $event })"
+            placeholder="e.g. Change order payment"
+            i18n-placeholder="@@amendmentDraft.instalmentLabel"
+            aria-label="Instalment"
+            i18n-aria-label="@@amendmentDraft.instalment"
+          />
+          <input
+            class="input tabular"
+            type="number"
+            min="0"
+            step="100"
+            [name]="'inst-amount-' + i"
+            [ngModel]="row.dollars"
+            (ngModelChange)="setInstalment(i, { dollars: $event })"
+            aria-label="Amount in dollars"
+            i18n-aria-label="@@amendmentDraft.instalmentAmount"
+          />
+          <input
+            class="input"
+            type="date"
+            [name]="'inst-due-' + i"
+            [ngModel]="row.dueDate"
+            (ngModelChange)="setInstalment(i, { dueDate: $event })"
+            aria-label="Due date"
+            i18n-aria-label="@@amendmentDraft.instalmentDue"
+          />
+          <button
+            class="icon-btn"
+            type="button"
+            (click)="removeInstalment(i)"
+            aria-label="Remove instalment"
+            i18n-aria-label="@@amendmentDraft.removeInstalment"
+          >
+            <hc-icon name="trash" [size]="16" />
+          </button>
+        </div>
+      }
+      <button class="link-btn small add" type="button" (click)="addInstalment()">
+        <hc-icon name="plus" [size]="14" />
+        <ng-container i18n="@@amendmentDraft.addInstalment">Add an instalment</ng-container>
+      </button>
+    </section>
+
+    <div class="field">
+      <label for="draft-closing" i18n="@@amendmentDraft.closing"
+        >New closing and possession date</label
+      >
+      <input
+        id="draft-closing"
+        class="input"
+        type="date"
+        name="closingDate"
+        [ngModel]="closingDate()"
+        (ngModelChange)="closingDate.set($event ?? '')"
+        data-testid="draft-closing"
+      />
+      <span class="tiny muted" i18n="@@amendmentDraft.closingHint"
+        >Leave empty to keep
+        {{
+          a.before.terms.closingDate
+            ? (a.before.terms.closingDate | localDate: 'calendar')
+            : noClosing
+        }}.</span
+      >
+    </div>
+
+    <div class="field">
+      <label for="pricing-note" i18n="@@amendmentDraft.note">Note for the buyer</label>
+      <textarea
+        id="pricing-note"
+        class="input"
+        name="pricingNote"
+        rows="2"
+        maxlength="4000"
+        [ngModel]="pricingNote()"
+        (ngModelChange)="pricingNote.set($event)"
+      ></textarea>
+    </div>
+
+    @if (!empty()) {
+      <section class="inset stack" data-testid="draft-preview">
+        @if (preview.value(); as p) {
+          <hc-change-lines [changes]="p.changes" [currency]="a.currency" />
+          <div class="kv">
+            <span i18n="@@amendmentDraft.priceBefore">Price before</span>
+            <span class="value tabular">{{ a.before.quote.totalCents | money: a.currency }}</span>
+          </div>
+          @if (p.after.quote.subtotalCents !== undefined) {
+            <div class="kv">
+              <span i18n="@@amendmentDraft.beforeTax">New price before tax</span>
+              <span class="value tabular">{{
+                p.after.quote.subtotalCents | money: a.currency
+              }}</span>
+            </div>
+          }
+          @for (line of p.after.quote.tax?.lines ?? []; track $index) {
+            <div class="kv">
+              <span>{{ line.label }} {{ line.ratePercent }}%</span>
+              <span class="value tabular">{{ line.amountCents | money: a.currency }}</span>
+            </div>
+          }
+          <div class="kv">
+            <span i18n="@@amendmentDraft.newPrice">New price</span>
+            <span class="value strong tabular" [class.dim]="preview.pending()">{{
+              p.after.quote.totalCents | money: a.currency
+            }}</span>
+          </div>
+          <div class="kv">
+            <span i18n="@@amendmentDraft.change">Change</span>
+            <span class="value tabular">{{ changeInPrice() | money: a.currency : true }}</span>
+          </div>
+          @if (p.approval.required) {
+            <p class="small callout warn" data-testid="draft-approval">
+              <ng-container i18n="@@amendmentDraft.approval"
+                >An administrator must approve it once the purchasers have signed:</ng-container
+              >
+              {{ reasons() }}
+            </p>
+          }
+        } @else if (preview.error(); as err) {
+          <span class="small" data-testid="draft-error">{{ err }}</span>
+        } @else {
+          <span class="small muted" i18n="@@amendmentDraft.pricing">Pricing…</span>
+        }
+      </section>
+    }
+
+    <button
+      class="btn btn-lg btn-block"
+      type="button"
+      (click)="save()"
+      [disabled]="busy() || empty() || preview.pending() || !!preview.error()"
+      data-testid="draft-save"
+    >
+      @if (busy()) {
+        <ng-container i18n="@@amendmentDraft.saving">Saving…</ng-container>
+      } @else {
+        <ng-container i18n="@@amendmentDraft.save">Save the draft</ng-container>
+      }
+    </button>
+  </div>
+</hc-sheet>

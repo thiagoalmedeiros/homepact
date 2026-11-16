@@ -108,6 +108,61 @@ export const REFUNDABLE_AGREEMENT_STATUSES = [
 export const isRefundableAgreement = (status: AgreementStatus): boolean =>
   (REFUNDABLE_AGREEMENT_STATUSES as readonly AgreementStatus[]).includes(status);
 
+/** A change order after the agreement is executed: requested from the catalog, priced by sales,
+ * signed by every purchaser, approved when the company policy asks for it, then executed. */
+export enum AmendmentStatus {
+  Requested = 'requested',
+  Priced = 'priced',
+  UnderReview = 'under_review',
+  AwaitingApproval = 'awaiting_approval',
+  Executed = 'executed',
+  Declined = 'declined',
+  Withdrawn = 'withdrawn',
+  Rejected = 'rejected',
+}
+
+/** Open amendments hold their agreement: only one at a time, so each amends the latest state. */
+export const OPEN_AMENDMENT_STATUSES = [
+  AmendmentStatus.Requested,
+  AmendmentStatus.Priced,
+  AmendmentStatus.UnderReview,
+  AmendmentStatus.AwaitingApproval,
+] as const;
+
+export const isOpenAmendment = (status: AmendmentStatus): boolean =>
+  (OPEN_AMENDMENT_STATUSES as readonly AmendmentStatus[]).includes(status);
+
+/** Until every purchaser has signed, sales can re-price or decline it and the buyer can withdraw. */
+export const UNSIGNED_AMENDMENT_STATUSES = [
+  AmendmentStatus.Requested,
+  AmendmentStatus.Priced,
+  AmendmentStatus.UnderReview,
+] as const;
+
+export const isUnsignedAmendment = (status: AmendmentStatus): boolean =>
+  (UNSIGNED_AMENDMENT_STATUSES as readonly AmendmentStatus[]).includes(status);
+
+export enum AmendmentAction {
+  Requested = 'requested',
+  Priced = 'priced',
+  Sent = 'sent',
+  Signed = 'signed',
+  AwaitingApproval = 'awaiting_approval',
+  Approved = 'approved',
+  Rejected = 'rejected',
+  Declined = 'declined',
+  Withdrawn = 'withdrawn',
+  Executed = 'executed',
+}
+
+/** Why an amendment needs an administrator's approval before it takes effect. */
+export enum ApprovalReason {
+  Credit = 'credit',
+  Adjustment = 'adjustment',
+  AboveThreshold = 'above_threshold',
+  RefundDue = 'refund_due',
+}
+
 export enum SignerStatus {
   Pending = 'pending',
   Signed = 'signed',
@@ -123,6 +178,7 @@ export enum AccessKeyStatus {
 export enum AccessResourceType {
   Proposal = 'proposal',
   Agreement = 'agreement',
+  Amendment = 'amendment',
 }
 
 export enum HealthStatus {

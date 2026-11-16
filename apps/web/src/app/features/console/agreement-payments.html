@@ -14,6 +14,13 @@
             >{{ totals.overdueCents | money: l.currency }} overdue</span
           >
         }
+        @if (totals.creditCents) {
+          <span class="small attention" data-testid="payments-credit" i18n="@@payments.credit"
+            >{{ totals.creditCents | money: l.currency }} received above the price is owed back to
+            the buyer</span
+          >
+        }
+        <hc-price-changes [changes]="l.priceChanges" [currency]="l.currency" />
         @if (totals.pendingCount) {
           <span class="small muted" data-testid="payments-pending" i18n="@@payments.pending"
             >{{ totals.pendingCount }} payment(s) ({{ totals.pendingCents | money: l.currency }})
@@ -22,7 +29,7 @@
         }
       </div>
       <div class="row">
-        @if (payable() && auth.isTeam()) {
+        @if (payable() && auth.isTeam() && !totals.creditCents) {
           <button
             class="btn btn-sm"
             type="button"
@@ -31,6 +38,16 @@
           >
             <hc-icon name="plus" [size]="14" />
             <ng-container i18n="@@payments.record">Record payment</ng-container>
+          </button>
+        }
+        @if (canRefund() && totals.creditCents) {
+          <button
+            class="btn btn-sm"
+            type="button"
+            (click)="form.set({ mode: 'refund', amountCents: totals.creditCents })"
+            data-testid="refund-credit"
+          >
+            <ng-container i18n="@@payments.refundCredit">Refund the credit</ng-container>
           </button>
         }
         @if (canRefund()) {

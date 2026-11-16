@@ -27,6 +27,10 @@
       "types": "./dist/agreement-fields.d.ts",
       "default": "./dist/agreement-fields.js"
     },
+    "./agreement-state": {
+      "types": "./dist/agreement-state.d.ts",
+      "default": "./dist/agreement-state.js"
+    },
     "./mortgage": {
       "types": "./dist/mortgage.d.ts",
       "default": "./dist/mortgage.js"

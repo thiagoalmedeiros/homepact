@@ -79,12 +79,12 @@ against it, and `task docker:down` stops it.
 
 ## Roles
 
-| Role          | Works on                                                                                             |
-| ------------- | ---------------------------------------------------------------------------------------------------- |
-| Administrator | Everything sales does, plus the catalog, templates, team and countersignatures; can approve payments |
-| Sales         | Proposals and agreements; records payments, which count once finance approves them                   |
-| Finance       | Agreements (read only) and their payments: records, approves, rejects, voids and refunds             |
-| Buyer         | Their proposals and agreements, the payments received and their receipts                             |
+| Role          | Works on                                                                                                               |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Administrator | Everything sales does, plus the catalog, templates, team and countersignatures; can approve payments and change orders |
+| Sales         | Proposals, agreements and change orders; records payments, which count once finance approves them                      |
+| Finance       | Agreements (read only) and their payments: records, approves, rejects, voids and refunds                               |
+| Buyer         | Their proposals and agreements, change orders, the payments received and their receipts                                |
 
 Someone signed in who opens a page that is not for them lands on their own home (finance on
 Payments, sales on the console overview, buyers on their proposals); visitors are asked to sign in.
@@ -97,6 +97,17 @@ Payments, sales on the console overview, buyers on their proposals); visitors ar
   with `companyId`.
 - Quotes (with sales tax) are copied into each revision and never change; an agreement's total comes
   from the signed revision.
+- An agreement's current price and terms (for payments, lists and summaries) come from
+  `agreementState` in `packages/shared`: the agreement as signed, then its executed amendments in
+  order. Only what shows, signs or drafts the document itself (its text, PDF, signing and draft
+  terms) reads the signed content directly.
+- An executed agreement never changes: its document, fingerprint and PDF stay as signed. Later
+  changes are change orders (`/agreements/:id/amendments`), one open at a time: the buyer (or sales
+  for them) picks catalog changes, sales prices them (options kept at their signed price, new ones
+  at today's, removed ones credited as signed) and signs for the company when sending, each
+  purchaser signs on their own link, and an administrator other than whoever priced or sent it
+  approves when the company policy asks (always when a refund would be due). Each executed
+  amendment keeps its own fingerprint, chained to the one before, and its own PDF.
 - Each signature stores the SHA-256 of the signed content. A signing link alone opens nothing: it
   needs its code.
 - Payments live in their own ledger, outside the signed content, and are never deleted: a posted

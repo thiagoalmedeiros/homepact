@@ -1,5 +1,6 @@
 import {
   AccessResourceType,
+  agreementState,
   agreementTemplateInputSchema,
   AgreementStatus,
   applyChanges,
@@ -496,14 +497,14 @@ export const seedShowcase = async (db: Db, opts: ShowcaseOptions): Promise<Showc
     });
     await recordPayment(c, p, agreement, riley, {
       status: PaymentStatus.Posted,
-      amountCents: agreement.terms.deposits[0]!.amountCents,
+      amountCents: agreementState(agreement).terms.deposits[0]!.amountCents,
       receivedOn: at(t0, 3 * day),
       method: PaymentMethod.Cheque,
       externalRef: STORY.lee.cheque,
     });
     await recordPayment(c, p, agreement, jordan, {
       status: PaymentStatus.Pending,
-      amountCents: agreement.terms.deposits[1]!.amountCents,
+      amountCents: agreementState(agreement).terms.deposits[1]!.amountCents,
       receivedOn: at(now, -day),
       method: PaymentMethod.Wire,
       externalRef: STORY.lee.wire,
@@ -535,14 +536,14 @@ export const seedShowcase = async (db: Db, opts: ShowcaseOptions): Promise<Showc
     });
     await recordPayment(c, p, agreement, riley, {
       status: PaymentStatus.Posted,
-      amountCents: agreement.terms.deposits[0]!.amountCents,
+      amountCents: agreementState(agreement).terms.deposits[0]!.amountCents,
       receivedOn: at(t0, 3 * day),
       method: PaymentMethod.Cheque,
       externalRef: STORY.rivera.cheque,
     });
     await recordPayment(c, p, agreement, casey, {
       status: PaymentStatus.Posted,
-      amountCents: agreement.terms.deposits[1]!.amountCents,
+      amountCents: agreementState(agreement).terms.deposits[1]!.amountCents,
       receivedOn: at(t0, 30 * day),
       method: PaymentMethod.Wire,
       externalRef: STORY.rivera.wire,

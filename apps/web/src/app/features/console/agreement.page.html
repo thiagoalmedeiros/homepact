@@ -128,6 +128,10 @@
 
   <hc-agreement-payments [agreement]="a" />
 
+  @if (a.status === AgreementStatus.Executed) {
+    <hc-agreement-amendments [agreement]="a" (executed)="agreement.reload()" />
+  }
+
   <div class="layout">
     <section class="card">
       <hc-agreement-document [agreement]="a" />

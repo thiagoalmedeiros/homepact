@@ -1,4 +1,4 @@
-import { AgreementStatus } from './enums.js';
+import { AgreementStatus, AmendmentStatus } from './enums.js';
 
 export const AGREEMENT_FIELDS = [
   { key: 'agreement.reference', label: 'Agreement number' },
@@ -97,6 +97,10 @@ const FILE_SUFFIX: Record<AgreementStatus, string> = {
 
 export const agreementFileName = (reference: string, status: AgreementStatus): string =>
   `${reference}-${FILE_SUFFIX[status]}.pdf`;
+
+/** An amendment's PDF: "-executed" once it took effect, "-draft" before. */
+export const amendmentFileName = (reference: string, status: AmendmentStatus): string =>
+  `${reference}-${status === AmendmentStatus.Executed ? 'executed' : 'draft'}.pdf`;
 
 export const receiptFileName = (paymentReference: string): string =>
   `${paymentReference}-receipt.pdf`;

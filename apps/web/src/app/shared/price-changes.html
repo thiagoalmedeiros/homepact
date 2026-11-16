@@ -1,0 +1,16 @@
+@let list = changes() ?? [];
+@if (list.length) {
+  <ul class="price-changes tiny muted" data-testid="price-changes">
+    <li i18n="@@priceChanges.signed">
+      Signed at <span class="nowrap">{{ list[0]!.fromCents | money: currency() }}</span>
+    </li>
+    @for (c of list; track c.number) {
+      <li i18n="@@priceChanges.change">
+        Change order {{ c.number }} (<span class="nowrap">{{ c.reference }}</span
+        >), {{ c.executedAt | localDate: 'date' }}:
+        <span class="nowrap">{{ c.toCents - c.fromCents | money: currency() : true }}</span> →
+        <span class="nowrap">{{ c.toCents | money: currency() }}</span>
+      </li>
+    }
+  </ul>
+}

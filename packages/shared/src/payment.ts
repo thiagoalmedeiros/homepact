@@ -8,6 +8,7 @@ import {
   type CompanyRole,
 } from './enums.js';
 import { centsSchema, type Currency } from './money.js';
+import type { PriceChange } from './agreement-state.js';
 import type { PaymentSchedule } from './payment-schedule.js';
 import { calendarDateSchema } from './schema-utils.js';
 
@@ -97,6 +98,8 @@ export interface AgreementLedger {
   currency: Currency;
   schedule: PaymentSchedule;
   payments: AgreementPayment[];
+  /** How executed amendments moved the price; absent while it stands as signed. */
+  priceChanges?: PriceChange[];
 }
 
 export interface BuyerLedger {
@@ -105,4 +108,5 @@ export interface BuyerLedger {
   currency: Currency;
   schedule: PaymentSchedule;
   payments: BuyerPayment[];
+  priceChanges?: PriceChange[];
 }

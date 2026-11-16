@@ -61,4 +61,27 @@ describe('AgreementsPage', () => {
     expect(el.querySelector('[data-testid="templates"]')).toBeNull();
     expect(row(el, 'A-2001')).toContain('Robin Buyer');
   });
+
+  it('an agreement whose price fell below what was received shows the credit owed back', async () => {
+    const http = setup();
+    await signInAs(http, Role.CompanyFinance, 'Riley Chen');
+    const fixture = TestBed.createComponent(AgreementsPage);
+    await settle(fixture);
+    http.expectOne('/api/agreements').flush([
+      summary({
+        totalCents: 60_000_000,
+        payments: {
+          netPaidCents: 60_650_000,
+          outstandingCents: 0,
+          overdueCents: 0,
+          pendingCount: 0,
+          creditCents: 650_000,
+        },
+      }),
+    ]);
+    await settle(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    expect(row(el, 'A-2001')).toContain('$600,000');
+    expect(row(el, 'A-2001')).toContain('$6,500 credit to refund');
+  });
 });

@@ -11,6 +11,7 @@ import type { ProposalKind, Signature } from './proposal.js';
 import type { QuoteSnapshot } from './quote.js';
 
 export * from './agreement-fields.js';
+export * from './agreement-state.js';
 
 /** Merge fields may appear anywhere; a typo in one is caught when the template is saved. */
 const mergeText = (max: number) =>

@@ -24,14 +24,18 @@ import { MoneyPipe } from '../../shared/money.pipe';
 import { ReasonSheet } from '../../shared/reason-sheet';
 import { INSTALMENT_LABEL, PAYMENT_LABEL, PAYMENT_METHOD_LABEL } from '../../shared/status';
 import { PaymentActions, REASON_TEXT } from './payment-actions';
+import { PriceChanges } from '../../shared/price-changes';
 import { PaymentSheet, type PaymentEntry } from './payment-sheet';
 
-type Form = { mode: 'record' | 'refund' } | { mode: 'edit' | 'reenter'; entry: AgreementPayment };
+type Form =
+  | { mode: 'record' }
+  | { mode: 'refund'; amountCents?: number }
+  | { mode: 'edit' | 'reenter'; entry: AgreementPayment };
 type Reason = { mode: 'void' | 'reject'; entry: AgreementPayment };
 
 @Component({
   selector: 'hc-agreement-payments',
-  imports: [MoneyPipe, LocalDatePipe, Icon, PaymentSheet, ReasonSheet],
+  imports: [MoneyPipe, LocalDatePipe, Icon, PaymentSheet, PriceChanges, ReasonSheet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './agreement-payments.html',
   styleUrl: './agreement-payments.scss',
@@ -86,6 +90,7 @@ export class AgreementPayments {
   }
 
   protected initialOf(form: Form): Partial<PaymentEntry> {
+    if (form.mode === 'refund') return form.amountCents ? { amountCents: form.amountCents } : {};
     if (!('entry' in form)) return {};
     const { amountCents, receivedOn, method, externalRef, note } = form.entry;
     return { amountCents, receivedOn, method, externalRef, note };

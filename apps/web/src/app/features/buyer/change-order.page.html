@@ -1,0 +1,128 @@
+@if (order.error() && !o()) {
+  <section class="page-narrow center section">
+    <h1 class="title-2" i18n="@@changeOrder.unavailableTitle">This change order isn't available</h1>
+    <p class="lead" i18n="@@changeOrder.unavailableLead">
+      Its signing link may have been replaced, or it was already signed or closed.
+    </p>
+    <a class="btn" [routerLink]="paths.home" i18n="@@common.actions.back">Back</a>
+  </section>
+} @else if (o(); as o) {
+  <section class="page-narrow section stack">
+    <header class="stack">
+      <p class="eyebrow" i18n="@@changeOrder.eyebrow">Change order {{ o.reference }}</p>
+      <h1 class="title-1">{{ o.home.model }}{{ o.home.address ? ', ' + o.home.address : '' }}</h1>
+      @if (o.after; as after) {
+        <p class="lead tabular" i18n="@@changeOrder.newPrice">
+          New price {{ after.quote.totalCents | money: o.currency }}
+        </p>
+      }
+    </header>
+
+    @if (canSign()) {
+      <div class="callout" data-testid="to-sign">
+        <strong i18n="@@changeOrder.toSignTitle"
+          >{{ o.seller.name }} sent you this change order to sign</strong
+        >
+        <ng-container i18n="@@changeOrder.toSignBody">
+          (sent {{ o.issuedAt | localDate: 'dateTime' }}). It changes purchase agreement
+          {{ o.agreementReference }} as shown below; everything else in it stays as signed.
+        </ng-container>
+      </div>
+    } @else if (o.status === AmendmentStatus.UnderReview && signed()) {
+      <div class="callout success" data-testid="you-signed">
+        <strong i18n="@@changeOrder.youSignedTitle">You signed this change order</strong>
+        <ng-container i18n="@@changeOrder.youSignedBody">
+          ({{ me()?.signature?.signedAt | localDate: 'dateTime' }}). It is waiting for the other
+          purchasers.
+        </ng-container>
+      </div>
+    } @else if (o.status === AmendmentStatus.AwaitingApproval) {
+      <div class="callout" data-testid="awaiting-approval" i18n="@@changeOrder.awaitingApproval">
+        Every purchaser signed; it is waiting for {{ o.seller.name }} to approve it.
+      </div>
+    } @else if (o.status === AmendmentStatus.Executed) {
+      <div class="callout success" data-testid="executed">
+        <strong i18n="@@changeOrder.executedTitle">This change order is executed</strong>
+        <ng-container i18n="@@changeOrder.executedBody">
+          (since {{ o.executedAt | localDate: 'dateTime' }}). Keep its PDF with your agreement.
+        </ng-container>
+      </div>
+    }
+
+    <section class="card">
+      <hc-amendment-view [amendment]="o" audience="buyer" />
+    </section>
+
+    <div class="row">
+      @if (canSign()) {
+        <button class="btn btn-lg" type="button" (click)="openSign()" data-testid="open-sign">
+          <hc-icon name="pen" [size]="18" />
+          <ng-container i18n="@@changeOrder.sign">Sign change order</ng-container>
+        </button>
+      }
+      @if (o.after) {
+        <button
+          class="btn btn-lg btn-secondary"
+          type="button"
+          (click)="download(o)"
+          [disabled]="downloading()"
+          data-testid="download-pdf"
+        >
+          <hc-icon name="download" [size]="18" />
+          <ng-container i18n="@@changeOrder.download">Download PDF</ng-container>
+        </button>
+      }
+    </div>
+  </section>
+
+  @if (signing()) {
+    <hc-sheet
+      title="Sign the change order"
+      i18n-title="@@changeOrder.signSheet.title"
+      (closed)="signing.set(false)"
+    >
+      <form class="stack" (ngSubmit)="sign(o)">
+        <div class="field">
+          <label for="co-name" i18n="@@changeOrder.signSheet.typeName">Type your full name</label>
+          <input
+            id="co-name"
+            class="input"
+            name="fullName"
+            [(ngModel)]="fullName"
+            autocomplete="name"
+            required
+            data-testid="sign-name"
+          />
+        </div>
+        <label class="row agree small">
+          <input
+            type="checkbox"
+            class="checkbox"
+            name="agree"
+            [(ngModel)]="agree"
+            data-testid="sign-agree"
+          />
+          <span i18n="@@changeOrder.signSheet.agree">
+            I have read change order {{ o.reference }} and agree to these changes to purchase
+            agreement {{ o.agreementReference }} at this price. I understand that typing my name is
+            my electronic signature.
+          </span>
+        </label>
+        <button
+          class="btn btn-lg btn-block"
+          type="submit"
+          [disabled]="busy() || !agree || fullName.trim().length < 2"
+          data-testid="sign-submit"
+        >
+          @if (busy()) {
+            <ng-container i18n="@@changeOrder.signSheet.signing">Signing…</ng-container>
+          } @else {
+            <ng-container i18n="@@changeOrder.signSheet.submit">Sign change order</ng-container>
+          }
+        </button>
+      </form>
+    </hc-sheet>
+  }
+} @else {
+  <div class="page-narrow section"><div class="skeleton loading"></div></div>
+}

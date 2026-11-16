@@ -112,6 +112,11 @@
               <div class="tabular" i18n="@@console.agreements.received">
                 {{ paid.netPaidCents | money: a.currency }} received
               </div>
+              @if (paid.creditCents) {
+                <div class="tiny attention" i18n="@@console.agreements.credit">
+                  {{ paid.creditCents | money: a.currency }} credit to refund
+                </div>
+              }
               @if (paid.overdueCents) {
                 <div class="tiny attention" i18n="@@console.agreements.overdue">
                   {{ paid.overdueCents | money: a.currency }} overdue

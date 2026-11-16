@@ -71,6 +71,29 @@ describe('the built-in signature provider', () => {
     );
   });
 
+  it('scopes links to an amendment when the envelope names one', async () => {
+    const amendment = {
+      ...ENVELOPE,
+      resource: { type: AccessResourceType.Amendment, id: 'amd-1' },
+    };
+    await builtInSignatureProvider.invite(ctx, amendment, [{ id: 'pur-1', name: 'Bea Buyer' }]);
+    expect(createAccessKey).toHaveBeenCalledWith(repo, AccessResourceType.Amendment, 'amd-1', {
+      createdBy: 'staff-1',
+      now: NOW,
+      code: 'ABCD-EFGH',
+      signerId: 'pur-1',
+    });
+    await builtInSignatureProvider.revoke(ctx, amendment);
+    expect(repo.col('accessKeys').updateMany).toHaveBeenCalledWith(
+      {
+        resourceType: AccessResourceType.Amendment,
+        resourceId: 'amd-1',
+        status: AccessKeyStatus.Active,
+      },
+      { $set: { status: AccessKeyStatus.Revoked } },
+    );
+  });
+
   it('captures who signed, when, from where, and exactly what', async () => {
     const signer = { id: 'pur-1', name: 'Bea Buyer' };
     expect(

@@ -1,6 +1,8 @@
 import type { Proposal } from '@homepact/shared';
 import {
   AgreementStatus,
+  AmendmentStatus,
+  ApprovalReason,
   InstalmentStatus,
   InventoryStatus,
   PaymentMethod,
@@ -124,4 +126,63 @@ export const turnOf = (p: Proposal, viewer: ProposalParty): Label => {
     default:
       return PROPOSAL_LABEL[p.status];
   }
+};
+
+/** Where a change order stands, for the company. */
+export const AMENDMENT_LABEL: Record<AmendmentStatus, Label> = {
+  [AmendmentStatus.Requested]: {
+    text: $localize`:@@status.amendment.requested:Requested`,
+    tone: 'orange',
+  },
+  [AmendmentStatus.Priced]: { text: $localize`:@@status.amendment.priced:Draft`, tone: 'orange' },
+  [AmendmentStatus.UnderReview]: {
+    text: $localize`:@@status.amendment.under_review:Out for signature`,
+    tone: 'blue',
+  },
+  [AmendmentStatus.AwaitingApproval]: {
+    text: $localize`:@@status.amendment.awaiting_approval:To approve`,
+    tone: 'orange',
+  },
+  [AmendmentStatus.Executed]: {
+    text: $localize`:@@status.amendment.executed:Executed`,
+    tone: 'green',
+  },
+  [AmendmentStatus.Declined]: { text: $localize`:@@status.amendment.declined:Declined`, tone: '' },
+  [AmendmentStatus.Withdrawn]: {
+    text: $localize`:@@status.amendment.withdrawn:Withdrawn`,
+    tone: '',
+  },
+  [AmendmentStatus.Rejected]: {
+    text: $localize`:@@status.amendment.rejected:Not approved`,
+    tone: '',
+  },
+};
+
+/** Where a change order stands, for the buyer. */
+export const AMENDMENT_BUYER_LABEL: Record<AmendmentStatus, Label> = {
+  ...AMENDMENT_LABEL,
+  [AmendmentStatus.Requested]: {
+    text: $localize`:@@status.amendmentBuyer.requested:Being prepared`,
+    tone: 'orange',
+  },
+  [AmendmentStatus.Priced]: {
+    text: $localize`:@@status.amendmentBuyer.priced:Being prepared`,
+    tone: 'orange',
+  },
+  [AmendmentStatus.UnderReview]: {
+    text: $localize`:@@status.amendmentBuyer.under_review:To sign`,
+    tone: 'blue',
+  },
+  [AmendmentStatus.AwaitingApproval]: {
+    text: $localize`:@@status.amendmentBuyer.awaiting_approval:Waiting for approval`,
+    tone: 'orange',
+  },
+};
+
+/** Why a change order needs an administrator's approval. */
+export const APPROVAL_REASON_LABEL: Record<ApprovalReason, string> = {
+  [ApprovalReason.Credit]: $localize`:@@approvalReason.credit:The price goes down`,
+  [ApprovalReason.Adjustment]: $localize`:@@approvalReason.adjustment:A fee or credit set by hand`,
+  [ApprovalReason.AboveThreshold]: $localize`:@@approvalReason.above_threshold:The change is above the approval limit`,
+  [ApprovalReason.RefundDue]: $localize`:@@approvalReason.refund_due:More has been paid than the new price`,
 };

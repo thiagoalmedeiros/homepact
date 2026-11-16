@@ -105,6 +105,27 @@ export const ERRORS = {
     alreadyCancelled: 'This agreement is already cancelled',
     priceChanged: 'The price of the signed proposal changed; this agreement is void',
   },
+  amendments: {
+    notFound: 'Change order not found',
+    signingLinkOnly: 'A signing link only opens what it was sent to sign',
+    onlyExecuted: 'Only an executed agreement can be amended',
+    oneAtATime: 'Another change order is open on this agreement; finish or close it first',
+    offeredAsIs: 'This home is offered as-is; ask your sales representative for changes',
+    nothingToAmend: 'Nothing would change; decline the change order instead',
+    signedCannotChange: 'Every purchaser has signed this change order; it can no longer be changed',
+    priceFirst: 'Price the change order before sending it',
+    alreadySent: 'This change order was already sent',
+    changedReview: 'The change order changed; review it again',
+    changedReload: 'The change order changed meanwhile; reload it',
+    notOpenForSignature: 'This change order is not open for signature',
+    notASigner: 'Open your own signing link to sign this change order',
+    alreadySigned: 'You already signed this change order',
+    notAwaitingApproval: 'This change order is not waiting for approval',
+    cannotApproveOwn: 'Someone else must approve a change order you priced or sent',
+    closed: 'This change order is closed',
+    purchaserNotFound: 'Purchaser not found on this change order',
+    notSent: 'Send the change order for signature first',
+  },
   payments: {
     agreementNotFound: 'Agreement not found',
     notFound: 'Payment not found on this agreement',
@@ -196,6 +217,32 @@ export const THREAD = {
     `The price changed to ${total}, so purchase agreement ${reference} is void and this proposal is back in negotiation.`,
   agreementCancelled: (name: string, reference: string, reason?: string) =>
     `${name} cancelled purchase agreement ${reference}.${reason ? ` ${reason}` : ''}`,
+  amendmentRequested: (name: string, agreement: string, count: number, reference: string) =>
+    count === 0
+      ? `${name} asked to change purchase agreement ${agreement} (${reference}).`
+      : `${name} asked to change purchase agreement ${agreement}: ${count} ${plural(count, 'change', 'changes')} (${reference}).`,
+  amendmentRepriced: (name: string, reference: string, invalidated: number) =>
+    invalidated === 0
+      ? `${name} changed the price of ${reference}; it must be sent again.`
+      : `${name} changed the price of ${reference}; ${invalidated} ${plural(invalidated, 'signature is', 'signatures are')} no longer valid and it must be sent again.`,
+  amendmentSent: (name: string, reference: string, before: string, after: string) =>
+    `${name} sent change order ${reference} for signature: ${before} becomes ${after}.`,
+  amendmentSigned: (name: string, reference: string, signed: number, total: number) =>
+    `${name} signed change order ${reference} (${signed} of ${total} ${plural(total, 'purchaser', 'purchasers')}).`,
+  amendmentAwaitingApproval: (reference: string) =>
+    `Every purchaser signed change order ${reference}; it is waiting for the Seller’s approval.`,
+  amendmentApproved: (name: string, reference: string) =>
+    `${name} approved change order ${reference}.`,
+  amendmentExecuted: (reference: string, agreement: string, total: string) =>
+    `Change order ${reference} is executed: purchase agreement ${agreement} now stands at ${total}.`,
+  amendmentCredit: (received: string, credit: string) =>
+    `Payments received (${received}) exceed the new price: ${credit} is owed back to the buyer.`,
+  amendmentRejected: (name: string, reference: string, reason: string) =>
+    `${name} did not approve change order ${reference}. ${reason}`,
+  amendmentDeclined: (name: string, reference: string, reason?: string) =>
+    `${name} declined change order ${reference}.${reason ? ` ${reason}` : ''}`,
+  amendmentWithdrawn: (name: string, reference: string) =>
+    `${name} withdrew change order ${reference}.`,
   paymentReceived: (amount: string, reference: string, receivedOn: string) =>
     `Payment of ${amount} received on ${receivedOn} for purchase agreement ${reference}.`,
   refundIssued: (amount: string, reference: string, receivedOn: string) =>
@@ -316,6 +363,57 @@ export const AGREEMENT_TEXT = {
     closingToBeConfirmed: 'To be confirmed',
     footer: (seller: string, reference: string) => `${seller}  ·  Agreement ${reference}`,
     page: (n: number, count: number) => `Page ${n} of ${count}`,
+  },
+  amendment: {
+    title: (number: number, agreement: string) =>
+      `Amendment ${number} to purchase agreement ${agreement}`,
+    subject: (reference: string) => `Change order ${reference}`,
+    meta: (reference: string, date: string) => `Change order ${reference}  ·  ${date}`,
+    amendsSigned: (agreement: string, hash: string) =>
+      `This amendment amends purchase agreement ${agreement} as signed (SHA-256 ${hash}).`,
+    amendsAmended: (agreement: string, number: number, hash: string) =>
+      `This amendment amends purchase agreement ${agreement} as amended by amendment ${number} (SHA-256 ${hash}).`,
+    unchanged: 'All other terms of the agreement remain unchanged.',
+    seller: 'Seller',
+    purchasers: 'Purchasers',
+    home: 'The home',
+    agreementLine: (reference: string) => `Purchase agreement ${reference}`,
+    requestedBy: (name: string, date: string) => `Requested by ${name} on ${date}.`,
+    inTheirWords: (note: string) => `In their words: ${note}`,
+    schedule: 'Payment schedule after this amendment',
+    balanceOn: (date?: string) =>
+      date ? `Balance due on closing (${date})` : 'Balance due on closing',
+    status: {
+      requested: 'Requested: not yet priced.',
+      priced: 'Priced: not yet sent to the purchasers.',
+      under_review: (date: string) => `Sent to the purchasers for signature on ${date}.`,
+      awaiting_approval: 'Signed by every purchaser; waiting for approval by the Seller.',
+      executed: (date: string) => `Executed on ${date}: signed by every party.`,
+      closed: (date: string) => `Closed on ${date} without taking effect.`,
+    },
+    watermark: { draft: 'DRAFT', closed: 'VOID' },
+    changes: 'Changes',
+    notIncluded: (note?: string) => `Not included${note ? `: ${note}` : ''}`,
+    adjustments: 'Fees and credits',
+    instalments: 'Added to the deposit schedule',
+    priceBefore: 'Purchase price before this amendment',
+    priceBeforeTax: 'Price before tax after this amendment',
+    priceAfter: 'Purchase price after this amendment',
+    priceChange: 'Change in price',
+    closingMoved: (to: string, from: string) => `Closing and possession: ${to} (was ${from})`,
+    closingToBeConfirmed: 'to be confirmed',
+    depositTotal: 'Deposit, all instalments',
+    signatures: 'Signatures',
+    purchaser: (n: number, count: number, name: string) =>
+      count > 1 ? `Purchaser ${n} of ${count}: ${name}` : `Purchaser: ${name}`,
+    forTheSeller: (name?: string) => (name ? `For the Seller: ${name}` : 'For the Seller'),
+    approvedBy: (name?: string) =>
+      name ? `Approved for the Seller: ${name}` : 'Approval for the Seller',
+    roleSeller: 'For the Seller (sent for signature)',
+    roleApprover: 'For the Seller (approval)',
+    footer: (seller: string, reference: string) => `${seller}  ·  Change order ${reference}`,
+    certificateFooter: (reference: string, stamp: string) =>
+      `Change order ${reference} executed ${stamp}.`,
   },
   receipt: {
     title: { payment: 'Payment receipt', refund: 'Refund confirmation' },

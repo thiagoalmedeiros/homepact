@@ -1,7 +1,13 @@
-import { InventoryStatus, Party, PaymentStatus, ProposalStatus } from '@homepact/shared/enums';
+import {
+  AgreementStatus,
+  InventoryStatus,
+  Party,
+  PaymentStatus,
+  ProposalStatus,
+} from '@homepact/shared/enums';
 import { ChangeDetectionStrategy, Component, computed, inject, resource } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import type { AgreementPayment, InventoryHome, Proposal } from '@homepact/shared';
+import type { AgreementPayment, AgreementSummary, InventoryHome, Proposal } from '@homepact/shared';
 import { API } from '../../core/api-endpoints';
 import { ApiService } from '../../core/api.service';
 import { PATHS } from '../../core/app-paths';
@@ -49,9 +55,22 @@ export class OverviewPage {
   protected readonly withBuyer = computed(
     () => this.all().filter((p) => p.status === ProposalStatus.Proposed).length,
   );
-  protected readonly signedValue = computed(() =>
-    this.all().reduce((t, p) => t + (p.signature?.totalCents ?? 0), 0),
-  );
+  protected readonly agreements = resource({
+    loader: () => this.api.get<AgreementSummary[]>(API.agreements.list),
+  });
+  /** Each signed sale at its price now: its agreement's, change orders included, once there is
+   * one; the price signed on the proposal before. */
+  protected readonly signedValue = computed(() => {
+    const live = new Map(
+      ((this.agreements.hasValue() ? this.agreements.value() : undefined) ?? [])
+        .filter((a) => a.status !== AgreementStatus.Cancelled)
+        .map((a) => [a.proposalId, a.totalCents]),
+    );
+    return this.all().reduce(
+      (t, p) => t + (p.signature ? (live.get(p.id) ?? p.signature.totalCents) : 0),
+      0,
+    );
+  });
   protected readonly available = computed(
     () =>
       ((this.inventory.hasValue() ? this.inventory.value() : undefined) ?? []).filter(

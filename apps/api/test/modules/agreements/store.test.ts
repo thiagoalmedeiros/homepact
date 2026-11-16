@@ -1,4 +1,4 @@
-import { AgreementStatus, Party, SignerStatus } from '@homepact/shared';
+import { AgreementStatus, AmendmentStatus, Party, SignerStatus } from '@homepact/shared';
 import { describe, expect, it } from 'vitest';
 import {
   agreementOfProposal,
@@ -10,7 +10,13 @@ import {
   toAgreementSummary,
   voidAgreement,
 } from '../../../src/modules/agreements/store.js';
-import { agreementDoc, purchaserDoc, signature, signedPurchaser } from '../../support/fixtures.js';
+import {
+  agreementDoc,
+  amendmentDoc,
+  purchaserDoc,
+  signature,
+  signedPurchaser,
+} from '../../support/fixtures.js';
 import { NOW, NOW_ISO, mockRepo } from '../../support/mocks.js';
 
 describe('toAgreement', () => {
@@ -173,5 +179,20 @@ describe('agreementOfProposal', () => {
 
     agreements.findOne.mockResolvedValue(null);
     expect(await agreementOfProposal(repo, 'gone', Party.Seller)).toBeUndefined();
+  });
+
+  it('totals the agreement as amended by its executed change orders', async () => {
+    const repo = mockRepo();
+    repo.col('agreements').findOne.mockResolvedValue(agreementDoc());
+    repo.col('agreementAmendments').find.mockResolvedValue([
+      amendmentDoc({
+        status: AmendmentStatus.Executed,
+        executedAt: NOW_ISO,
+        contentHash: 'a1'.repeat(32),
+      }),
+    ]);
+    expect(await agreementOfProposal(repo, 'agr-1', Party.Seller)).toMatchObject({
+      totalCents: 50_800_000,
+    });
   });
 });

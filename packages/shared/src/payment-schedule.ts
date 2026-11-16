@@ -35,6 +35,8 @@ export interface AgreementPaymentSummary {
   outstandingCents: number;
   overdueCents: number;
   pendingCount: number;
+  /** Received beyond the price (after a price cut): owed back to the buyer. */
+  creditCents?: number;
 }
 
 export interface ScheduleTerms {
@@ -146,4 +148,5 @@ export const paymentSummary = ({ totals }: PaymentSchedule): AgreementPaymentSum
   outstandingCents: totals.outstandingCents,
   overdueCents: totals.overdueCents,
   pendingCount: totals.pendingCount,
+  ...(totals.creditCents > 0 && { creditCents: totals.creditCents }),
 });

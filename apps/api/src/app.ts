@@ -16,6 +16,12 @@ import { redactUrl, type Logger } from './logger.js';
 import { accessRoutes, adminAccessKeyRoutes } from './modules/access-keys/routes.js';
 import { agreementTemplateRoutes } from './modules/agreement-templates/routes.js';
 import { agreementRoutes } from './modules/agreements/routes.js';
+import {
+  amendmentLookupRoutes,
+  amendmentPolicyRoutes,
+  amendmentQueueRoutes,
+  amendmentRoutes,
+} from './modules/amendments/routes.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { catalogRoutes } from './modules/catalog/routes.js';
 import { companyRoutes } from './modules/companies/routes.js';
@@ -121,8 +127,12 @@ export const createApp = ({
   api.use('/proposals', proposalRoutes(ctx));
   api.use('/agreement-templates', agreementTemplateRoutes(ctx));
   api.use('/agreements/:agreementId/payments', agreementPaymentRoutes(ctx));
+  api.use('/agreements/:agreementId/amendments', amendmentRoutes(ctx));
   api.use('/agreements', agreementRoutes(ctx));
   api.use('/agreement-payments', paymentQueueRoutes(ctx));
+  api.use('/agreement-amendments', amendmentQueueRoutes(ctx));
+  api.use('/amendment-policy', amendmentPolicyRoutes(ctx));
+  api.use('/amendments', amendmentLookupRoutes(ctx));
   api.use('/tax-presets', taxPresetRoutes(ctx));
   api.use('/tax-rates', taxRateRoutes(ctx));
   api.use('/referral-programs', referralProgramRoutes(ctx));

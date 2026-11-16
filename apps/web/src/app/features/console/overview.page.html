@@ -21,7 +21,7 @@
   </a>
   <div class="card stat-card">
     <span class="muted small" i18n="@@console.overview.signedValue">Signed value</span>
-    <span class="value">{{ signedValue() | money: currency() }}</span>
+    <span class="value" data-testid="signed-value">{{ signedValue() | money: currency() }}</span>
   </div>
   @if (toApprove.hasValue()) {
     <a

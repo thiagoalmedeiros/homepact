@@ -17,6 +17,7 @@ import {
   paymentReasonSchema,
   PaymentStatus,
   paymentUpdateSchema,
+  priceChangesOf,
   receiptFileName,
   type AgreementLedger,
   type BuyerLedger,
@@ -38,6 +39,7 @@ import {
 } from '../../http/errors.js';
 import { ERRORS, NAMES, THREAD } from '../../messages.js';
 import type { AgreementDoc } from '../agreements/store.js';
+import { stateOf } from '../amendments/store.js';
 import { addMessage, loadProposalFor, type ProposalDoc } from '../proposals/store.js';
 import { renderReceiptPdf } from './receipt.js';
 import {
@@ -115,8 +117,9 @@ export const agreementPaymentRoutes = (ctx: ModuleContext): Router => {
     if (receivedOn > isoDay(at)) throw unprocessable(ERRORS.payments.futureDate);
   };
 
-  /** Posted and pending payments, less refunds, plus this one, may not pass the price. */
-  const assertWithinPrice = (
+  /** Posted and pending payments, less refunds, plus this one, may not pass the current price. */
+  const assertWithinPrice = async (
+    req: Request,
     agreement: AgreementDoc,
     ledger: PaymentDoc[],
     amountCents: number,
@@ -126,7 +129,7 @@ export const agreementPaymentRoutes = (ctx: ModuleContext): Router => {
       totalOf(ledger, PaymentKind.Payment, PaymentStatus.Posted) -
       totalOf(ledger, PaymentKind.Refund, PaymentStatus.Posted) +
       (countPending ? totalOf(ledger, PaymentKind.Payment, PaymentStatus.Pending) : 0);
-    const left = agreement.quote.totalCents - committed;
+    const left = (await stateOf(req.repo, agreement)).totalCents - committed;
     if (amountCents > left) {
       throw unprocessable(
         ERRORS.payments.aboveBalance(money(Math.max(0, left), agreement), countPending),
@@ -176,6 +179,10 @@ export const agreementPaymentRoutes = (ctx: ModuleContext): Router => {
   router.get('/', async (req, res) => {
     const today = isoDay(now());
     const { agreement, company } = await loadReadable(req);
+    const state = await stateOf(req.repo, agreement);
+    const history = state.amendments.length
+      ? { priceChanges: priceChangesOf(agreement.quote.totalCents, state.amendments) }
+      : {};
     if (company) {
       const entries = await ledgerOf(req.repo, agreement._id);
       res.json({
@@ -183,8 +190,9 @@ export const agreementPaymentRoutes = (ctx: ModuleContext): Router => {
         agreementReference: agreement.reference,
         agreementStatus: agreement.status,
         currency: agreement.currency,
-        schedule: scheduleOf(agreement, entries, today),
+        schedule: scheduleOf(state, entries, today),
         payments: entries.map(toPayment),
+        ...history,
       } satisfies AgreementLedger);
       return;
     }
@@ -195,8 +203,9 @@ export const agreementPaymentRoutes = (ctx: ModuleContext): Router => {
       agreementId: agreement._id,
       agreementReference: agreement.reference,
       currency: agreement.currency,
-      schedule: scheduleOf(agreement, posted, today),
+      schedule: scheduleOf(state, posted, today),
       payments: posted.map(toBuyerPayment),
+      ...history,
     } satisfies BuyerLedger);
   });
 
@@ -239,7 +248,7 @@ export const agreementPaymentRoutes = (ctx: ModuleContext): Router => {
             : ERRORS.payments.agreementNotSigned,
         );
       }
-      assertWithinPrice(agreement, ledger, input.amountCents, true);
+      await assertWithinPrice(req, agreement, ledger, input.amountCents, true);
     }
     if (!input.allowDuplicate) assertNoDuplicate(ledger, input);
 
@@ -307,7 +316,7 @@ export const agreementPaymentRoutes = (ctx: ModuleContext): Router => {
     const at = now();
     assertNotFuture(input.receivedOn, at);
     const ledger = await liveLedger(req, agreement, current._id);
-    assertWithinPrice(agreement, ledger, input.amountCents, true);
+    await assertWithinPrice(req, agreement, ledger, input.amountCents, true);
     if (!input.allowDuplicate) assertNoDuplicate(ledger, { ...input, kind: current.kind });
 
     const ts = at.toISOString();
@@ -357,7 +366,7 @@ export const agreementPaymentRoutes = (ctx: ModuleContext): Router => {
       throw forbidden(ERRORS.payments.cannotApproveOwn);
     }
     const ledger = await liveLedger(req, agreement, current._id);
-    assertWithinPrice(agreement, ledger, current.amountCents, false);
+    await assertWithinPrice(req, agreement, ledger, current.amountCents, false);
     const at = now();
     const doc = await transition(
       req,

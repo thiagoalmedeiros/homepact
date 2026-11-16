@@ -10,6 +10,7 @@ export const VALIDATION = {
   taxRateDecimals: 'Use at most 3 decimals, e.g. 9.975',
   regionCode: '2 to 6 letters or digits, e.g. ON',
   unknownField: (key: string) => `Unknown field {{${key}}}`,
+  changesOrNote: 'Pick options from the catalog or describe the change',
 } as const;
 
 export const QUOTE_ERRORS = {
@@ -26,6 +27,11 @@ export const CHANGE_ERRORS = {
   noPackage: 'No package selected in this area',
   alreadyIncluded: 'Item already included',
   notInHome: 'Item is not part of this home',
+} as const;
+
+export const AMENDMENT_ERRORS = {
+  outOfOrder: (numbers: number[]) =>
+    `Executed amendments must be numbered 1 to n, without gaps or repeats (got ${numbers.join(', ') || 'none'})`,
 } as const;
 
 export const ORIGIN_ERRORS = {

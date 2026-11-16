@@ -1,0 +1,24 @@
+.amendment {
+  gap: 0.75rem;
+}
+.head {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.request {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--line, #d2d2d7);
+  white-space: pre-line;
+}
+.price {
+  display: grid;
+  gap: 0.25rem;
+}
+.approval {
+  margin: 0;
+}
+.nowrap {
+  white-space: nowrap;
+}
