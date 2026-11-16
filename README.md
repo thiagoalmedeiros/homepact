@@ -103,3 +103,7 @@ Payments, sales on the console overview, buyers on their proposals); visitors ar
   entry is voided with a reason and re-entered. Sales' entries count once finance (or an
   administrator) approves them. Every entry that counts has a PDF receipt, numbered with the
   entry's reference and rendered from it, so it never changes.
+
+## License
+
+[MIT](LICENSE)

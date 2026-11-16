@@ -2,6 +2,7 @@
   "name": "homepact",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Client–constructor contract agreement for a house purchase (monorepo).",
   "packageManager": "npm@10.9.9",
   "workspaces": [
